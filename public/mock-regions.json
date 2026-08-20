@@ -825,7 +825,9 @@
         "size": "465.7 MB",
         "createdAt": "2026-08-04T01:43:08.898Z"
       }
-    ]
+    ],
+    "landCoverUrl": "/geojson/landcover-mock-1784872433872.json",
+    "soilTypeUrl": "/geojson/soiltype-mock-1784872433872.json"
   },
   {
     "id": "mock-1785210909535",
@@ -1058,7 +1060,9 @@
     "area": "-",
     "coordinates": [],
     "color": "#8b5cf6",
-    "status": "Belum ada data"
+    "status": "Belum ada data",
+    "landCoverUrl": "/geojson/landcover-mock-1787099265018.json",
+    "soilTypeUrl": "/geojson/soiltype-mock-1787099265018.json"
   },
   {
     "id": "mock-1787099919121",
@@ -1067,7 +1071,9 @@
     "area": "-",
     "coordinates": [],
     "color": "#e11d48",
-    "status": "Belum ada data"
+    "status": "Belum ada data",
+    "soilTypeUrl": "/geojson/soiltype-mock-1787099919121.json",
+    "landCoverUrl": "/geojson/landcover-mock-1787099919121.json"
   },
   {
     "id": "mock-1787100230173",
@@ -1076,7 +1082,9 @@
     "area": "-",
     "coordinates": [],
     "color": "#3b82f6",
-    "status": "Belum ada data"
+    "status": "Belum ada data",
+    "soilTypeUrl": "/geojson/soiltype-mock-1787100230173.json",
+    "landCoverUrl": "/geojson/landcover-mock-1787100230173.json"
   },
   {
     "id": "mock-1787100724095",
@@ -1085,7 +1093,9 @@
     "area": "-",
     "coordinates": [],
     "color": "#e11d48",
-    "status": "Belum ada data"
+    "status": "Belum ada data",
+    "soilTypeUrl": "/geojson/soiltype-mock-1787100724095.json",
+    "landCoverUrl": "/geojson/landcover-mock-1787100724095.json"
   },
   {
     "id": "mock-1787101118334",
@@ -1094,7 +1104,9 @@
     "area": "-",
     "coordinates": [],
     "color": "#16a34a",
-    "status": "Belum ada data"
+    "status": "Belum ada data",
+    "landCoverUrl": "/geojson/landcover-mock-1787101118334.json",
+    "soilTypeUrl": "/geojson/soiltype-mock-1787101118334.json"
   },
   {
     "id": "mock-1787101988455",
@@ -1103,7 +1115,9 @@
     "area": "-",
     "coordinates": [],
     "color": "#65a30d",
-    "status": "Belum ada data"
+    "status": "Belum ada data",
+    "landCoverUrl": "/geojson/landcover-mock-1787101988455.json",
+    "soilTypeUrl": "/geojson/soiltype-mock-1787101988455.json"
   },
   {
     "id": "mock-1787102864842",
@@ -1112,7 +1126,9 @@
     "area": "-",
     "coordinates": [],
     "color": "#0d9488",
-    "status": "Belum ada data"
+    "status": "Belum ada data",
+    "soilTypeUrl": "/geojson/soiltype-mock-1787102864842.json",
+    "landCoverUrl": "/geojson/landcover-mock-1787102864842.json"
   },
   {
     "id": "mock-1787103263543",
@@ -1121,7 +1137,9 @@
     "area": "-",
     "coordinates": [],
     "color": "#e11d48",
-    "status": "Belum ada data"
+    "status": "Belum ada data",
+    "landCoverUrl": "/geojson/landcover-mock-1787103263543.json",
+    "soilTypeUrl": "/geojson/soiltype-mock-1787103263543.json"
   },
   {
     "id": "mock-1787103824945",
@@ -1130,7 +1148,9 @@
     "area": "-",
     "coordinates": [],
     "color": "#65a30d",
-    "status": "Belum ada data"
+    "status": "Belum ada data",
+    "landCoverUrl": "/geojson/landcover-mock-1787103824945.json",
+    "soilTypeUrl": "/geojson/soiltype-mock-1787103824945.json"
   },
   {
     "id": "mock-1787103997033",
@@ -1161,7 +1181,9 @@
     "area": "-",
     "coordinates": [],
     "color": "#ea580c",
-    "status": "Belum ada data"
+    "status": "Belum ada data",
+    "soilTypeUrl": "/geojson/soiltype-mock-1787104802992.json",
+    "landCoverUrl": "/geojson/landcover-mock-1787104802992.json"
   },
   {
     "id": "mock-1787105410617",
@@ -1181,7 +1203,9 @@
     "area": "-",
     "coordinates": [],
     "color": "#ea580c",
-    "status": "Belum ada data"
+    "status": "Belum ada data",
+    "soilTypeUrl": "/geojson/soiltype-mock-1787105762676.json",
+    "landCoverUrl": "/geojson/landcover-mock-1787105762676.json"
   },
   {
     "id": "mock-1787106056995",
@@ -1190,7 +1214,9 @@
     "area": "-",
     "coordinates": [],
     "color": "#7c3aed",
-    "status": "Belum ada data"
+    "status": "Belum ada data",
+    "landCoverUrl": "/geojson/landcover-mock-1787106056995.json",
+    "soilTypeUrl": "/geojson/soiltype-mock-1787106056995.json"
   },
   {
     "id": "mock-1787106385171",
@@ -1199,7 +1225,9 @@
     "area": "-",
     "coordinates": [],
     "color": "#f59e0b",
-    "status": "Belum ada data"
+    "status": "Belum ada data",
+    "soilTypeUrl": "/geojson/soiltype-mock-1787106385171.json",
+    "landCoverUrl": "/geojson/landcover-mock-1787106385171.json"
   },
   {
     "id": "mock-1787106813338",
@@ -1208,7 +1236,9 @@
     "area": "-",
     "coordinates": [],
     "color": "#0d9488",
-    "status": "Belum ada data"
+    "status": "Belum ada data",
+    "landCoverUrl": "/geojson/landcover-mock-1787106813338.json",
+    "soilTypeUrl": "/geojson/soiltype-mock-1787106813338.json"
   },
   {
     "id": "mock-1787107638167",
@@ -1217,6 +1247,8 @@
     "area": "-",
     "coordinates": [],
     "color": "#c026d3",
-    "status": "Belum ada data"
+    "status": "Belum ada data",
+    "landCoverUrl": "/geojson/landcover-mock-1787107638167.json",
+    "soilTypeUrl": "/geojson/soiltype-mock-1787107638167.json"
   }
 ]
