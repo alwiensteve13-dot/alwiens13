@@ -1,14 +1,23 @@
 import { betterAuth } from "better-auth";
-import Database from "better-sqlite3";
-import path from "path";
 
-// Initialize a local SQLite database for authentication
-const dbPath = path.join(process.cwd(), "auth.db");
-const sqlite = new Database(dbPath);
+let sqlite: any = null;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const Database = require("better-sqlite3");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const path = require("path");
+  const dbPath = path.join(process.cwd(), "auth.db");
+  sqlite = new Database(dbPath);
+} catch (err) {
+  console.warn("better-sqlite3 native module fallback:", err);
+}
 
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET || "sangat-rahasia-bws-maluku-2026-auth-key",
-  database: sqlite,
+  database: sqlite || {
+    provider: "sqlite",
+    url: ":memory:"
+  },
   emailAndPassword: {
     enabled: true,
     sendResetPassword: async ({ url, user }) => {
