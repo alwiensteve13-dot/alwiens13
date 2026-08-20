@@ -1,0 +1,47 @@
+[
+  {
+    "id": "mock-wu-1785485078583",
+    "name": "PT Spice Island Maluku",
+    "latitude": -2.981300556,
+    "longitude": 128.1341539,
+    "kebutuhan": 0.007,
+    "regionId": "mock-1784796720544",
+    "createdAt": "2026-07-31T08:04:38.583Z"
+  },
+  {
+    "id": "mock-wu-1785486337829",
+    "name": "PT Spice Island Maluku",
+    "latitude": -3.27955,
+    "longitude": 1283459711,
+    "kebutuhan": 0.00992,
+    "regionId": "mock-1785210909535",
+    "createdAt": "2026-07-31T08:25:37.829Z"
+  },
+  {
+    "id": "mock-wu-1785487308194",
+    "name": "Perusahaan Umum Daerah Air Minum Tirta Ina Kabupaten Maluku Tengah",
+    "latitude": -3.303155556,
+    "longitude": 1289651389,
+    "kebutuhan": 0.0075,
+    "regionId": "mock-1785486502892",
+    "createdAt": "2026-07-31T08:41:48.194Z"
+  },
+  {
+    "id": "mock-wu-1785487645043",
+    "name": "Perusahaan Umum Daerah Air Minum Tirta Ina Kabupaten Maluku Tengah",
+    "latitude": -3.543038889,
+    "longitude": 12847535,
+    "kebutuhan": 0.012,
+    "regionId": "mock-1785487406819",
+    "createdAt": "2026-07-31T08:47:25.043Z"
+  },
+  {
+    "id": "mock-wu-1785487958930",
+    "name": "Perusahaan Umum Daerah Air Minum Tirta Ina Kabupaten Maluku Tengah",
+    "latitude": -3.366869444,
+    "longitude": 1295227111,
+    "kebutuhan": 0.004,
+    "regionId": "mock-1784796841176",
+    "createdAt": "2026-07-31T08:52:38.930Z"
+  }
+]

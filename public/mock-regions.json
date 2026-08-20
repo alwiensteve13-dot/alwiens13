@@ -1,0 +1,1216 @@
+[
+  {
+    "id": "2",
+    "name": "DAS Way Ruhu",
+    "region": "Kota Ambon",
+    "area": "145 km²",
+    "coordinates": [
+      [
+        -3.65,
+        128.18
+      ],
+      [
+        -3.62,
+        128.22
+      ],
+      [
+        -3.68,
+        128.25
+      ],
+      [
+        -3.7,
+        128.19
+      ]
+    ],
+    "debit": "64.8 m³/s",
+    "need": "72.1 m³/s",
+    "status": "Defisit",
+    "color": "#3b82f6",
+    "pdfUrl": "/uploads/1784682389738-Wae_Ruhu_Water_Resilience_Profile.pdf",
+    "soilTypeUrl": "/geojson/soiltype-2.json",
+    "landCoverUrl": "/geojson/landcover-2.json",
+    "riverUrl": "/geojson/river-2.json",
+    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+    "demnasName": "DEMNAS - DAS Way Ruhu",
+    "demnasSize": "Master DEMNAS",
+    "demnasList": [
+      {
+        "id": "dem-1785808976605-7890m",
+        "name": "DEMNAS - DAS Way Ruhu",
+        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+        "size": "Master DEMNAS",
+        "createdAt": "2026-08-04T02:02:56.605Z"
+      }
+    ]
+  },
+  {
+    "id": "3",
+    "name": "DAS Way Ela",
+    "region": "Kabupaten Maluku Tengah",
+    "area": "89 km²",
+    "coordinates": [
+      [
+        -3.55,
+        128.3
+      ],
+      [
+        -3.53,
+        128.35
+      ],
+      [
+        -3.58,
+        128.38
+      ],
+      [
+        -3.6,
+        128.32
+      ]
+    ],
+    "debit": "98.3 m³/s",
+    "need": "55.6 m³/s",
+    "status": "Surplus",
+    "color": "#db2777",
+    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+    "demnasName": "DEMNAS - DAS Way Ruhu",
+    "demnasSize": "Master DEMNAS",
+    "demnasList": [
+      {
+        "id": "dem-1785808976744-959s6",
+        "name": "DEMNAS - DAS Way Ruhu",
+        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+        "size": "Master DEMNAS",
+        "createdAt": "2026-08-04T02:02:56.744Z"
+      },
+      {
+        "id": "dem-1785807785487-tnijr",
+        "name": "DEMNAS - Ambon Seram",
+        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
+        "size": "465.7 MB",
+        "createdAt": "2026-08-04T01:43:05.487Z"
+      }
+    ]
+  },
+  {
+    "id": "mock-1784530973200",
+    "name": "DAS Wae Tantui",
+    "region": "Pulau Ambon",
+    "area": "-",
+    "coordinates": [],
+    "color": "#db2777",
+    "status": "Belum ada data",
+    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+    "demnasName": "DEMNAS - DAS Way Ruhu",
+    "demnasSize": "Master DEMNAS",
+    "demnasList": [
+      {
+        "id": "dem-1785808976916-nhxde",
+        "name": "DEMNAS - DAS Way Ruhu",
+        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+        "size": "Master DEMNAS",
+        "createdAt": "2026-08-04T02:02:56.916Z"
+      },
+      {
+        "id": "dem-1785807785615-x1qkw",
+        "name": "DEMNAS - Ambon Seram",
+        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
+        "size": "465.7 MB",
+        "createdAt": "2026-08-04T01:43:05.615Z"
+      }
+    ]
+  },
+  {
+    "id": "mock-1784531326680",
+    "name": "DAS Wae Poka",
+    "region": "Pulau Ambon",
+    "area": "-",
+    "coordinates": [],
+    "color": "#f59e0b",
+    "status": "Belum ada data",
+    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+    "demnasName": "DEMNAS - DAS Way Ruhu",
+    "demnasSize": "Master DEMNAS",
+    "demnasList": [
+      {
+        "id": "dem-1785808977055-x4ruf",
+        "name": "DEMNAS - DAS Way Ruhu",
+        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+        "size": "Master DEMNAS",
+        "createdAt": "2026-08-04T02:02:57.055Z"
+      },
+      {
+        "id": "dem-1785807785749-3mod0",
+        "name": "DEMNAS - Ambon Seram",
+        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
+        "size": "465.7 MB",
+        "createdAt": "2026-08-04T01:43:05.749Z"
+      }
+    ]
+  },
+  {
+    "id": "mock-1784534345916",
+    "name": "DAS Wae Matakabo",
+    "region": "Pulau Seram",
+    "area": "-",
+    "coordinates": [],
+    "color": "#3b82f6",
+    "status": "Belum ada data",
+    "pdfUrl": "/uploads/1784600847561-MatakaboW.pdf",
+    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+    "demnasName": "DEMNAS - DAS Way Ruhu",
+    "demnasSize": "Master DEMNAS",
+    "demnasList": [
+      {
+        "id": "dem-1785808977203-al9wq",
+        "name": "DEMNAS - DAS Way Ruhu",
+        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+        "size": "Master DEMNAS",
+        "createdAt": "2026-08-04T02:02:57.203Z"
+      },
+      {
+        "id": "dem-1785807785893-idh2y",
+        "name": "DEMNAS - Ambon Seram",
+        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
+        "size": "465.7 MB",
+        "createdAt": "2026-08-04T01:43:05.893Z"
+      }
+    ]
+  },
+  {
+    "id": "mock-1784598513312",
+    "name": "DAS Wae Talahereta",
+    "region": "Pulau Seram",
+    "area": "-",
+    "coordinates": [],
+    "color": "#8b5cf6",
+    "status": "Belum ada data",
+    "landCoverUrl": "/geojson/landcover-mock-1784598513312.json",
+    "soilTypeUrl": "/geojson/soiltype-mock-1784598513312.json",
+    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+    "demnasName": "DEMNAS - DAS Way Ruhu",
+    "demnasSize": "Master DEMNAS",
+    "demnasList": [
+      {
+        "id": "dem-1785808977341-kjff0",
+        "name": "DEMNAS - DAS Way Ruhu",
+        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+        "size": "Master DEMNAS",
+        "createdAt": "2026-08-04T02:02:57.341Z"
+      },
+      {
+        "id": "dem-1785807786025-fragm",
+        "name": "DEMNAS - Ambon Seram",
+        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
+        "size": "465.7 MB",
+        "createdAt": "2026-08-04T01:43:06.025Z"
+      }
+    ]
+  },
+  {
+    "id": "mock-1784599021085",
+    "name": "DAS Wae Batu Merah",
+    "region": "Pulau Ambon",
+    "area": "-",
+    "coordinates": [],
+    "color": "#e11d48",
+    "status": "Belum ada data",
+    "pdfUrl": "/uploads/1784691942510-Hidrologi_Wae_Batu_Merah_2026.pdf",
+    "landCoverUrl": "/geojson/landcover-mock-1784599021085.json",
+    "soilTypeUrl": "/geojson/soiltype-mock-1784599021085.json",
+    "riverUrl": "/geojson/river-mock-1784599021085.json",
+    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+    "demnasName": "DEMNAS - DAS Way Ruhu",
+    "demnasSize": "Master DEMNAS",
+    "demnasList": [
+      {
+        "id": "dem-1785808977493-ypp2j",
+        "name": "DEMNAS - DAS Way Ruhu",
+        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+        "size": "Master DEMNAS",
+        "createdAt": "2026-08-04T02:02:57.493Z"
+      },
+      {
+        "id": "dem-1785807786153-p9nob",
+        "name": "DEMNAS - Ambon Seram",
+        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
+        "size": "465.7 MB",
+        "createdAt": "2026-08-04T01:43:06.153Z"
+      }
+    ]
+  },
+  {
+    "id": "mock-1784599778934",
+    "name": "DAS Wae Boti",
+    "region": "Pulau Seram",
+    "area": "-",
+    "coordinates": [],
+    "color": "#4f46e5",
+    "status": "Belum ada data",
+    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+    "demnasName": "DEMNAS - DAS Way Ruhu",
+    "demnasSize": "Master DEMNAS",
+    "demnasList": [
+      {
+        "id": "dem-1785808977645-qbtv0",
+        "name": "DEMNAS - DAS Way Ruhu",
+        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+        "size": "Master DEMNAS",
+        "createdAt": "2026-08-04T02:02:57.645Z"
+      },
+      {
+        "id": "dem-1785807786288-tt90i",
+        "name": "DEMNAS - Ambon Seram",
+        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
+        "size": "465.7 MB",
+        "createdAt": "2026-08-04T01:43:06.288Z"
+      }
+    ]
+  },
+  {
+    "id": "mock-1784599843976",
+    "name": "DAS Wae Bubi",
+    "region": "Pulau Seram",
+    "area": "-",
+    "coordinates": [],
+    "color": "#db2777",
+    "status": "Belum ada data",
+    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+    "demnasName": "DEMNAS - DAS Way Ruhu",
+    "demnasSize": "Master DEMNAS",
+    "demnasList": [
+      {
+        "id": "dem-1785808977785-ybtee",
+        "name": "DEMNAS - DAS Way Ruhu",
+        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+        "size": "Master DEMNAS",
+        "createdAt": "2026-08-04T02:02:57.785Z"
+      },
+      {
+        "id": "dem-1785807786425-jx2vi",
+        "name": "DEMNAS - Ambon Seram",
+        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
+        "size": "465.7 MB",
+        "createdAt": "2026-08-04T01:43:06.425Z"
+      }
+    ]
+  },
+  {
+    "id": "mock-1784600111015",
+    "name": "DAS Wae fufa",
+    "region": "Pulau Seram",
+    "area": "-",
+    "coordinates": [],
+    "color": "#65a30d",
+    "status": "Belum ada data",
+    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+    "demnasName": "DEMNAS - DAS Way Ruhu",
+    "demnasSize": "Master DEMNAS",
+    "demnasList": [
+      {
+        "id": "dem-1785808977935-wmlna",
+        "name": "DEMNAS - DAS Way Ruhu",
+        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+        "size": "Master DEMNAS",
+        "createdAt": "2026-08-04T02:02:57.935Z"
+      },
+      {
+        "id": "dem-1785807786556-dt9pd",
+        "name": "DEMNAS - Ambon Seram",
+        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
+        "size": "465.7 MB",
+        "createdAt": "2026-08-04T01:43:06.556Z"
+      }
+    ]
+  },
+  {
+    "id": "mock-1784600186418",
+    "name": "DAS Wae Haruru",
+    "region": "Pulau Seram",
+    "area": "-",
+    "coordinates": [],
+    "color": "#06b6d4",
+    "status": "Belum ada data",
+    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+    "demnasName": "DEMNAS - DAS Way Ruhu",
+    "demnasSize": "Master DEMNAS",
+    "demnasList": [
+      {
+        "id": "dem-1785808978075-o5nz5",
+        "name": "DEMNAS - DAS Way Ruhu",
+        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+        "size": "Master DEMNAS",
+        "createdAt": "2026-08-04T02:02:58.075Z"
+      },
+      {
+        "id": "dem-1785807786690-vptbf",
+        "name": "DEMNAS - Ambon Seram",
+        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
+        "size": "465.7 MB",
+        "createdAt": "2026-08-04T01:43:06.690Z"
+      }
+    ]
+  },
+  {
+    "id": "mock-1784600360100",
+    "name": "DAS Wae Hutumuri",
+    "region": "Pulau Ambon",
+    "area": "-",
+    "coordinates": [],
+    "color": "#10b981",
+    "status": "Belum ada data",
+    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+    "demnasName": "DEMNAS - DAS Way Ruhu",
+    "demnasSize": "Master DEMNAS",
+    "demnasList": [
+      {
+        "id": "dem-1785808978226-remay",
+        "name": "DEMNAS - DAS Way Ruhu",
+        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+        "size": "Master DEMNAS",
+        "createdAt": "2026-08-04T02:02:58.226Z"
+      },
+      {
+        "id": "dem-1785807786812-bhhjl",
+        "name": "DEMNAS - Ambon Seram",
+        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
+        "size": "465.7 MB",
+        "createdAt": "2026-08-04T01:43:06.812Z"
+      }
+    ]
+  },
+  {
+    "id": "mock-1784600659501",
+    "name": "DAS Wae Kara",
+    "region": "Pulau Seram",
+    "area": "-",
+    "coordinates": [],
+    "color": "#ea580c",
+    "status": "Belum ada data",
+    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+    "demnasName": "DEMNAS - DAS Way Ruhu",
+    "demnasSize": "Master DEMNAS",
+    "demnasList": [
+      {
+        "id": "dem-1785808978383-j7zzl",
+        "name": "DEMNAS - DAS Way Ruhu",
+        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+        "size": "Master DEMNAS",
+        "createdAt": "2026-08-04T02:02:58.383Z"
+      },
+      {
+        "id": "dem-1785807786937-189yj",
+        "name": "DEMNAS - Ambon Seram",
+        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
+        "size": "465.7 MB",
+        "createdAt": "2026-08-04T01:43:06.937Z"
+      }
+    ]
+  },
+  {
+    "id": "mock-1784602353280",
+    "name": "DAS Wae Lalan",
+    "region": "Pulau Seram",
+    "area": "-",
+    "coordinates": [],
+    "color": "#65a30d",
+    "status": "Belum ada data",
+    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+    "demnasName": "DEMNAS - DAS Way Ruhu",
+    "demnasSize": "Master DEMNAS",
+    "demnasList": [
+      {
+        "id": "dem-1785808978518-p9e1v",
+        "name": "DEMNAS - DAS Way Ruhu",
+        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+        "size": "Master DEMNAS",
+        "createdAt": "2026-08-04T02:02:58.518Z"
+      },
+      {
+        "id": "dem-1785807787083-jr1uq",
+        "name": "DEMNAS - Ambon Seram",
+        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
+        "size": "465.7 MB",
+        "createdAt": "2026-08-04T01:43:07.083Z"
+      }
+    ]
+  },
+  {
+    "id": "mock-1784606120567",
+    "name": "Das Wae Laala",
+    "region": "Pulau Seram",
+    "area": "-",
+    "coordinates": [],
+    "color": "#4f46e5",
+    "status": "Belum ada data",
+    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+    "demnasName": "DEMNAS - DAS Way Ruhu",
+    "demnasSize": "Master DEMNAS",
+    "demnasList": [
+      {
+        "id": "dem-1785808978664-u29g3",
+        "name": "DEMNAS - DAS Way Ruhu",
+        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+        "size": "Master DEMNAS",
+        "createdAt": "2026-08-04T02:02:58.664Z"
+      },
+      {
+        "id": "dem-1785807787212-ce999",
+        "name": "DEMNAS - Ambon Seram",
+        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
+        "size": "465.7 MB",
+        "createdAt": "2026-08-04T01:43:07.212Z"
+      }
+    ]
+  },
+  {
+    "id": "mock-1784606215869",
+    "name": "DAS Wae Larike",
+    "region": "Pulau Ambon",
+    "area": "-",
+    "coordinates": [],
+    "color": "#06b6d4",
+    "status": "Belum ada data",
+    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+    "demnasName": "DEMNAS - DAS Way Ruhu",
+    "demnasSize": "Master DEMNAS",
+    "demnasList": [
+      {
+        "id": "dem-1785808978796-69qpk",
+        "name": "DEMNAS - DAS Way Ruhu",
+        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+        "size": "Master DEMNAS",
+        "createdAt": "2026-08-04T02:02:58.796Z"
+      },
+      {
+        "id": "dem-1785807787343-32w8k",
+        "name": "DEMNAS - Ambon Seram",
+        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
+        "size": "465.7 MB",
+        "createdAt": "2026-08-04T01:43:07.343Z"
+      }
+    ]
+  },
+  {
+    "id": "mock-1784606657545",
+    "name": "DAS Wae Loping",
+    "region": "Pulau Seram",
+    "area": "-",
+    "coordinates": [],
+    "color": "#06b6d4",
+    "status": "Belum ada data",
+    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+    "demnasName": "DEMNAS - DAS Way Ruhu",
+    "demnasSize": "Master DEMNAS",
+    "demnasList": [
+      {
+        "id": "dem-1785808978931-5whxx",
+        "name": "DEMNAS - DAS Way Ruhu",
+        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+        "size": "Master DEMNAS",
+        "createdAt": "2026-08-04T02:02:58.931Z"
+      },
+      {
+        "id": "dem-1785807787468-l8nua",
+        "name": "DEMNAS - Ambon Seram",
+        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
+        "size": "465.7 MB",
+        "createdAt": "2026-08-04T01:43:07.468Z"
+      }
+    ]
+  },
+  {
+    "id": "mock-1784684513699",
+    "name": "DAS Wae Sihtalan",
+    "region": "Pulau Seram",
+    "area": "-",
+    "coordinates": [],
+    "color": "#d97706",
+    "status": "Belum ada data",
+    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+    "demnasName": "DEMNAS - DAS Way Ruhu",
+    "demnasSize": "Master DEMNAS",
+    "demnasList": [
+      {
+        "id": "dem-1785808979067-qgu8y",
+        "name": "DEMNAS - DAS Way Ruhu",
+        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+        "size": "Master DEMNAS",
+        "createdAt": "2026-08-04T02:02:59.067Z"
+      },
+      {
+        "id": "dem-1785807787600-66sby",
+        "name": "DEMNAS - Ambon Seram",
+        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
+        "size": "465.7 MB",
+        "createdAt": "2026-08-04T01:43:07.600Z"
+      }
+    ]
+  },
+  {
+    "id": "mock-1784690798664",
+    "name": "DAS Wae Aluni",
+    "region": "Pulau Seram",
+    "area": "-",
+    "coordinates": [],
+    "color": "#3b82f6",
+    "status": "Belum ada data",
+    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+    "demnasName": "DEMNAS - DAS Way Ruhu",
+    "demnasSize": "Master DEMNAS",
+    "demnasList": [
+      {
+        "id": "dem-1785808979194-lopg9",
+        "name": "DEMNAS - DAS Way Ruhu",
+        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+        "size": "Master DEMNAS",
+        "createdAt": "2026-08-04T02:02:59.194Z"
+      },
+      {
+        "id": "dem-1785807787724-qsfue",
+        "name": "DEMNAS - Ambon Seram",
+        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
+        "size": "465.7 MB",
+        "createdAt": "2026-08-04T01:43:07.724Z"
+      }
+    ]
+  },
+  {
+    "id": "mock-1784796652634",
+    "name": "DAS Wae Passo",
+    "region": "Pulau Ambon",
+    "area": "-",
+    "coordinates": [],
+    "color": "#4f46e5",
+    "status": "Belum ada data",
+    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+    "demnasName": "DEMNAS - DAS Way Ruhu",
+    "demnasSize": "Master DEMNAS",
+    "demnasList": [
+      {
+        "id": "dem-1785808979329-fv60m",
+        "name": "DEMNAS - DAS Way Ruhu",
+        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+        "size": "Master DEMNAS",
+        "createdAt": "2026-08-04T02:02:59.329Z"
+      },
+      {
+        "id": "dem-1785807787854-xfv6n",
+        "name": "DEMNAS - Ambon Seram",
+        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
+        "size": "465.7 MB",
+        "createdAt": "2026-08-04T01:43:07.854Z"
+      }
+    ]
+  },
+  {
+    "id": "mock-1784796720544",
+    "name": "DAS Wae Rutilep",
+    "region": "Pulau Seram",
+    "area": "-",
+    "coordinates": [],
+    "color": "#0284c7",
+    "status": "Belum ada data",
+    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+    "demnasName": "DEMNAS - DAS Way Ruhu",
+    "demnasSize": "Master DEMNAS",
+    "demnasList": [
+      {
+        "id": "dem-1785808979463-lpqw5",
+        "name": "DEMNAS - DAS Way Ruhu",
+        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+        "size": "Master DEMNAS",
+        "createdAt": "2026-08-04T02:02:59.463Z"
+      },
+      {
+        "id": "dem-1785807787984-w0vc2",
+        "name": "DEMNAS - Ambon Seram",
+        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
+        "size": "465.7 MB",
+        "createdAt": "2026-08-04T01:43:07.984Z"
+      }
+    ]
+  },
+  {
+    "id": "mock-1784796788483",
+    "name": "DAS Wae Samal",
+    "region": "Pulau Seram",
+    "area": "-",
+    "coordinates": [],
+    "color": "#0284c7",
+    "status": "Belum ada data",
+    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+    "demnasName": "DEMNAS - DAS Way Ruhu",
+    "demnasSize": "Master DEMNAS",
+    "demnasList": [
+      {
+        "id": "dem-1785808979592-qiscg",
+        "name": "DEMNAS - DAS Way Ruhu",
+        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+        "size": "Master DEMNAS",
+        "createdAt": "2026-08-04T02:02:59.592Z"
+      },
+      {
+        "id": "dem-1785807788117-dxm1c",
+        "name": "DEMNAS - Ambon Seram",
+        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
+        "size": "465.7 MB",
+        "createdAt": "2026-08-04T01:43:08.117Z"
+      }
+    ]
+  },
+  {
+    "id": "mock-1784796841176",
+    "name": "DAS Wae Sapolose",
+    "region": "Pulau Seram",
+    "area": "-",
+    "coordinates": [],
+    "color": "#e11d48",
+    "status": "Belum ada data",
+    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+    "demnasName": "DEMNAS - DAS Way Ruhu",
+    "demnasSize": "Master DEMNAS",
+    "demnasList": [
+      {
+        "id": "dem-1785808979723-6cba5",
+        "name": "DEMNAS - DAS Way Ruhu",
+        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+        "size": "Master DEMNAS",
+        "createdAt": "2026-08-04T02:02:59.723Z"
+      },
+      {
+        "id": "dem-1785807788254-zljps",
+        "name": "DEMNAS - Ambon Seram",
+        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
+        "size": "465.7 MB",
+        "createdAt": "2026-08-04T01:43:08.254Z"
+      }
+    ]
+  },
+  {
+    "id": "mock-1784796861915",
+    "name": "DAS Wae Sariputi",
+    "region": "Wilayah Baru",
+    "area": "-",
+    "coordinates": [],
+    "color": "#c026d3",
+    "status": "Belum ada data",
+    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+    "demnasName": "DEMNAS - DAS Way Ruhu",
+    "demnasSize": "Master DEMNAS",
+    "demnasList": [
+      {
+        "id": "dem-1785808979855-hnitz",
+        "name": "DEMNAS - DAS Way Ruhu",
+        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+        "size": "Master DEMNAS",
+        "createdAt": "2026-08-04T02:02:59.855Z"
+      },
+      {
+        "id": "dem-1785807788384-rowz0",
+        "name": "DEMNAS - Ambon Seram",
+        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
+        "size": "465.7 MB",
+        "createdAt": "2026-08-04T01:43:08.384Z"
+      }
+    ]
+  },
+  {
+    "id": "mock-1784797060023",
+    "name": "DAS Wae Wakauli",
+    "region": "Pulau Ambon",
+    "area": "-",
+    "coordinates": [],
+    "color": "#65a30d",
+    "status": "Belum ada data",
+    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+    "demnasName": "DEMNAS - DAS Way Ruhu",
+    "demnasSize": "Master DEMNAS",
+    "demnasList": [
+      {
+        "id": "dem-1785808979985-attxt",
+        "name": "DEMNAS - DAS Way Ruhu",
+        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+        "size": "Master DEMNAS",
+        "createdAt": "2026-08-04T02:02:59.985Z"
+      },
+      {
+        "id": "dem-1785807788514-77xh2",
+        "name": "DEMNAS - Ambon Seram",
+        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
+        "size": "465.7 MB",
+        "createdAt": "2026-08-04T01:43:08.514Z"
+      }
+    ]
+  },
+  {
+    "id": "mock-1784869342389",
+    "name": "DAS Wae Epe",
+    "region": "Pulau Seram",
+    "area": "-",
+    "coordinates": [],
+    "color": "#d97706",
+    "status": "Belum ada data",
+    "landCoverUrl": "/geojson/landcover-mock-1784869342389.json",
+    "soilTypeUrl": "/geojson/soiltype-mock-1784869342389.json",
+    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+    "demnasName": "DEMNAS - DAS Way Ruhu",
+    "demnasSize": "Master DEMNAS",
+    "demnasList": [
+      {
+        "id": "dem-1785808980109-yogxt",
+        "name": "DEMNAS - DAS Way Ruhu",
+        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+        "size": "Master DEMNAS",
+        "createdAt": "2026-08-04T02:03:00.109Z"
+      },
+      {
+        "id": "dem-1785807788646-gmx2o",
+        "name": "DEMNAS - Ambon Seram",
+        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
+        "size": "465.7 MB",
+        "createdAt": "2026-08-04T01:43:08.646Z"
+      }
+    ]
+  },
+  {
+    "id": "mock-1784872167665",
+    "name": "DAS Wae Tonipa (Kobi)",
+    "region": "Pulau Seram",
+    "area": "-",
+    "coordinates": [],
+    "color": "#db2777",
+    "status": "Belum ada data",
+    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+    "demnasName": "DEMNAS - DAS Way Ruhu",
+    "demnasSize": "Master DEMNAS",
+    "demnasList": [
+      {
+        "id": "dem-1785808980235-bivzj",
+        "name": "DEMNAS - DAS Way Ruhu",
+        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+        "size": "Master DEMNAS",
+        "createdAt": "2026-08-04T02:03:00.235Z"
+      },
+      {
+        "id": "dem-1785807788773-iadgp",
+        "name": "DEMNAS - Ambon Seram",
+        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
+        "size": "465.7 MB",
+        "createdAt": "2026-08-04T01:43:08.773Z"
+      }
+    ]
+  },
+  {
+    "id": "mock-1784872433872",
+    "name": "DAS Wae Tomu",
+    "region": "Pulau Ambon",
+    "area": "-",
+    "coordinates": [],
+    "color": "#06b6d4",
+    "status": "Belum ada data",
+    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+    "demnasName": "DEMNAS - DAS Way Ruhu",
+    "demnasSize": "Master DEMNAS",
+    "demnasList": [
+      {
+        "id": "dem-1785808980361-t3ivv",
+        "name": "DEMNAS - DAS Way Ruhu",
+        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+        "size": "Master DEMNAS",
+        "createdAt": "2026-08-04T02:03:00.361Z"
+      },
+      {
+        "id": "dem-1785807788898-r8zn6",
+        "name": "DEMNAS - Ambon Seram",
+        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
+        "size": "465.7 MB",
+        "createdAt": "2026-08-04T01:43:08.898Z"
+      }
+    ]
+  },
+  {
+    "id": "mock-1785210909535",
+    "name": "DAS Wae Nata",
+    "region": "Pulau Seram",
+    "area": "-",
+    "coordinates": [],
+    "color": "#8b5cf6",
+    "status": "Belum ada data",
+    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+    "demnasName": "DEMNAS - DAS Way Ruhu",
+    "demnasSize": "Master DEMNAS",
+    "demnasList": [
+      {
+        "id": "dem-1785808980489-vjfsk",
+        "name": "DEMNAS - DAS Way Ruhu",
+        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+        "size": "Master DEMNAS",
+        "createdAt": "2026-08-04T02:03:00.489Z"
+      },
+      {
+        "id": "dem-1785807789025-ugmrq",
+        "name": "DEMNAS - Ambon Seram",
+        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
+        "size": "465.7 MB",
+        "createdAt": "2026-08-04T01:43:09.025Z"
+      }
+    ]
+  },
+  {
+    "id": "mock-1785480001746",
+    "name": "DAS Wae Loning Tengah",
+    "region": "Wilayah Baru",
+    "area": "-",
+    "coordinates": [],
+    "color": "#7c3aed",
+    "status": "Belum ada data",
+    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+    "demnasName": "DEMNAS - DAS Way Ruhu",
+    "demnasSize": "Master DEMNAS",
+    "demnasList": [
+      {
+        "id": "dem-1785808980628-unke3",
+        "name": "DEMNAS - DAS Way Ruhu",
+        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+        "size": "Master DEMNAS",
+        "createdAt": "2026-08-04T02:03:00.628Z"
+      },
+      {
+        "id": "dem-1785807789156-47kvc",
+        "name": "DEMNAS - Ambon Seram",
+        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
+        "size": "465.7 MB",
+        "createdAt": "2026-08-04T01:43:09.156Z"
+      }
+    ]
+  },
+  {
+    "id": "mock-1785480394028",
+    "name": "DAS Wae Nasiri",
+    "region": "Pulau Seram",
+    "area": "-",
+    "coordinates": [],
+    "color": "#3b82f6",
+    "status": "Belum ada data",
+    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+    "demnasName": "DEMNAS - DAS Way Ruhu",
+    "demnasSize": "Master DEMNAS",
+    "demnasList": [
+      {
+        "id": "dem-1785808980756-66t8q",
+        "name": "DEMNAS - DAS Way Ruhu",
+        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+        "size": "Master DEMNAS",
+        "createdAt": "2026-08-04T02:03:00.756Z"
+      },
+      {
+        "id": "dem-1785807789286-t1mlb",
+        "name": "DEMNAS - Ambon Seram",
+        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
+        "size": "465.7 MB",
+        "createdAt": "2026-08-04T01:43:09.286Z"
+      }
+    ]
+  },
+  {
+    "id": "mock-1785480676773",
+    "name": "DAS Wae Seith",
+    "region": "Pulau Ambon",
+    "area": "-",
+    "coordinates": [],
+    "color": "#e11d48",
+    "status": "Belum ada data",
+    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+    "demnasName": "DEMNAS - DAS Way Ruhu",
+    "demnasSize": "Master DEMNAS",
+    "demnasList": [
+      {
+        "id": "dem-1785808980880-kt2t6",
+        "name": "DEMNAS - DAS Way Ruhu",
+        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+        "size": "Master DEMNAS",
+        "createdAt": "2026-08-04T02:03:00.880Z"
+      },
+      {
+        "id": "dem-1785807789410-r2jvm",
+        "name": "DEMNAS - Ambon Seram",
+        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
+        "size": "465.7 MB",
+        "createdAt": "2026-08-04T01:43:09.410Z"
+      }
+    ]
+  },
+  {
+    "id": "mock-1785481325472",
+    "name": "DAS Wae Riuapa",
+    "region": "Pulau Seram",
+    "area": "-",
+    "coordinates": [],
+    "color": "#7c3aed",
+    "status": "Belum ada data",
+    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+    "demnasName": "DEMNAS - DAS Way Ruhu",
+    "demnasSize": "Master DEMNAS",
+    "demnasList": [
+      {
+        "id": "dem-1785808981012-wlfdb",
+        "name": "DEMNAS - DAS Way Ruhu",
+        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+        "size": "Master DEMNAS",
+        "createdAt": "2026-08-04T02:03:01.012Z"
+      },
+      {
+        "id": "dem-1785807789538-h9p71",
+        "name": "DEMNAS - Ambon Seram",
+        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
+        "size": "465.7 MB",
+        "createdAt": "2026-08-04T01:43:09.538Z"
+      }
+    ]
+  },
+  {
+    "id": "mock-1785486502892",
+    "name": "DAS Wae Epu",
+    "region": "Pulau seram",
+    "area": "-",
+    "coordinates": [],
+    "color": "#c026d3",
+    "status": "Belum ada data",
+    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+    "demnasName": "DEMNAS - DAS Way Ruhu",
+    "demnasSize": "Master DEMNAS",
+    "demnasList": [
+      {
+        "id": "dem-1785808981148-6rrvk",
+        "name": "DEMNAS - DAS Way Ruhu",
+        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+        "size": "Master DEMNAS",
+        "createdAt": "2026-08-04T02:03:01.148Z"
+      },
+      {
+        "id": "dem-1785807789668-zm7lz",
+        "name": "DEMNAS - Ambon Seram",
+        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
+        "size": "465.7 MB",
+        "createdAt": "2026-08-04T01:43:09.668Z"
+      }
+    ]
+  },
+  {
+    "id": "mock-1785487406819",
+    "name": "DAS Wae Marake",
+    "region": "Pulau Seram",
+    "area": "-",
+    "coordinates": [],
+    "color": "#7c3aed",
+    "status": "Belum ada data",
+    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+    "demnasName": "DEMNAS - DAS Way Ruhu",
+    "demnasSize": "Master DEMNAS",
+    "demnasList": [
+      {
+        "id": "dem-1785808981287-6dd9v",
+        "name": "DEMNAS - DAS Way Ruhu",
+        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+        "size": "Master DEMNAS",
+        "createdAt": "2026-08-04T02:03:01.288Z"
+      },
+      {
+        "id": "dem-1785807789794-viqpl",
+        "name": "DEMNAS - Ambon Seram",
+        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
+        "size": "465.7 MB",
+        "createdAt": "2026-08-04T01:43:09.794Z"
+      }
+    ]
+  },
+  {
+    "id": "mock-1785565879455",
+    "name": "DAS Wae Ake Ternate",
+    "region": "Pulau Seram",
+    "area": "-",
+    "coordinates": [],
+    "color": "#10b981",
+    "status": "Belum ada data",
+    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+    "demnasName": "DEMNAS - DAS Way Ruhu",
+    "demnasSize": "Master DEMNAS",
+    "demnasList": [
+      {
+        "id": "dem-1785808981433-ej9g5",
+        "name": "DEMNAS - DAS Way Ruhu",
+        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
+        "size": "Master DEMNAS",
+        "createdAt": "2026-08-04T02:03:01.433Z"
+      },
+      {
+        "id": "dem-1785807789923-hfflg",
+        "name": "DEMNAS - Ambon Seram",
+        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
+        "size": "465.7 MB",
+        "createdAt": "2026-08-04T01:43:09.923Z"
+      }
+    ]
+  },
+  {
+    "id": "mock-1787099265018",
+    "name": "DAS Wae Rumah Tiga",
+    "region": "Pulau Ambon",
+    "area": "-",
+    "coordinates": [],
+    "color": "#8b5cf6",
+    "status": "Belum ada data"
+  },
+  {
+    "id": "mock-1787099919121",
+    "name": "DAS Wae Sapalewa",
+    "region": "Pulau Seram",
+    "area": "-",
+    "coordinates": [],
+    "color": "#e11d48",
+    "status": "Belum ada data"
+  },
+  {
+    "id": "mock-1787100230173",
+    "name": "DAS Wae Uluapa",
+    "region": "Pulau Seram",
+    "area": "-",
+    "coordinates": [],
+    "color": "#3b82f6",
+    "status": "Belum ada data"
+  },
+  {
+    "id": "mock-1787100724095",
+    "name": "DAS Wae Nalawai",
+    "region": "Pulau Seram",
+    "area": "-",
+    "coordinates": [],
+    "color": "#e11d48",
+    "status": "Belum ada data"
+  },
+  {
+    "id": "mock-1787101118334",
+    "name": "DAS Wae Loi",
+    "region": "Pulau Ambon",
+    "area": "-",
+    "coordinates": [],
+    "color": "#16a34a",
+    "status": "Belum ada data"
+  },
+  {
+    "id": "mock-1787101988455",
+    "name": "DAS Wae Palapin Kaka",
+    "region": "Pulau Seram",
+    "area": "-",
+    "coordinates": [],
+    "color": "#65a30d",
+    "status": "Belum ada data"
+  },
+  {
+    "id": "mock-1787102864842",
+    "name": "DAS Wae Tatiri",
+    "region": "Pulau Ambon",
+    "area": "-",
+    "coordinates": [],
+    "color": "#0d9488",
+    "status": "Belum ada data"
+  },
+  {
+    "id": "mock-1787103263543",
+    "name": "DAS Wae Tulehu",
+    "region": "Pulau Ambon",
+    "area": "-",
+    "coordinates": [],
+    "color": "#e11d48",
+    "status": "Belum ada data"
+  },
+  {
+    "id": "mock-1787103824945",
+    "name": "DAS Wae Kawa",
+    "region": "Pulau Seram",
+    "area": "-",
+    "coordinates": [],
+    "color": "#65a30d",
+    "status": "Belum ada data"
+  },
+  {
+    "id": "mock-1787103997033",
+    "name": "DAS Wae Batu Gajah",
+    "region": "Pulau Ambon",
+    "area": "-",
+    "coordinates": [],
+    "color": "#4f46e5",
+    "status": "Belum ada data"
+  },
+  {
+    "id": "mock-1787104440875",
+    "name": "DAS Wae Batuasa",
+    "region": "Pulau Seram",
+    "area": "-",
+    "coordinates": [],
+    "color": "#65a30d",
+    "status": "Belum ada data"
+  },
+  {
+    "id": "mock-1787104802992",
+    "name": "DAS Wae Tomahitu",
+    "region": "Pulau Ambon",
+    "area": "-",
+    "coordinates": [],
+    "color": "#ea580c",
+    "status": "Belum ada data"
+  },
+  {
+    "id": "mock-1787105410617",
+    "name": "DAS Wae Eleuw",
+    "region": "Pulau Seram",
+    "area": "-",
+    "coordinates": [],
+    "color": "#d97706",
+    "status": "Belum ada data"
+  },
+  {
+    "id": "mock-1787105762676",
+    "name": "DAS Wae Ruatan",
+    "region": "Pulau Seram",
+    "area": "-",
+    "coordinates": [],
+    "color": "#ea580c",
+    "status": "Belum ada data"
+  },
+  {
+    "id": "mock-1787106056995",
+    "name": "DAS Wae Tehoru Seram",
+    "region": "Pulau Seram",
+    "area": "-",
+    "coordinates": [],
+    "color": "#7c3aed",
+    "status": "Belum ada data"
+  },
+  {
+    "id": "mock-1787106385171",
+    "name": "DAS Wae Tukang",
+    "region": "Pulau Ambon",
+    "area": "-",
+    "coordinates": [],
+    "color": "#f59e0b",
+    "status": "Belum ada data"
+  },
+  {
+    "id": "mock-1787106813338",
+    "name": "DAS Wae Yapana",
+    "region": "Pulau Seram",
+    "area": "-",
+    "coordinates": [],
+    "color": "#0d9488",
+    "status": "Belum ada data"
+  },
+  {
+    "id": "mock-1787107638167",
+    "name": "DAS Wae Sia",
+    "region": "Pulau Ambon",
+    "area": "-",
+    "coordinates": [],
+    "color": "#c026d3",
+    "status": "Belum ada data"
+  }
+]
