@@ -87,6 +87,9 @@ export async function GET() {
         waterData: true
       }
     });
+    if (!regions || regions.length === 0) {
+      return apiSuccess(getMockRegions());
+    }
     return apiSuccess(regions);
   } catch (error) {
     console.warn("Database connection failed, using file mock data.");

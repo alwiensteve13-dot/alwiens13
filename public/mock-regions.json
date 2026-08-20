@@ -1170,7 +1170,9 @@
     "area": "-",
     "coordinates": [],
     "color": "#d97706",
-    "status": "Belum ada data"
+    "status": "Belum ada data",
+    "landCoverUrl": "/geojson/landcover-mock-1787105410617.json",
+    "soilTypeUrl": "/geojson/soiltype-mock-1787105410617.json"
   },
   {
     "id": "mock-1787105762676",

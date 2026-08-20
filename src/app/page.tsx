@@ -86,44 +86,54 @@ export default function Home() {
       .then(res => res.json())
       .then(async data => {
          const urls: Record<string, string> = {};
-         if (data.data) {
-           setRegions(data.data);
-           data.data.forEach((r: any) => {
-             if (r.pdfUrl) urls[r.id] = r.pdfUrl;
-           });
-           setPdfUrls(urls);
+         const fetchedRegions = (data && Array.isArray(data.data) && data.data.length > 0)
+           ? data.data
+           : initialRegionsData;
 
-           // Batch fetch custom GeoJSON polygons in parallel and update state once
-           const loadedGeojsons: Record<string, any> = {};
-           await Promise.all(
-             data.data.map((r: any) =>
-               fetch(`/geojson/${r.id}.json?t=${new Date().getTime()}`)
-                 .then(res => res.ok ? res.json() : null)
-                 .then(geojson => { if (geojson) loadedGeojsons[r.id] = geojson; })
-                 .catch(() => {})
-             )
-           );
-           setGeojsons(loadedGeojsons);
-         }
+         setRegions(fetchedRegions);
+         fetchedRegions.forEach((r: any) => {
+           if (r.pdfUrl) urls[r.id] = r.pdfUrl;
+         });
+         setPdfUrls(urls);
+
+         // Batch fetch custom GeoJSON polygons in parallel and update state once
+         const loadedGeojsons: Record<string, any> = {};
+         await Promise.all(
+           fetchedRegions.map((r: any) =>
+             fetch(`/geojson/${r.id}.json?t=${new Date().getTime()}`)
+               .then(res => res.ok ? res.json() : null)
+               .then(geojson => { if (geojson) loadedGeojsons[r.id] = geojson; })
+               .catch(() => {})
+           )
+         );
+         setGeojsons(loadedGeojsons);
       })
-      .catch(console.error);
+      .catch(err => {
+         console.warn("Failed to fetch /api/regions, falling back to initialRegionsData:", err);
+         setRegions(initialRegionsData);
+      });
       
     // Fetch latest water data
     fetch('/api/water-data')
       .then(res => res.json())
       .then(data => {
          const wd: Record<string, any> = {};
-         if (data.data) {
-           setAllWaterData(data.data);
-           data.data.forEach((w: any) => {
-             if (!wd[w.regionId]) {
-                wd[w.regionId] = w;
-             }
-           });
-         }
+         const fetchedWater = (data && Array.isArray(data.data) && data.data.length > 0)
+           ? data.data
+           : initialWaterData;
+
+         setAllWaterData(fetchedWater);
+         fetchedWater.forEach((w: any) => {
+           if (!wd[w.regionId]) {
+              wd[w.regionId] = w;
+           }
+         });
          setWaterDataMap(wd);
       })
-      .catch(console.error);
+      .catch(err => {
+         console.warn("Failed to fetch /api/water-data, falling back to initialWaterData:", err);
+         setAllWaterData(initialWaterData);
+      });
 
     // Fetch water users
     fetch('/api/water-users')

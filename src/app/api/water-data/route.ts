@@ -40,6 +40,13 @@ export async function GET(request: Request) {
       orderBy: { period: "desc" }
     });
     
+    if (!data || data.length === 0) {
+      let mockData = getMockWaterData();
+      if (regionId) mockData = mockData.filter((d: any) => d.regionId === regionId);
+      mockData.sort((a: any, b: any) => new Date(b.period).getTime() - new Date(a.period).getTime());
+      return apiSuccess(mockData);
+    }
+
     return apiSuccess(data);
   } catch (error) {
     console.warn("Database connection failed, using mock data.", error);
