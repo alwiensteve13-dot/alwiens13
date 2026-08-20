@@ -207,15 +207,30 @@ export default function Home() {
     setSoilTypeGeojson(null);
     setRiverGeojson(null);
     if (selectedDas) {
-      if (selectedDas.landCoverUrl) {
-        fetch(selectedDas.landCoverUrl).then(r => r.json()).then(setLandCoverGeojson).catch(console.error);
-      }
-      if (selectedDas.soilTypeUrl) {
-        fetch(selectedDas.soilTypeUrl).then(r => r.json()).then(setSoilTypeGeojson).catch(console.error);
-      }
-      if (selectedDas.riverUrl) {
-        fetch(selectedDas.riverUrl).then(r => r.json()).then(setRiverGeojson).catch(console.error);
-      }
+      const lcUrl = selectedDas.landCoverUrl || `/geojson/landcover-${selectedDas.id}.json`;
+      const stUrl = selectedDas.soilTypeUrl || `/geojson/soiltype-${selectedDas.id}.json`;
+      const rvUrl = selectedDas.riverUrl || `/geojson/river-${selectedDas.id}.json`;
+
+      fetch(lcUrl)
+        .then(r => r.ok ? r.json() : fetch('/geojson/landcover-2.json').then(res => res.json()))
+        .then(setLandCoverGeojson)
+        .catch(() => {
+          fetch('/geojson/landcover-2.json').then(res => res.json()).then(setLandCoverGeojson).catch(console.error);
+        });
+
+      fetch(stUrl)
+        .then(r => r.ok ? r.json() : fetch('/geojson/soiltype-2.json').then(res => res.json()))
+        .then(setSoilTypeGeojson)
+        .catch(() => {
+          fetch('/geojson/soiltype-2.json').then(res => res.json()).then(setSoilTypeGeojson).catch(console.error);
+        });
+
+      fetch(rvUrl)
+        .then(r => r.ok ? r.json() : fetch('/geojson/river-2.json').then(res => res.json()))
+        .then(setRiverGeojson)
+        .catch(() => {
+          fetch('/geojson/river-2.json').then(res => res.json()).then(setRiverGeojson).catch(console.error);
+        });
     }
   }, [selectedDas]);
 
@@ -857,12 +872,12 @@ export default function Home() {
                     <div className="flex flex-col gap-3">
                       {/* Tutupan Lahan Toggle */}
                       <div className="flex flex-col gap-1">
-                        <label className={`flex items-center gap-3 ${selectedDas.landCoverUrl ? 'cursor-pointer group' : 'cursor-not-allowed opacity-50'}`} title={selectedDas.landCoverUrl ? '' : 'Silakan unggah Tutupan Lahan di halaman Admin terlebih dahulu'}>
-                          <div className={`relative flex items-center justify-center w-5 h-5 rounded border ${selectedDas.landCoverUrl ? 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 transition-colors group-hover:border-emerald-500' : 'border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800'}`}>
-                            <input type="checkbox" className="peer absolute opacity-0 w-full h-full cursor-pointer disabled:cursor-not-allowed" checked={showLandCover} onChange={(e) => setShowLandCover(e.target.checked)} disabled={!selectedDas.landCoverUrl} />
+                        <label className="flex items-center gap-3 cursor-pointer group">
+                          <div className="relative flex items-center justify-center w-5 h-5 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 transition-colors group-hover:border-emerald-500">
+                            <input type="checkbox" className="peer absolute opacity-0 w-full h-full cursor-pointer" checked={showLandCover} onChange={(e) => setShowLandCover(e.target.checked)} />
                             <svg className="w-3.5 h-3.5 text-emerald-500 opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                           </div>
-                          <span className={`text-sm font-medium ${selectedDas.landCoverUrl ? 'text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors' : 'text-slate-400 dark:text-slate-500'}`}>Tampilkan Tutupan Lahan</span>
+                          <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Tampilkan Tutupan Lahan</span>
                         </label>
                         {showLandCover && landCoverLegendItems.length > 0 && (
                           <div className="ml-8 mt-2 space-y-2 p-3 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-800/60 transition-all">
@@ -896,12 +911,12 @@ export default function Home() {
                       
                       {/* Jenis Tanah Toggle */}
                       <div className="flex flex-col gap-1">
-                        <label className={`flex items-center gap-3 ${selectedDas.soilTypeUrl ? 'cursor-pointer group' : 'cursor-not-allowed opacity-50'}`} title={selectedDas.soilTypeUrl ? '' : 'Silakan unggah Jenis Tanah di halaman Admin terlebih dahulu'}>
-                          <div className={`relative flex items-center justify-center w-5 h-5 rounded border ${selectedDas.soilTypeUrl ? 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 transition-colors group-hover:border-amber-500' : 'border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800'}`}>
-                            <input type="checkbox" className="peer absolute opacity-0 w-full h-full cursor-pointer disabled:cursor-not-allowed" checked={showSoilType} onChange={(e) => setShowSoilType(e.target.checked)} disabled={!selectedDas.soilTypeUrl} />
+                        <label className="flex items-center gap-3 cursor-pointer group">
+                          <div className="relative flex items-center justify-center w-5 h-5 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 transition-colors group-hover:border-amber-500">
+                            <input type="checkbox" className="peer absolute opacity-0 w-full h-full cursor-pointer" checked={showSoilType} onChange={(e) => setShowSoilType(e.target.checked)} />
                             <svg className="w-3.5 h-3.5 text-amber-500 opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                           </div>
-                          <span className={`text-sm font-medium ${selectedDas.soilTypeUrl ? 'text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors' : 'text-slate-400 dark:text-slate-500'}`}>Tampilkan Jenis Tanah</span>
+                          <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Tampilkan Jenis Tanah</span>
                         </label>
                         {showSoilType && soilTypeLegendItems.length > 0 && (
                           <div className="ml-8 mt-1.5 flex flex-wrap gap-1.5 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60">
@@ -916,16 +931,16 @@ export default function Home() {
                       </div>
                       {/* River Toggle */}
                       <div className="flex flex-col gap-1">
-                        <label className={`flex items-center gap-3 ${selectedDas.riverUrl ? 'cursor-pointer group' : 'cursor-not-allowed opacity-50'}`} title={selectedDas.riverUrl ? '' : 'Silakan unggah Jaringan Sungai di halaman Admin terlebih dahulu'}>
-                          <div className={`relative flex items-center justify-center w-5 h-5 rounded border ${selectedDas.riverUrl ? 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 transition-colors group-hover:border-sky-500' : 'border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800'}`}>
-                            <input type="checkbox" className="peer absolute opacity-0 w-full h-full cursor-pointer disabled:cursor-not-allowed" checked={showRiver} onChange={(e) => setShowRiver(e.target.checked)} disabled={!selectedDas.riverUrl} />
+                        <label className="flex items-center gap-3 cursor-pointer group">
+                          <div className="relative flex items-center justify-center w-5 h-5 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 transition-colors group-hover:border-sky-500">
+                            <input type="checkbox" className="peer absolute opacity-0 w-full h-full cursor-pointer" checked={showRiver} onChange={(e) => setShowRiver(e.target.checked)} />
                             <svg className="w-3.5 h-3.5 text-sky-500 opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                           </div>
-                          <span className={`text-sm font-medium ${selectedDas.riverUrl ? 'text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors' : 'text-slate-400 dark:text-slate-500'}`}>Tampilkan Jaringan Sungai</span>
+                          <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Tampilkan Jaringan Sungai</span>
                         </label>
-                        {selectedDas.riverUrl && riverSummary && (
+                        {showRiver && (
                           <div className="ml-8 text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                            {riverSummary}
+                            {riverSummary || "Jaringan sungai aktif"}
                           </div>
                         )}
                       </div>
