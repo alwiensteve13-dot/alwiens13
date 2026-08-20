@@ -376,6 +376,129 @@ export default function Home() {
     }
   }, [selectedDasId, selectedDas]);
 
+  const handlePrintPublicChart = async (containerId: string) => {
+    if (!selectedDas) return;
+    const regionName = selectedDas.name;
+    const regionDesc = selectedDas.region || "Maluku";
+    
+    let chartImgHtml = '';
+    const chartContainer = document.getElementById(containerId);
+    if (chartContainer) {
+      try {
+        const { toPng } = await import('html-to-image');
+        const dataUrl = await toPng(chartContainer, { backgroundColor: '#0f172a', quality: 0.95 });
+        chartImgHtml = `
+          <div style="margin-bottom: 6px; text-align: center; page-break-inside: avoid;">
+            <img src="${dataUrl}" style="width: 100%; max-height: 260px; object-fit: contain; border-radius: 6px; border: 1px solid #cbd5e1;" />
+          </div>
+        `;
+      } catch (err) {
+        console.warn("Failed to capture public chart image:", err);
+      }
+    }
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+    
+    let rowsHtml = '';
+    let totalDebit = 0, totalNeed = 0, totalPemeliharaan = 0, totalNA = 0;
+    
+    chartData.forEach((bin: any, idx: number) => {
+      const debitNum = bin.debit || 0;
+      const needNum = bin.need || 0;
+      const pemeliharaanNum = bin.pemeliharaan || 0;
+      const naNum = bin.na !== undefined ? bin.na : (debitNum - (needNum + pemeliharaanNum));
+      const status = debitNum >= (needNum + pemeliharaanNum) ? "Surplus" : "Defisit";
+      
+      totalDebit += debitNum;
+      totalNeed += needNum;
+      totalPemeliharaan += pemeliharaanNum;
+      totalNA += naNum;
+      
+      const statusBg = status === "Surplus" ? "#d1fae5" : "#fee2e2";
+      const statusColor = status === "Surplus" ? "#065f46" : "#991b1b";
+      
+      rowsHtml += `
+        <tr>
+          <td style="text-align: center; padding: 3px 5px; border: 1px solid #cbd5e1;">${idx + 1}</td>
+          <td style="padding: 3px 5px; border: 1px solid #cbd5e1; font-weight: bold;">${bin.name}</td>
+          <td style="text-align: right; padding: 3px 5px; border: 1px solid #cbd5e1;">${debitNum.toFixed(2)}</td>
+          <td style="text-align: right; padding: 3px 5px; border: 1px solid #cbd5e1;">${needNum.toFixed(2)}</td>
+          <td style="text-align: right; padding: 3px 5px; border: 1px solid #cbd5e1;">${pemeliharaanNum.toFixed(2)}</td>
+          <td style="text-align: right; padding: 3px 5px; border: 1px solid #cbd5e1; font-weight: bold; color: ${naNum >= 0 ? '#047857' : '#dc2626'};">${naNum.toFixed(2)}</td>
+          <td style="text-align: center; padding: 3px 5px; border: 1px solid #cbd5e1; background-color: ${statusBg}; color: ${statusColor}; font-weight: bold;">${status}</td>
+        </tr>
+      `;
+    });
+    
+    const avgDebit = totalDebit / 24;
+    const avgNeed = totalNeed / 24;
+    const avgPemeliharaan = totalPemeliharaan / 24;
+    const avgNA = totalNA / 24;
+    const overallStatus = avgDebit >= (avgNeed + avgPemeliharaan) ? "Surplus" : "Defisit";
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Grafik Bulanan Neraca Air - ${regionName} (${chartYear})</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 8px 12px; color: #0f172a; font-size: 10px; }
+          h2 { text-align: center; font-size: 14px; font-weight: bold; margin: 0 0 2px 0; text-transform: uppercase; color: #0f172a; }
+          .subtitle { text-align: center; font-size: 10.5px; color: #475569; margin-bottom: 8px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+          th { background-color: #f1f5f9; padding: 4px 6px; border: 1px solid #cbd5e1; font-size: 9.5px; text-transform: uppercase; color: #334155; }
+          td { font-size: 9.5px; }
+          tfoot tr td { font-weight: bold; background-color: #f8fafc; }
+          @media print {
+            @page { size: A4 portrait; margin: 8mm; }
+          }
+        </style>
+      </head>
+      <body>
+        <h2>Grafik Bulanan Neraca Air (24 Periode)</h2>
+        <div class="subtitle">Wilayah DAS: <strong>${regionName}</strong> (${regionDesc}) | Tahun: <strong>${chartYear}</strong></div>
+
+        ${chartImgHtml}
+
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 25px;">No</th>
+              <th>Periode</th>
+              <th style="text-align: right;">Ketersediaan (m³/s)</th>
+              <th style="text-align: right;">Kebutuhan (m³/s)</th>
+              <th style="text-align: right;">Pemeliharaan (m³/s)</th>
+              <th style="text-align: right;">Neraca Air (m³/s)</th>
+              <th style="text-align: center;">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsHtml}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="2" style="text-align: center; padding: 4px 6px; border: 1px solid #cbd5e1;">RATA-RATA TAHUNAN</td>
+              <td style="text-align: right; padding: 4px 6px; border: 1px solid #cbd5e1;">${avgDebit.toFixed(2)}</td>
+              <td style="text-align: right; padding: 4px 6px; border: 1px solid #cbd5e1;">${avgNeed.toFixed(2)}</td>
+              <td style="text-align: right; padding: 4px 6px; border: 1px solid #cbd5e1;">${avgPemeliharaan.toFixed(2)}</td>
+              <td style="text-align: right; padding: 4px 6px; border: 1px solid #cbd5e1; color: ${avgNA >= 0 ? '#047857' : '#dc2626'};">${avgNA.toFixed(2)}</td>
+              <td style="text-align: center; padding: 4px 6px; border: 1px solid #cbd5e1;">${overallStatus}</td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <script>
+          window.onload = function() {
+            window.print();
+          };
+        </script>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
+
   const filteredDas = useMemo(() => {
     if (searchCoordinate) {
       // If searching by coordinate, don't filter the list so the dropdown still shows all, 
@@ -656,19 +779,31 @@ export default function Home() {
                         </select>
                       </div>
 
-                      <button
-                        onClick={() => setIsChartModalOpen(true)}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/60 text-xs font-bold hover:bg-indigo-100 dark:hover:bg-indigo-900/80 transition"
-                        title="Perbesar Grafik Layar Penuh"
-                      >
-                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                        </svg>
-                        <span>Perbesar</span>
-                      </button>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => handlePrintPublicChart('public-chart-container')}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60 text-xs font-bold hover:bg-emerald-100 dark:hover:bg-emerald-900/80 transition"
+                          title="Cetak Grafik Neraca Air 24 Periode (PDF 1 Halaman)"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                          </svg>
+                          <span>Cetak Grafik</span>
+                        </button>
+                        <button
+                          onClick={() => setIsChartModalOpen(true)}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/60 text-xs font-bold hover:bg-indigo-100 dark:hover:bg-indigo-900/80 transition"
+                          title="Perbesar Grafik Layar Penuh"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                          </svg>
+                          <span>Perbesar</span>
+                        </button>
+                      </div>
                     </div>
                     
-                    <div className="w-full h-[320px] mt-2">
+                    <div className="w-full h-[320px] mt-2" id="public-chart-container">
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={chartData} margin={{ top: 10, right: 5, left: -20, bottom: 45 }} barGap={0.5}>
                           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? "#334155" : "#e2e8f0"} />
@@ -892,6 +1027,17 @@ export default function Home() {
                 </select>
 
                 <button
+                  onClick={() => handlePrintPublicChart('modal-chart-container')}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-xs transition"
+                  title="Cetak Grafik Neraca Air 24 Periode (PDF 1 Halaman)"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                  </svg>
+                  <span>Cetak Grafik</span>
+                </button>
+
+                <button
                   onClick={() => setIsChartModalOpen(false)}
                   className="p-2 rounded-xl bg-slate-200/80 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition"
                   title="Tutup Modal"
@@ -904,7 +1050,7 @@ export default function Home() {
             </div>
 
             <div className="p-6 flex-1 overflow-y-auto">
-              <div className="h-[460px] w-full">
+              <div className="h-[460px] w-full" id="modal-chart-container">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={chartData} margin={{ top: 20, right: 20, left: 0, bottom: 65 }} barGap={2}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? "#334155" : "#e2e8f0"} />
