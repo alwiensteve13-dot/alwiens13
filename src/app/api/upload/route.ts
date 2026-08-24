@@ -27,40 +27,48 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(await file.arrayBuffer());
     const filename = `${Date.now()}-${file.name.replace(/\s+/g, "_")}`;
     const uploadDir = path.join(process.cwd(), "public/uploads");
+    const tmpDir = path.join("/tmp", "uploads");
     
-    // Ensure directory exists
+    let pdfUrl = `/uploads/${filename}`;
+
     try {
       await mkdir(uploadDir, { recursive: true });
+      await writeFile(path.join(uploadDir, filename), buffer);
     } catch (e) {
-      // Ignore if exists
+      try {
+        await mkdir(tmpDir, { recursive: true });
+        await writeFile(path.join(tmpDir, filename), buffer);
+        pdfUrl = `/api/file-proxy/uploads/${filename}`;
+      } catch (tmpErr) {
+        console.warn("Failed to write to tmp directory:", tmpErr);
+      }
     }
-    
-    const filepath = path.join(uploadDir, filename);
-    await writeFile(filepath, buffer);
-    const pdfUrl = `/uploads/${filename}`;
 
     try {
       // Update the Region in Database
-      await prisma!.region.update({
-        where: { id: regionId },
-        data: { pdfUrl },
-      });
+      if (prisma) {
+        await prisma.region.update({
+          where: { id: regionId },
+          data: { pdfUrl },
+        });
+      }
     } catch (dbError) {
       console.warn("Prisma failed, possibly no actual DB connected. Mocking DB success.", dbError);
-      // Fallback: update mock JSON
-      try {
-        const mockFilePath = path.join(process.cwd(), "public", "mock-regions.json");
-        if (fs.existsSync(mockFilePath)) {
-          const mockData = JSON.parse(fs.readFileSync(mockFilePath, "utf-8"));
-          const index = mockData.findIndex((r: any) => r.id === regionId);
-          if (index !== -1) {
-            mockData[index].pdfUrl = pdfUrl;
-            fs.writeFileSync(mockFilePath, JSON.stringify(mockData, null, 2));
-          }
+    }
+
+    // Fallback: update mock JSON safely
+    try {
+      const mockFilePath = path.join(process.cwd(), "public", "mock-regions.json");
+      if (fs.existsSync(mockFilePath)) {
+        const mockData = JSON.parse(fs.readFileSync(mockFilePath, "utf-8"));
+        const index = mockData.findIndex((r: any) => r.id === regionId);
+        if (index !== -1) {
+          mockData[index].pdfUrl = pdfUrl;
+          fs.writeFileSync(mockFilePath, JSON.stringify(mockData, null, 2));
         }
-      } catch (mockErr) {
-        console.error("Failed to update mock regions JSON", mockErr);
       }
+    } catch (mockErr) {
+      // Ignore read-only filesystem write errors on Vercel
     }
 
     return NextResponse.json({ success: true, pdfUrl });

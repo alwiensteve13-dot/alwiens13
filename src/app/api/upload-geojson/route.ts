@@ -15,13 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     const uploadDir = path.join(process.cwd(), "public/geojson");
-    
-    // Ensure directory exists
-    try {
-      await mkdir(uploadDir, { recursive: true });
-    } catch (e) {
-      // Ignore if exists
-    }
+    const tmpDir = path.join("/tmp", "geojson");
     
     let filename = `${regionId}.json`;
     if (type === "landcover") {
@@ -32,8 +26,20 @@ export async function POST(request: NextRequest) {
       filename = `river-${regionId}.json`;
     }
 
-    const filepath = path.join(uploadDir, filename);
-    await writeFile(filepath, JSON.stringify(geojson, null, 2));
+    let fileUrl = `/geojson/${filename}`;
+
+    try {
+      await mkdir(uploadDir, { recursive: true });
+      await writeFile(path.join(uploadDir, filename), JSON.stringify(geojson, null, 2));
+    } catch (e) {
+      try {
+        await mkdir(tmpDir, { recursive: true });
+        await writeFile(path.join(tmpDir, filename), JSON.stringify(geojson, null, 2));
+        fileUrl = `/api/file-proxy/geojson/${filename}`;
+      } catch (tmpErr) {
+        console.warn("Failed to write geojson to tmp directory:", tmpErr);
+      }
+    }
 
     // Update mock-regions.json if needed
     if (type === "landcover" || type === "soiltype" || type === "river") {
@@ -44,18 +50,18 @@ export async function POST(request: NextRequest) {
           const mockData = JSON.parse(fs.readFileSync(mockPath, "utf-8"));
           const regionIdx = mockData.findIndex((r: any) => r.id === regionId);
           if (regionIdx >= 0) {
-            if (type === "landcover") mockData[regionIdx].landCoverUrl = `/geojson/${filename}`;
-            if (type === "soiltype") mockData[regionIdx].soilTypeUrl = `/geojson/${filename}`;
-            if (type === "river") mockData[regionIdx].riverUrl = `/geojson/${filename}`;
+            if (type === "landcover") mockData[regionIdx].landCoverUrl = fileUrl;
+            if (type === "soiltype") mockData[regionIdx].soilTypeUrl = fileUrl;
+            if (type === "river") mockData[regionIdx].riverUrl = fileUrl;
             fs.writeFileSync(mockPath, JSON.stringify(mockData, null, 2));
           }
         }
       } catch (e) {
-        console.error("Failed to update mock-regions.json", e);
+        // Ignore read-only filesystem write errors on Vercel
       }
     }
 
-    return NextResponse.json({ success: true, filename });
+    return NextResponse.json({ success: true, filename, fileUrl });
   } catch (error) {
     console.error("Upload error:", error);
     return NextResponse.json(

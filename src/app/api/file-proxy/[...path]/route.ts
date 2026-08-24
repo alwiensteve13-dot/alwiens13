@@ -9,10 +9,15 @@ export async function GET(
   const { path: pathSegments } = await params;
   
   // pathSegments will be ['uploads', 'filename.pdf'] or ['geojson', 'filename.json']
-  const filePath = path.join(process.cwd(), "public", ...pathSegments);
+  let filePath = path.join(process.cwd(), "public", ...pathSegments);
 
   if (!fs.existsSync(filePath)) {
-    return new NextResponse("File not found", { status: 404 });
+    const tmpPath = path.join("/tmp", ...pathSegments);
+    if (fs.existsSync(tmpPath)) {
+      filePath = tmpPath;
+    } else {
+      return new NextResponse("File not found", { status: 404 });
+    }
   }
 
   const fileBuffer = fs.readFileSync(filePath);

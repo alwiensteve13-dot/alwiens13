@@ -37,14 +37,22 @@ export async function POST(request: NextRequest) {
       const buffer = Buffer.from(await file.arrayBuffer());
       const filename = `demnas-${Date.now()}-${file.name.replace(/\s+/g, "_")}`;
       const uploadDir = path.join(process.cwd(), "public/uploads");
+      const tmpDir = path.join("/tmp", "uploads");
+
+      demnasUrl = `/uploads/${filename}`;
 
       try {
         await mkdir(uploadDir, { recursive: true });
-      } catch (e) {}
-
-      const filepath = path.join(uploadDir, filename);
-      await writeFile(filepath, buffer);
-      demnasUrl = `/uploads/${filename}`;
+        await writeFile(path.join(uploadDir, filename), buffer);
+      } catch (e) {
+        try {
+          await mkdir(tmpDir, { recursive: true });
+          await writeFile(path.join(tmpDir, filename), buffer);
+          demnasUrl = `/api/file-proxy/uploads/${filename}`;
+        } catch (tmpErr) {
+          console.warn("Failed to write demnas to tmp directory:", tmpErr);
+        }
+      }
 
       // Calculate readable size
       const bytes = buffer.length;
@@ -74,29 +82,33 @@ export async function POST(request: NextRequest) {
       createdAt: new Date().toISOString()
     };
 
-    // Update Mock JSON
-    const mockFilePath = path.join(process.cwd(), "public", "mock-regions.json");
-    if (fs.existsSync(mockFilePath)) {
-      const mockData = JSON.parse(fs.readFileSync(mockFilePath, "utf-8"));
-      const index = mockData.findIndex((r: any) => r.id === regionId);
-      if (index !== -1) {
-        mockData[index].demnasUrl = demnasUrl;
-        mockData[index].demnasName = demnasName;
-        mockData[index].demnasSize = demnasSize;
-        
-        if (!Array.isArray(mockData[index].demnasList)) {
-          mockData[index].demnasList = [];
-        }
-        // Avoid exact URL duplicates
-        const existingIdx = mockData[index].demnasList.findIndex((item: any) => item.url === demnasUrl);
-        if (existingIdx !== -1) {
-          mockData[index].demnasList[existingIdx] = newItem;
-        } else {
-          mockData[index].demnasList.unshift(newItem);
-        }
+    // Update Mock JSON safely
+    try {
+      const mockFilePath = path.join(process.cwd(), "public", "mock-regions.json");
+      if (fs.existsSync(mockFilePath)) {
+        const mockData = JSON.parse(fs.readFileSync(mockFilePath, "utf-8"));
+        const index = mockData.findIndex((r: any) => r.id === regionId);
+        if (index !== -1) {
+          mockData[index].demnasUrl = demnasUrl;
+          mockData[index].demnasName = demnasName;
+          mockData[index].demnasSize = demnasSize;
+          
+          if (!Array.isArray(mockData[index].demnasList)) {
+            mockData[index].demnasList = [];
+          }
+          // Avoid exact URL duplicates
+          const existingIdx = mockData[index].demnasList.findIndex((item: any) => item.url === demnasUrl);
+          if (existingIdx !== -1) {
+            mockData[index].demnasList[existingIdx] = newItem;
+          } else {
+            mockData[index].demnasList.unshift(newItem);
+          }
 
-        fs.writeFileSync(mockFilePath, JSON.stringify(mockData, null, 2));
+          fs.writeFileSync(mockFilePath, JSON.stringify(mockData, null, 2));
+        }
       }
+    } catch (e) {
+      // Ignore read-only filesystem write errors on Vercel
     }
 
     // Update Prisma if available

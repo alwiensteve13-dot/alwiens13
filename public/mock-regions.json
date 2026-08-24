@@ -88,7 +88,9 @@
         "size": "465.7 MB",
         "createdAt": "2026-08-04T01:43:05.487Z"
       }
-    ]
+    ],
+    "soilTypeUrl": "/geojson/soiltype-3.json",
+    "landCoverUrl": "/geojson/landcover-3.json"
   },
   {
     "id": "mock-1784530973200",
@@ -116,7 +118,9 @@
         "size": "465.7 MB",
         "createdAt": "2026-08-04T01:43:05.615Z"
       }
-    ]
+    ],
+    "landCoverUrl": "/geojson/landcover-mock-1784530973200.json",
+    "soilTypeUrl": "/geojson/soiltype-mock-1784530973200.json"
   },
   {
     "id": "mock-1784531326680",
@@ -144,7 +148,9 @@
         "size": "465.7 MB",
         "createdAt": "2026-08-04T01:43:05.749Z"
       }
-    ]
+    ],
+    "soilTypeUrl": "/geojson/soiltype-mock-1784531326680.json",
+    "landCoverUrl": "/geojson/landcover-mock-1784531326680.json"
   },
   {
     "id": "mock-1784534345916",
@@ -173,7 +179,9 @@
         "size": "465.7 MB",
         "createdAt": "2026-08-04T01:43:05.893Z"
       }
-    ]
+    ],
+    "landCoverUrl": "/geojson/landcover-mock-1784534345916.json",
+    "soilTypeUrl": "/geojson/soiltype-mock-1784534345916.json"
   },
   {
     "id": "mock-1784598513312",
@@ -263,7 +271,9 @@
         "size": "465.7 MB",
         "createdAt": "2026-08-04T01:43:06.288Z"
       }
-    ]
+    ],
+    "soilTypeUrl": "/geojson/soiltype-mock-1784599778934.json",
+    "landCoverUrl": "/geojson/landcover-mock-1784599778934.json"
   },
   {
     "id": "mock-1784599843976",
@@ -291,7 +301,9 @@
         "size": "465.7 MB",
         "createdAt": "2026-08-04T01:43:06.425Z"
       }
-    ]
+    ],
+    "landCoverUrl": "/geojson/landcover-mock-1784599843976.json",
+    "soilTypeUrl": "/geojson/soiltype-mock-1784599843976.json"
   },
   {
     "id": "mock-1784600111015",
@@ -319,7 +331,9 @@
         "size": "465.7 MB",
         "createdAt": "2026-08-04T01:43:06.556Z"
       }
-    ]
+    ],
+    "landCoverUrl": "/geojson/landcover-mock-1784600111015.json",
+    "soilTypeUrl": "/geojson/soiltype-mock-1784600111015.json"
   },
   {
     "id": "mock-1784600186418",
@@ -347,7 +361,9 @@
         "size": "465.7 MB",
         "createdAt": "2026-08-04T01:43:06.690Z"
       }
-    ]
+    ],
+    "landCoverUrl": "/geojson/landcover-mock-1784600186418.json",
+    "soilTypeUrl": "/geojson/soiltype-mock-1784600186418.json"
   },
   {
     "id": "mock-1784600360100",
@@ -375,7 +391,9 @@
         "size": "465.7 MB",
         "createdAt": "2026-08-04T01:43:06.812Z"
       }
-    ]
+    ],
+    "landCoverUrl": "/geojson/landcover-mock-1784600360100.json",
+    "soilTypeUrl": "/geojson/soiltype-mock-1784600360100.json"
   },
   {
     "id": "mock-1784600659501",
@@ -403,7 +421,9 @@
         "size": "465.7 MB",
         "createdAt": "2026-08-04T01:43:06.937Z"
       }
-    ]
+    ],
+    "landCoverUrl": "/geojson/landcover-mock-1784600659501.json",
+    "soilTypeUrl": "/geojson/soiltype-mock-1784600659501.json"
   },
   {
     "id": "mock-1784602353280",
@@ -431,7 +451,9 @@
         "size": "465.7 MB",
         "createdAt": "2026-08-04T01:43:07.083Z"
       }
-    ]
+    ],
+    "landCoverUrl": "/geojson/landcover-mock-1784602353280.json",
+    "soilTypeUrl": "/geojson/soiltype-mock-1784602353280.json"
   },
   {
     "id": "mock-1784606120567",
@@ -459,7 +481,9 @@
         "size": "465.7 MB",
         "createdAt": "2026-08-04T01:43:07.212Z"
       }
-    ]
+    ],
+    "landCoverUrl": "/geojson/landcover-mock-1784606120567.json",
+    "soilTypeUrl": "/geojson/soiltype-mock-1784606120567.json"
   },
   {
     "id": "mock-1784606215869",
@@ -487,7 +511,9 @@
         "size": "465.7 MB",
         "createdAt": "2026-08-04T01:43:07.343Z"
       }
-    ]
+    ],
+    "soilTypeUrl": "/geojson/soiltype-mock-1784606215869.json",
+    "landCoverUrl": "/geojson/landcover-mock-1784606215869.json"
   },
   {
     "id": "mock-1784606657545",
@@ -515,7 +541,9 @@
         "size": "465.7 MB",
         "createdAt": "2026-08-04T01:43:07.468Z"
       }
-    ]
+    ],
+    "landCoverUrl": "/geojson/landcover-mock-1784606657545.json",
+    "soilTypeUrl": "/geojson/soiltype-mock-1784606657545.json"
   },
   {
     "id": "mock-1784684513699",
@@ -543,7 +571,9 @@
         "size": "465.7 MB",
         "createdAt": "2026-08-04T01:43:07.600Z"
       }
-    ]
+    ],
+    "soilTypeUrl": "/geojson/soiltype-mock-1784684513699.json",
+    "landCoverUrl": "/geojson/landcover-mock-1784684513699.json"
   },
   {
     "id": "mock-1784690798664",
@@ -571,7 +601,9 @@
         "size": "465.7 MB",
         "createdAt": "2026-08-04T01:43:07.724Z"
       }
-    ]
+    ],
+    "landCoverUrl": "/geojson/landcover-mock-1784690798664.json",
+    "soilTypeUrl": "/geojson/soiltype-mock-1784690798664.json"
   },
   {
     "id": "mock-1784796652634",
@@ -599,7 +631,9 @@
         "size": "465.7 MB",
         "createdAt": "2026-08-04T01:43:07.854Z"
       }
-    ]
+    ],
+    "landCoverUrl": "/geojson/landcover-mock-1784796652634.json",
+    "soilTypeUrl": "/geojson/soiltype-mock-1784796652634.json"
   },
   {
     "id": "mock-1784796720544",
@@ -627,7 +661,9 @@
         "size": "465.7 MB",
         "createdAt": "2026-08-04T01:43:07.984Z"
       }
-    ]
+    ],
+    "soilTypeUrl": "/geojson/soiltype-mock-1784796720544.json",
+    "landCoverUrl": "/geojson/landcover-mock-1784796720544.json"
   },
   {
     "id": "mock-1784796788483",
@@ -655,7 +691,9 @@
         "size": "465.7 MB",
         "createdAt": "2026-08-04T01:43:08.117Z"
       }
-    ]
+    ],
+    "landCoverUrl": "/geojson/landcover-mock-1784796788483.json",
+    "soilTypeUrl": "/geojson/soiltype-mock-1784796788483.json"
   },
   {
     "id": "mock-1784796841176",
@@ -683,7 +721,9 @@
         "size": "465.7 MB",
         "createdAt": "2026-08-04T01:43:08.254Z"
       }
-    ]
+    ],
+    "landCoverUrl": "/geojson/landcover-mock-1784796841176.json",
+    "soilTypeUrl": "/geojson/soiltype-mock-1784796841176.json"
   },
   {
     "id": "mock-1784796861915",
@@ -711,7 +751,9 @@
         "size": "465.7 MB",
         "createdAt": "2026-08-04T01:43:08.384Z"
       }
-    ]
+    ],
+    "soilTypeUrl": "/geojson/soiltype-mock-1784796861915.json",
+    "landCoverUrl": "/geojson/landcover-mock-1784796861915.json"
   },
   {
     "id": "mock-1784797060023",
@@ -739,7 +781,9 @@
         "size": "465.7 MB",
         "createdAt": "2026-08-04T01:43:08.514Z"
       }
-    ]
+    ],
+    "landCoverUrl": "/geojson/landcover-mock-1784797060023.json",
+    "soilTypeUrl": "/geojson/soiltype-mock-1784797060023.json"
   },
   {
     "id": "mock-1784869342389",
@@ -797,7 +841,9 @@
         "size": "465.7 MB",
         "createdAt": "2026-08-04T01:43:08.773Z"
       }
-    ]
+    ],
+    "soilTypeUrl": "/geojson/soiltype-mock-1784872167665.json",
+    "landCoverUrl": "/geojson/landcover-mock-1784872167665.json"
   },
   {
     "id": "mock-1784872433872",
@@ -855,7 +901,9 @@
         "size": "465.7 MB",
         "createdAt": "2026-08-04T01:43:09.025Z"
       }
-    ]
+    ],
+    "soilTypeUrl": "/geojson/soiltype-mock-1785210909535.json",
+    "landCoverUrl": "/geojson/landcover-mock-1785210909535.json"
   },
   {
     "id": "mock-1785480001746",
@@ -883,7 +931,9 @@
         "size": "465.7 MB",
         "createdAt": "2026-08-04T01:43:09.156Z"
       }
-    ]
+    ],
+    "soilTypeUrl": "/geojson/soiltype-mock-1785480001746.json",
+    "landCoverUrl": "/geojson/landcover-mock-1785480001746.json"
   },
   {
     "id": "mock-1785480394028",
@@ -911,7 +961,9 @@
         "size": "465.7 MB",
         "createdAt": "2026-08-04T01:43:09.286Z"
       }
-    ]
+    ],
+    "landCoverUrl": "/geojson/landcover-mock-1785480394028.json",
+    "soilTypeUrl": "/geojson/soiltype-mock-1785480394028.json"
   },
   {
     "id": "mock-1785480676773",
@@ -939,7 +991,9 @@
         "size": "465.7 MB",
         "createdAt": "2026-08-04T01:43:09.410Z"
       }
-    ]
+    ],
+    "landCoverUrl": "/geojson/landcover-mock-1785480676773.json",
+    "soilTypeUrl": "/geojson/soiltype-mock-1785480676773.json"
   },
   {
     "id": "mock-1785481325472",
@@ -967,7 +1021,9 @@
         "size": "465.7 MB",
         "createdAt": "2026-08-04T01:43:09.538Z"
       }
-    ]
+    ],
+    "landCoverUrl": "/geojson/landcover-mock-1785481325472.json",
+    "soilTypeUrl": "/geojson/soiltype-mock-1785481325472.json"
   },
   {
     "id": "mock-1785486502892",
@@ -995,7 +1051,9 @@
         "size": "465.7 MB",
         "createdAt": "2026-08-04T01:43:09.668Z"
       }
-    ]
+    ],
+    "soilTypeUrl": "/geojson/soiltype-mock-1785486502892.json",
+    "landCoverUrl": "/geojson/landcover-mock-1785486502892.json"
   },
   {
     "id": "mock-1785487406819",
@@ -1023,7 +1081,9 @@
         "size": "465.7 MB",
         "createdAt": "2026-08-04T01:43:09.794Z"
       }
-    ]
+    ],
+    "soilTypeUrl": "/geojson/soiltype-mock-1785487406819.json",
+    "landCoverUrl": "/geojson/landcover-mock-1785487406819.json"
   },
   {
     "id": "mock-1785565879455",
@@ -1051,7 +1111,9 @@
         "size": "465.7 MB",
         "createdAt": "2026-08-04T01:43:09.923Z"
       }
-    ]
+    ],
+    "landCoverUrl": "/geojson/landcover-mock-1785565879455.json",
+    "soilTypeUrl": "/geojson/soiltype-mock-1785565879455.json"
   },
   {
     "id": "mock-1787099265018",

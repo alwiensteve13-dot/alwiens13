@@ -102,15 +102,15 @@
         ]
       },
       "properties": {
-        "FID_Jenis_": 6337,
-        "Tanah": "Fluventic Hapludolls",
-        "Solum_Tnh": "Dalam",
-        "K": 0.16,
         "FID_Epe": 0,
         "NAME": "WAE EPE MUTOKE",
         "LAYER": "Unknown Area Type",
         "NAMA_DAS": "WAE EPE MUTOKE",
-        "WS": "WS AMBON-SERAM"
+        "WS": "WS AMBON-SERAM",
+        "FID_Jenis_": 6337,
+        "Tanah": "Fluventic Hapludolls",
+        "Solum_Tnh": "Dalam",
+        "K": 0.16
       }
     },
     {
@@ -4174,15 +4174,15 @@
         ]
       },
       "properties": {
-        "FID_Jenis_": 13413,
-        "Tanah": "Typic Eutrudepts",
-        "Solum_Tnh": "Sangat Dalam",
-        "K": 0.24,
         "FID_Epe": 0,
         "NAME": "WAE EPE MUTOKE",
         "LAYER": "Unknown Area Type",
         "NAMA_DAS": "WAE EPE MUTOKE",
-        "WS": "WS AMBON-SERAM"
+        "WS": "WS AMBON-SERAM",
+        "FID_Jenis_": 13413,
+        "Tanah": "Typic Eutrudepts",
+        "Solum_Tnh": "Sangat Dalam",
+        "K": 0.24
       }
     },
     {
@@ -7971,15 +7971,15 @@
         ]
       },
       "properties": {
-        "FID_Jenis_": 13739,
-        "Tanah": "Typic Eutrudepts",
-        "Solum_Tnh": "Sedang",
-        "K": 0.24,
         "FID_Epe": 0,
         "NAME": "WAE EPE MUTOKE",
         "LAYER": "Unknown Area Type",
         "NAMA_DAS": "WAE EPE MUTOKE",
-        "WS": "WS AMBON-SERAM"
+        "WS": "WS AMBON-SERAM",
+        "FID_Jenis_": 13739,
+        "Tanah": "Typic Eutrudepts",
+        "Solum_Tnh": "Sedang",
+        "K": 0.24
       }
     },
     {
@@ -9153,15 +9153,15 @@
         ]
       },
       "properties": {
-        "FID_Jenis_": 13748,
-        "Tanah": "Typic Eutrudepts",
-        "Solum_Tnh": "Sedang",
-        "K": 0.24,
         "FID_Epe": 0,
         "NAME": "WAE EPE MUTOKE",
         "LAYER": "Unknown Area Type",
         "NAMA_DAS": "WAE EPE MUTOKE",
-        "WS": "WS AMBON-SERAM"
+        "WS": "WS AMBON-SERAM",
+        "FID_Jenis_": 13748,
+        "Tanah": "Typic Eutrudepts",
+        "Solum_Tnh": "Sedang",
+        "K": 0.24
       }
     },
     {
@@ -17070,15 +17070,15 @@
         ]
       },
       "properties": {
-        "FID_Jenis_": 13919,
-        "Tanah": "Typic Hapludalfs",
-        "Solum_Tnh": "Dalam",
-        "K": 0.36,
         "FID_Epe": 0,
         "NAME": "WAE EPE MUTOKE",
         "LAYER": "Unknown Area Type",
         "NAMA_DAS": "WAE EPE MUTOKE",
-        "WS": "WS AMBON-SERAM"
+        "WS": "WS AMBON-SERAM",
+        "FID_Jenis_": 13919,
+        "Tanah": "Typic Hapludalfs",
+        "Solum_Tnh": "Dalam",
+        "K": 0.36
       }
     },
     {
@@ -19062,17 +19062,17 @@
         ]
       },
       "properties": {
-        "FID_Jenis_": 15664,
-        "Tanah": "Vertic Hapludalfs",
-        "Solum_Tnh": "Sedang",
-        "K": 0.13,
         "FID_Epe": 0,
         "NAME": "WAE EPE MUTOKE",
         "LAYER": "Unknown Area Type",
         "NAMA_DAS": "WAE EPE MUTOKE",
-        "WS": "WS AMBON-SERAM"
+        "WS": "WS AMBON-SERAM",
+        "FID_Jenis_": 15664,
+        "Tanah": "Vertic Hapludalfs",
+        "Solum_Tnh": "Sedang",
+        "K": 0.13
       }
     }
   ],
-  "fileName": "JTepe"
+  "fileName": "Epe"
 }

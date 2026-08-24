@@ -9492,6 +9492,11 @@
         ]
       },
       "properties": {
+        "FID_Epe": 0,
+        "NAME": "WAE EPE MUTOKE",
+        "LAYER": "Unknown Area Type",
+        "NAMA_DAS": "WAE EPE MUTOKE",
+        "WS": "WS AMBON-SERAM",
         "FID_PL_202": 1326,
         "KODE_PROV": 81,
         "PL2024_ID": 2002,
@@ -9502,12 +9507,7 @@
         "LCODE": "C1018AR",
         "SRS_ID": "Cylindrical Equal Area (World)",
         "METADATA": "PL2024_AR_250K",
-        "REMARK": "-",
-        "FID_Epe": 0,
-        "NAME": "WAE EPE MUTOKE",
-        "LAYER": "Unknown Area Type",
-        "NAMA_DAS": "WAE EPE MUTOKE",
-        "WS": "WS AMBON-SERAM"
+        "REMARK": "-"
       }
     },
     {
@@ -9742,22 +9742,22 @@
         ]
       },
       "properties": {
+        "FID_Epe": 0,
+        "NAME": "WAE EPE MUTOKE",
+        "LAYER": "Unknown Area Type",
+        "NAMA_DAS": "WAE EPE MUTOKE",
+        "WS": "WS AMBON-SERAM",
         "FID_PL_202": 3721,
         "KODE_PROV": 81,
         "PL2024_ID": 2007,
         "PL2023_ID_": 2007,
-        "LUAS_HA": 8.27390947113,
+        "LUAS_HA": 8.273909471129432,
         "NAMAOBJ": "Semak Belukar",
         "FCODE": "-",
         "LCODE": "C1018AR",
         "SRS_ID": "Cylindrical Equal Area (World)",
         "METADATA": "PL2024_AR_250K",
-        "REMARK": "-",
-        "FID_Epe": 0,
-        "NAME": "WAE EPE MUTOKE",
-        "LAYER": "Unknown Area Type",
-        "NAMA_DAS": "WAE EPE MUTOKE",
-        "WS": "WS AMBON-SERAM"
+        "REMARK": "-"
       }
     },
     {
@@ -10106,22 +10106,22 @@
         ]
       },
       "properties": {
+        "FID_Epe": 0,
+        "NAME": "WAE EPE MUTOKE",
+        "LAYER": "Unknown Area Type",
+        "NAMA_DAS": "WAE EPE MUTOKE",
+        "WS": "WS AMBON-SERAM",
         "FID_PL_202": 3722,
         "KODE_PROV": 81,
         "PL2024_ID": 2007,
         "PL2023_ID_": 2007,
-        "LUAS_HA": 26.8308714982,
+        "LUAS_HA": 26.830871498158352,
         "NAMAOBJ": "Semak Belukar",
         "FCODE": "-",
         "LCODE": "C1018AR",
         "SRS_ID": "Cylindrical Equal Area (World)",
         "METADATA": "PL2024_AR_250K",
-        "REMARK": "-",
-        "FID_Epe": 0,
-        "NAME": "WAE EPE MUTOKE",
-        "LAYER": "Unknown Area Type",
-        "NAMA_DAS": "WAE EPE MUTOKE",
-        "WS": "WS AMBON-SERAM"
+        "REMARK": "-"
       }
     },
     {
@@ -10615,22 +10615,22 @@
         ]
       },
       "properties": {
+        "FID_Epe": 0,
+        "NAME": "WAE EPE MUTOKE",
+        "LAYER": "Unknown Area Type",
+        "NAMA_DAS": "WAE EPE MUTOKE",
+        "WS": "WS AMBON-SERAM",
         "FID_PL_202": 5373,
         "KODE_PROV": 81,
         "PL2024_ID": 2012,
         "PL2023_ID_": 2012,
-        "LUAS_HA": 37.1826673756,
+        "LUAS_HA": 37.18266737562437,
         "NAMAOBJ": "Permukiman",
         "FCODE": "-",
         "LCODE": "C1018AR",
         "SRS_ID": "Cylindrical Equal Area (World)",
         "METADATA": "PL2024_AR_250K",
-        "REMARK": "-",
-        "FID_Epe": 0,
-        "NAME": "WAE EPE MUTOKE",
-        "LAYER": "Unknown Area Type",
-        "NAMA_DAS": "WAE EPE MUTOKE",
-        "WS": "WS AMBON-SERAM"
+        "REMARK": "-"
       }
     },
     {
@@ -11469,22 +11469,22 @@
         ]
       },
       "properties": {
+        "FID_Epe": 0,
+        "NAME": "WAE EPE MUTOKE",
+        "LAYER": "Unknown Area Type",
+        "NAMA_DAS": "WAE EPE MUTOKE",
+        "WS": "WS AMBON-SERAM",
         "FID_PL_202": 9997,
         "KODE_PROV": 81,
         "PL2024_ID": 20091,
         "PL2023_ID_": 20091,
-        "LUAS_HA": 202.790217334,
+        "LUAS_HA": 202.79021733395072,
         "NAMAOBJ": "Pertanian Lahan Kering",
         "FCODE": "-",
         "LCODE": "C1018AR",
         "SRS_ID": "Cylindrical Equal Area (World)",
         "METADATA": "PL2024_AR_250K",
-        "REMARK": "-",
-        "FID_Epe": 0,
-        "NAME": "WAE EPE MUTOKE",
-        "LAYER": "Unknown Area Type",
-        "NAMA_DAS": "WAE EPE MUTOKE",
-        "WS": "WS AMBON-SERAM"
+        "REMARK": "-"
       }
     },
     {
@@ -12884,6 +12884,11 @@
         ]
       },
       "properties": {
+        "FID_Epe": 0,
+        "NAME": "WAE EPE MUTOKE",
+        "LAYER": "Unknown Area Type",
+        "NAMA_DAS": "WAE EPE MUTOKE",
+        "WS": "WS AMBON-SERAM",
         "FID_PL_202": 11052,
         "KODE_PROV": 81,
         "PL2024_ID": 20092,
@@ -12894,14 +12899,9 @@
         "LCODE": "C1018AR",
         "SRS_ID": "Cylindrical Equal Area (World)",
         "METADATA": "PL2024_AR_250K",
-        "REMARK": "-",
-        "FID_Epe": 0,
-        "NAME": "WAE EPE MUTOKE",
-        "LAYER": "Unknown Area Type",
-        "NAMA_DAS": "WAE EPE MUTOKE",
-        "WS": "WS AMBON-SERAM"
+        "REMARK": "-"
       }
     }
   ],
-  "fileName": "TLepe"
+  "fileName": "Epe"
 }
