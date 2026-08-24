@@ -194,21 +194,22 @@ export default function AdminDashboardPage() {
         const text = await file.text();
         geojson = JSON.parse(text);
       }
+
+      const formData = new FormData();
+      formData.append("regionId", regionId);
+      formData.append("type", type);
+      formData.append("file", file);
+      formData.append("geojson", JSON.stringify(geojson));
       
       const res = await fetch("/api/upload-geojson", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          regionId: regionId,
-          geojson,
-          type
-        })
+        body: formData
       });
       const data = await res.json();
       if (data.success) {
         alert(`File ${type} berhasil diunggah!`);
       } else {
-        alert("Gagal unggah: " + data.error);
+        alert("Gagal unggah: " + (data.error || "Gagal memproses berkas"));
       }
     } catch (err: any) {
       console.error(err);

@@ -1,15 +1,42 @@
 import { NextRequest, NextResponse } from "next/server";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
+import fs from "fs";
+
+export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { regionId, geojson, type } = body;
+    const contentType = request.headers.get("content-type") || "";
+
+    let regionId = "";
+    let type = "";
+    let geojson: any = null;
+
+    if (contentType.includes("multipart/form-data")) {
+      const formData = await request.formData();
+      regionId = (formData.get("regionId") as string) || "";
+      type = (formData.get("type") as string) || "";
+      const file = formData.get("file") as File | null;
+      const rawGeojson = formData.get("geojson") as string | null;
+
+      if (rawGeojson) {
+        geojson = JSON.parse(rawGeojson);
+      } else if (file) {
+        const text = await file.text();
+        geojson = JSON.parse(text);
+      }
+    } else {
+      const body = await request.json();
+      regionId = body.regionId || "";
+      type = body.type || "";
+      geojson = body.geojson;
+    }
 
     if (!regionId || !geojson) {
       return NextResponse.json(
-        { error: "regionId and geojson are required." },
+        { error: "regionId dan data GeoJSON wajib diisi" },
         { status: 400 }
       );
     }
@@ -45,7 +72,6 @@ export async function POST(request: NextRequest) {
     if (type === "landcover" || type === "soiltype" || type === "river") {
       try {
         const mockPath = path.join(process.cwd(), "public", "mock-regions.json");
-        const fs = require('fs');
         if (fs.existsSync(mockPath)) {
           const mockData = JSON.parse(fs.readFileSync(mockPath, "utf-8"));
           const regionIdx = mockData.findIndex((r: any) => r.id === regionId);
@@ -62,10 +88,10 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ success: true, filename, fileUrl });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Upload error:", error);
     return NextResponse.json(
-      { error: "Failed to process upload" },
+      { error: error?.message || "Gagal memproses unggah berkas GeoJSON" },
       { status: 500 }
     );
   }
