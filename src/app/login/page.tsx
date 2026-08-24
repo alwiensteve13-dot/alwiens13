@@ -74,21 +74,30 @@ function LoginForm() {
         return;
       }
 
-      // Set admin session cookies (compatible with Vercel & Serverless)
+      // Set admin session cookies and localStorage immediately (compatible with Localhost, Vercel & Serverless)
       document.cookie = `neraca_air_session=better-auth-active;expires=${new Date(Date.now() + 7 * 864e5).toUTCString()};path=/;SameSite=Lax`;
       document.cookie = `better-auth.session_token=better-auth-active;expires=${new Date(Date.now() + 7 * 864e5).toUTCString()};path=/;SameSite=Lax`;
-
-      // Try better-auth in background if available
-      try {
-        await authClient.signIn.email({ email, password });
-      } catch {
-        // Ignore better-auth serverless sqlite write error
+      if (typeof window !== "undefined") {
+        localStorage.setItem("neraca_air_session", "active");
       }
 
-      // Hard redirect to admin dashboard
+      // Try better-auth in background with 800ms timeout
+      try {
+        await Promise.race([
+          authClient.signIn.email({ email, password }),
+          new Promise((resolve) => setTimeout(resolve, 800))
+        ]);
+      } catch (err) {
+        console.warn("Auth client warning:", err);
+      }
+
+      // Direct navigation to admin dashboard
       window.location.href = redirect;
     } catch (err) {
       document.cookie = `neraca_air_session=better-auth-active;expires=${new Date(Date.now() + 7 * 864e5).toUTCString()};path=/;SameSite=Lax`;
+      if (typeof window !== "undefined") {
+        localStorage.setItem("neraca_air_session", "active");
+      }
       window.location.href = redirect;
     }
   }

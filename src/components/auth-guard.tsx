@@ -15,7 +15,8 @@ export default function AuthGuard({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const cookies = typeof document !== "undefined" ? document.cookie : "";
-    const activeCookie = cookies.includes("neraca_air_session") || cookies.includes("better-auth.session_token");
+    const hasLocalStore = typeof window !== "undefined" && localStorage.getItem("neraca_air_session") === "active";
+    const activeCookie = cookies.includes("neraca_air_session") || cookies.includes("better-auth.session_token") || hasLocalStore;
     setHasSessionCookie(activeCookie);
   }, []);
 
