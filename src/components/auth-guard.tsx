@@ -6,36 +6,37 @@ import { useEffect, useState, type ReactNode } from "react";
 
 /**
  * AuthGuard — wraps any page / layout that requires authentication.
- * Checks both Better Auth session and local session cookies for Vercel compatibility.
+ * Uses sessionStorage (dies on tab close) as the ONLY client-side session check.
+ * This ensures users MUST log in every time they open a new browser/tab.
  */
 export default function AuthGuard({ children }: { children: ReactNode }) {
   const { data: session, isPending: isLoading } = authClient.useSession();
-  const [hasSessionCookie, setHasSessionCookie] = useState<boolean | null>(null);
-  const router = useRouter();
+  const [authChecked, setAuthChecked] = useState(false);
+  const [isAuthed, setIsAuthed] = useState(false);
 
   useEffect(() => {
-    const cookies = typeof document !== "undefined" ? document.cookie : "";
-    const hasSessionStore = typeof window !== "undefined" && (sessionStorage.getItem("neraca_air_session") === "active" || localStorage.getItem("neraca_air_session") === "active");
+    // Clear any legacy localStorage session to prevent bypass
+    try { localStorage.removeItem("neraca_air_session"); } catch (e) {}
+
+    // Only sessionStorage counts — it dies when tab/browser closes
+    const hasSession = typeof window !== "undefined" 
+      && sessionStorage.getItem("neraca_air_session") === "active";
     
-    // Require explicit active session cookie OR active session token
-    const hasActiveCookie = cookies.includes("neraca_air_session=better-auth-active") || cookies.includes("better-auth.session_token");
-    
-    const isAuthenticated = hasActiveCookie && hasSessionStore;
-    setHasSessionCookie(isAuthenticated);
+    setIsAuthed(hasSession);
+    setAuthChecked(true);
   }, []);
 
-  const isAuthenticated = !!session?.user || hasSessionCookie === true;
+  // Also accept Better Auth server session if available
+  const isAuthenticated = !!session?.user || isAuthed;
 
   useEffect(() => {
-    if (!isLoading && hasSessionCookie !== null && !isAuthenticated) {
-      if (typeof window !== "undefined") {
-        window.location.replace("/login");
-      }
+    if (authChecked && !isLoading && !isAuthenticated) {
+      window.location.replace("/login?redirect=/admin");
     }
-  }, [isLoading, hasSessionCookie, isAuthenticated, router]);
+  }, [authChecked, isLoading, isAuthenticated]);
 
-  /* Still determining auth state */
-  if (hasSessionCookie === null || (isLoading && !hasSessionCookie)) {
+  // Still checking auth state
+  if (!authChecked || (isLoading && !isAuthed)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-950">
         <div className="flex flex-col items-center gap-4">
@@ -46,11 +47,8 @@ export default function AuthGuard({ children }: { children: ReactNode }) {
     );
   }
 
-  /* Not authenticated */
+  // Not authenticated → redirect
   if (!isAuthenticated) {
-    if (typeof window !== "undefined") {
-      window.location.replace("/login");
-    }
     return null;
   }
 

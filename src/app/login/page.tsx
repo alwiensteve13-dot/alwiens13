@@ -74,12 +74,11 @@ function LoginForm() {
         return;
       }
 
-      // Set admin session cookies and session stores (compatible with Localhost, Vercel & Serverless)
-      document.cookie = `neraca_air_session=better-auth-active;expires=${new Date(Date.now() + 7 * 864e5).toUTCString()};path=/;SameSite=Lax`;
-      document.cookie = `better-auth.session_token=better-auth-active;expires=${new Date(Date.now() + 7 * 864e5).toUTCString()};path=/;SameSite=Lax`;
+      // Set session in sessionStorage ONLY (clears when tab/browser closes)
       if (typeof window !== "undefined") {
         sessionStorage.setItem("neraca_air_session", "active");
-        localStorage.setItem("neraca_air_session", "active");
+        // Clear any legacy localStorage that could bypass auth
+        localStorage.removeItem("neraca_air_session");
       }
 
       // Try better-auth in background with 800ms timeout
@@ -95,9 +94,9 @@ function LoginForm() {
       // Direct navigation to admin dashboard
       window.location.href = redirect;
     } catch (err) {
-      document.cookie = `neraca_air_session=better-auth-active;expires=${new Date(Date.now() + 7 * 864e5).toUTCString()};path=/;SameSite=Lax`;
+      // Fallback: still set session and redirect
       if (typeof window !== "undefined") {
-        localStorage.setItem("neraca_air_session", "active");
+        sessionStorage.setItem("neraca_air_session", "active");
       }
       window.location.href = redirect;
     }
