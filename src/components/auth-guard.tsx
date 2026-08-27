@@ -15,16 +15,22 @@ export default function AuthGuard({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const cookies = typeof document !== "undefined" ? document.cookie : "";
-    const hasLocalStore = typeof window !== "undefined" && localStorage.getItem("neraca_air_session") === "active";
-    const activeCookie = cookies.includes("neraca_air_session=better-auth-active") || cookies.includes("better-auth.session_token") || hasLocalStore;
-    setHasSessionCookie(activeCookie);
+    const hasSessionStore = typeof window !== "undefined" && (sessionStorage.getItem("neraca_air_session") === "active" || localStorage.getItem("neraca_air_session") === "active");
+    
+    // Require explicit active session cookie OR active session token
+    const hasActiveCookie = cookies.includes("neraca_air_session=better-auth-active") || cookies.includes("better-auth.session_token");
+    
+    const isAuthenticated = hasActiveCookie && hasSessionStore;
+    setHasSessionCookie(isAuthenticated);
   }, []);
 
   const isAuthenticated = !!session?.user || hasSessionCookie === true;
 
   useEffect(() => {
     if (!isLoading && hasSessionCookie !== null && !isAuthenticated) {
-      router.replace("/login");
+      if (typeof window !== "undefined") {
+        window.location.replace("/login");
+      }
     }
   }, [isLoading, hasSessionCookie, isAuthenticated, router]);
 
@@ -43,7 +49,7 @@ export default function AuthGuard({ children }: { children: ReactNode }) {
   /* Not authenticated */
   if (!isAuthenticated) {
     if (typeof window !== "undefined") {
-      window.location.href = "/login";
+      window.location.replace("/login");
     }
     return null;
   }

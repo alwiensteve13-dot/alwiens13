@@ -74,10 +74,11 @@ function LoginForm() {
         return;
       }
 
-      // Set admin session cookies and localStorage immediately (compatible with Localhost, Vercel & Serverless)
+      // Set admin session cookies and session stores (compatible with Localhost, Vercel & Serverless)
       document.cookie = `neraca_air_session=better-auth-active;expires=${new Date(Date.now() + 7 * 864e5).toUTCString()};path=/;SameSite=Lax`;
       document.cookie = `better-auth.session_token=better-auth-active;expires=${new Date(Date.now() + 7 * 864e5).toUTCString()};path=/;SameSite=Lax`;
       if (typeof window !== "undefined") {
+        sessionStorage.setItem("neraca_air_session", "active");
         localStorage.setItem("neraca_air_session", "active");
       }
 
