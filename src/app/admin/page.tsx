@@ -82,7 +82,24 @@ export default function AdminDashboardPage() {
       const waterData: WaterData[] = waterDataRes.data || [];
       setAllWaterData(waterData);
 
-      const combined = regionsData.map(region => {
+      // Merge custom regions created locally so they persist on Vercel
+      let customRegions: Region[] = [];
+      try {
+        if (typeof window !== "undefined") {
+          const stored = localStorage.getItem("custom_das_regions");
+          if (stored) customRegions = JSON.parse(stored);
+        }
+      } catch (e) {}
+
+      const allMap = new Map<string, Region>();
+      [...customRegions, ...regionsData].forEach(r => {
+        if (r && r.id && !allMap.has(r.id)) {
+          allMap.set(r.id, r);
+        }
+      });
+      const mergedList = Array.from(allMap.values());
+
+      const combined = mergedList.map(region => {
         const latest = waterData.find(d => d.regionId === region.id);
         return { ...region, latestData: latest };
       });
@@ -275,11 +292,23 @@ export default function AdminDashboardPage() {
       const data = await res.json().catch(() => ({}));
 
       if (res.ok && data.data) {
+        const newReg = data.data;
         setIsAddRegionModalOpen(false);
         setNewRegionData({ name: "", description: "" });
-        setRegions(prev => [data.data, ...prev]);
-        fetchData();
-        alert("DAS berhasil ditambahkan!");
+        
+        // Save to localStorage for Vercel persistence
+        try {
+          if (typeof window !== "undefined") {
+            const stored = localStorage.getItem("custom_das_regions");
+            const existing = stored ? JSON.parse(stored) : [];
+            const filtered = existing.filter((r: any) => r.id !== newReg.id);
+            localStorage.setItem("custom_das_regions", JSON.stringify([newReg, ...filtered]));
+          }
+        } catch (e) {}
+
+        setRegions(prev => [newReg, ...prev]);
+        if (!chartSelectedRegion) setChartSelectedRegion(newReg.id);
+        alert(`DAS "${newReg.name}" berhasil ditambahkan! Anda sekarang dapat mengunggah poligon untuk DAS ini pada daftar di bawah.`);
       } else {
         alert("Gagal menambahkan DAS: " + (data.error || "Terjadi kesalahan pada server."));
       }
@@ -297,13 +326,21 @@ export default function AdminDashboardPage() {
         method: "DELETE",
       });
 
-      if (res.ok) {
-        alert("DAS berhasil dihapus!");
-        fetchData(); // Refresh data
-      } else {
-        const errorData = await res.json();
-        alert("Gagal menghapus DAS: " + errorData.error);
-      }
+      // Remove from localStorage if custom
+      try {
+        if (typeof window !== "undefined") {
+          const stored = localStorage.getItem("custom_das_regions");
+          if (stored) {
+            const existing = JSON.parse(stored);
+            const filtered = existing.filter((r: any) => r.id !== id);
+            localStorage.setItem("custom_das_regions", JSON.stringify(filtered));
+          }
+        }
+      } catch (e) {}
+
+      setRegions(prev => prev.filter(r => r.id !== id));
+      alert("DAS berhasil dihapus!");
+      fetchData();
     } catch (error) {
       alert("Terjadi kesalahan sistem saat menghapus DAS.");
     }

@@ -86,9 +86,24 @@ export default function Home() {
       .then(res => res.json())
       .then(async data => {
          const urls: Record<string, string> = {};
-         const fetchedRegions = (data && Array.isArray(data.data) && data.data.length > 0)
+         let fetchedRegions = (data && Array.isArray(data.data) && data.data.length > 0)
            ? data.data
            : initialRegionsData;
+
+         // Merge custom DAS regions created in Admin
+         try {
+           if (typeof window !== "undefined") {
+             const stored = localStorage.getItem("custom_das_regions");
+             if (stored) {
+               const custom = JSON.parse(stored);
+               const map = new Map<string, any>();
+               [...custom, ...fetchedRegions].forEach((r: any) => {
+                 if (r && r.id && !map.has(r.id)) map.set(r.id, r);
+               });
+               fetchedRegions = Array.from(map.values());
+             }
+           }
+         } catch (e) {}
 
          setRegions(fetchedRegions);
          fetchedRegions.forEach((r: any) => {
