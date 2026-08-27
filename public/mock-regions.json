@@ -1321,5 +1321,14 @@
     "coordinates": [],
     "color": "#64748b",
     "status": "Belum ada data"
+  },
+  {
+    "id": "mock-1787816159071",
+    "name": "DAS Lola Besar",
+    "region": "Pulau Seram",
+    "area": "-",
+    "coordinates": [],
+    "color": "#64748b",
+    "status": "Belum ada data"
   }
 ]
