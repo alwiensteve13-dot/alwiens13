@@ -100,8 +100,14 @@ function Sidebar({
   const user = session?.user;
 
   const handleLogout = async () => {
-    await authClient.signOut();
-    document.cookie = `neraca_air_session=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+    try {
+      await authClient.signOut();
+    } catch (e) {}
+    document.cookie = `neraca_air_session=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;SameSite=Lax`;
+    document.cookie = `better-auth.session_token=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;SameSite=Lax`;
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("neraca_air_session");
+    }
     window.location.href = "/login";
   };
 
