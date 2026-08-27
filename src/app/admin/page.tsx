@@ -272,17 +272,20 @@ export default function AdminDashboardPage() {
         body: JSON.stringify(newRegionData),
       });
 
-      if (res.ok) {
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok && data.data) {
         setIsAddRegionModalOpen(false);
         setNewRegionData({ name: "", description: "" });
+        setRegions(prev => [data.data, ...prev]);
         fetchData();
         alert("DAS berhasil ditambahkan!");
       } else {
-        const errorData = await res.json();
-        alert("Gagal menambahkan DAS: " + errorData.error);
+        alert("Gagal menambahkan DAS: " + (data.error || "Terjadi kesalahan pada server."));
       }
-    } catch (error) {
-      alert("Terjadi kesalahan sistem saat menyimpan DAS.");
+    } catch (error: any) {
+      console.error(error);
+      alert("Terjadi kesalahan sistem saat menyimpan DAS: " + (error?.message || "Koneksi terputus"));
     }
   };
 

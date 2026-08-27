@@ -65,18 +65,26 @@ const MOCK_DAS_DATA = [
 
 // Helper to manage mock data file
 const getMockRegions = () => {
-  const filePath = path.join(process.cwd(), "public", "mock-regions.json");
-  if (fs.existsSync(filePath)) {
-    return JSON.parse(fs.readFileSync(filePath, "utf-8"));
+  try {
+    const filePath = path.join(process.cwd(), "public", "mock-regions.json");
+    if (fs.existsSync(filePath)) {
+      return JSON.parse(fs.readFileSync(filePath, "utf-8"));
+    }
+  } catch (e) {
+    console.warn("Failed to read mock-regions.json:", e);
   }
   return MOCK_DAS_DATA;
 };
 
 const saveMockRegion = (region: any) => {
-  const filePath = path.join(process.cwd(), "public", "mock-regions.json");
-  const data = getMockRegions();
-  data.push(region);
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+  try {
+    const filePath = path.join(process.cwd(), "public", "mock-regions.json");
+    const data = getMockRegions();
+    data.push(region);
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+  } catch (e) {
+    console.warn("Failed to write to mock-regions.json (Vercel read-only filesystem):", e);
+  }
 };
 
 export async function GET() {
@@ -123,7 +131,7 @@ export async function POST(request: Request) {
     });
     return apiSuccess(newRegion);
   } catch (error: any) {
-    console.warn("Database connection failed on POST, falling back to mock file.");
+    console.warn("Database connection failed on POST, falling back to mock file logic.");
     
     const newRegion = {
       id: "mock-" + Date.now().toString(),
@@ -152,22 +160,24 @@ export async function DELETE(request: Request) {
     try {
       if (!prisma) throw new Error("Prisma not initialized");
       
-      // Try to delete in DB (Cascades are handled if set, otherwise might fail if waterData exists, but let's try)
-      // Note: We might need to delete WaterData first if no cascade
       await prisma.waterData.deleteMany({ where: { regionId: id } });
       await prisma.region.delete({
         where: { id }
       });
       return apiSuccess({ success: true });
     } catch (dbError) {
-      console.warn("Database connection failed on DELETE, falling back to mock file.", dbError);
+      console.warn("Database connection failed on DELETE, falling back to mock file logic.", dbError);
       
-      // Fallback: delete from mock JSON
-      const filePath = path.join(process.cwd(), "public", "mock-regions.json");
-      if (fs.existsSync(filePath)) {
-        const data = getMockRegions();
-        const filtered = data.filter((r: any) => r.id !== id);
-        fs.writeFileSync(filePath, JSON.stringify(filtered, null, 2));
+      // Fallback: delete from mock JSON safely
+      try {
+        const filePath = path.join(process.cwd(), "public", "mock-regions.json");
+        if (fs.existsSync(filePath)) {
+          const data = getMockRegions();
+          const filtered = data.filter((r: any) => r.id !== id);
+          fs.writeFileSync(filePath, JSON.stringify(filtered, null, 2));
+        }
+      } catch (e) {
+        console.warn("Failed to delete from mock-regions.json on Vercel:", e);
       }
       return apiSuccess({ success: true });
     }
