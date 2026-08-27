@@ -1312,5 +1312,14 @@
     "status": "Belum ada data",
     "landCoverUrl": "/geojson/landcover-mock-1787107638167.json",
     "soilTypeUrl": "/geojson/soiltype-mock-1787107638167.json"
+  },
+  {
+    "id": "mock-1787801368345",
+    "name": "DAS Lata Uwao",
+    "region": "Pulau Seram",
+    "area": "-",
+    "coordinates": [],
+    "color": "#64748b",
+    "status": "Belum ada data"
   }
 ]
