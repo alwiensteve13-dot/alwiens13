@@ -74,19 +74,28 @@ function LoginForm() {
         return;
       }
 
-      // Set session in sessionStorage ONLY (clears when tab/browser closes)
+      // Set session cookie (crucial for Next.js Middleware check)
+      document.cookie = "neraca_air_session=active; path=/; SameSite=Lax";
+
+      // Set session in sessionStorage (for client-side AuthGuard, clears on tab close)
       if (typeof window !== "undefined") {
         sessionStorage.setItem("neraca_air_session", "active");
-        // Clear any legacy localStorage that could bypass auth
         localStorage.removeItem("neraca_air_session");
       }
 
-      // Try better-auth in background with 800ms timeout
+      // Try better-auth in background with timeout
       try {
-        await Promise.race([
-          authClient.signIn.email({ email, password }),
-          new Promise((resolve) => setTimeout(resolve, 800))
-        ]);
+        if (hasUsers === false) {
+          await Promise.race([
+            authClient.signUp.email({ email, password, name: email.split("@")[0] || "Admin" }),
+            new Promise((resolve) => setTimeout(resolve, 800))
+          ]);
+        } else {
+          await Promise.race([
+            authClient.signIn.email({ email, password }),
+            new Promise((resolve) => setTimeout(resolve, 800))
+          ]);
+        }
       } catch (err) {
         console.warn("Auth client warning:", err);
       }
@@ -94,7 +103,8 @@ function LoginForm() {
       // Direct navigation to admin dashboard
       window.location.href = redirect;
     } catch (err) {
-      // Fallback: still set session and redirect
+      // Fallback: still ensure session cookie and redirect
+      document.cookie = "neraca_air_session=active; path=/; SameSite=Lax";
       if (typeof window !== "undefined") {
         sessionStorage.setItem("neraca_air_session", "active");
       }

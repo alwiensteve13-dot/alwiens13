@@ -108,6 +108,7 @@ function Sidebar({
     }
     document.cookie = `neraca_air_session=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;SameSite=Lax`;
     document.cookie = `better-auth.session_token=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;SameSite=Lax`;
+    document.cookie = `__Secure-better-auth.session_token=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;SameSite=Lax`;
     window.location.replace("/login");
   };
 

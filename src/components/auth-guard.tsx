@@ -18,11 +18,13 @@ export default function AuthGuard({ children }: { children: ReactNode }) {
     // Clear any legacy localStorage session to prevent bypass
     try { localStorage.removeItem("neraca_air_session"); } catch (e) {}
 
-    // Only sessionStorage counts — it dies when tab/browser closes
-    const hasSession = typeof window !== "undefined" 
+    // Check sessionStorage OR session cookie — ensures auth works reliably across tab/redirects
+    const hasSessionStorage = typeof window !== "undefined" 
       && sessionStorage.getItem("neraca_air_session") === "active";
+    const hasSessionCookie = typeof document !== "undefined"
+      && document.cookie.includes("neraca_air_session=active");
     
-    setIsAuthed(hasSession);
+    setIsAuthed(hasSessionStorage || hasSessionCookie);
     setAuthChecked(true);
   }, []);
 

@@ -11,7 +11,10 @@ import { NextResponse, type NextRequest } from "next/server";
  */
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const session = request.cookies.get("better-auth.session_token")?.value || request.cookies.get("neraca_air_session")?.value;
+  const session = 
+    request.cookies.get("better-auth.session_token")?.value || 
+    request.cookies.get("__Secure-better-auth.session_token")?.value || 
+    request.cookies.get("neraca_air_session")?.value;
 
   /* Protect /admin routes */
   if (pathname.startsWith("/admin")) {
