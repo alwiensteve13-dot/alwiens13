@@ -605,54 +605,54 @@ export default function AdminDashboardPage() {
     // Summary categories following Ditjen SDA Exceedance Probability standard
     const summaryCategories = [
       {
+        key: 'sangatBasah',
         name: 'Sangat Basah',
         prob: 'P < 20%',
         desc: 'Debit/hujan sangat tinggi (hanya terjadi < 20% waktu)',
         icon: '🌊',
         badgeBg: '#dbeafe',
         textColor: '#1e40af',
-        periods: [] as string[],
-        debits: [] as number[]
+        items: [] as any[]
       },
       {
+        key: 'basah',
         name: 'Basah',
         prob: '20% ≤ P < 40%',
         desc: 'Debit andalan basah (Q20% - Q40%)',
         icon: '💧',
         badgeBg: '#e0f2fe',
         textColor: '#0369a1',
-        periods: [] as string[],
-        debits: [] as number[]
+        items: [] as any[]
       },
       {
+        key: 'normal',
         name: 'Normal',
         prob: '40% ≤ P ≤ 60%',
         desc: 'Periode rata-rata / median (Q50%)',
         icon: '⚖️',
         badgeBg: '#d1fae5',
         textColor: '#065f46',
-        periods: [] as string[],
-        debits: [] as number[]
+        items: [] as any[]
       },
       {
+        key: 'kering',
         name: 'Kering',
         prob: '60% < P ≤ 80%',
         desc: 'Debit andalan irigasi standar Ditjen SDA (Q80%)',
         icon: '☀️',
         badgeBg: '#fef3c7',
         textColor: '#92400e',
-        periods: [] as string[],
-        debits: [] as number[]
+        items: [] as any[]
       },
       {
+        key: 'sangatKering',
         name: 'Sangat Kering',
         prob: 'P > 80%',
         desc: 'Debit andalan air baku / kritis (Q85% - Q95%)',
         icon: '🔥',
         badgeBg: '#fee2e2',
         textColor: '#991b1b',
-        periods: [] as string[],
-        debits: [] as number[]
+        items: [] as any[]
       }
     ];
 
@@ -670,6 +670,8 @@ export default function AdminDashboardPage() {
       const naNum = (bulkFormData[idx]?.na !== undefined && bulkFormData[idx]?.na !== "")
         ? parseFloat(bulkFormData[idx].na)
         : (bin.na !== undefined ? bin.na : (debitNum - (needNum + pemeliharaanNum)));
+      const status = debitNum >= (needNum + pemeliharaanNum) ? "Surplus" : "Defisit";
+      const PVal = bin.P !== undefined ? bin.P : 0;
 
       totalDebit += debitNum;
       totalNeed += needNum;
@@ -677,16 +679,24 @@ export default function AdminDashboardPage() {
       totalNA += naNum;
 
       if (bin.hasData && bin.P !== undefined) {
-        const P = bin.P;
         let catIndex = 2; // default Normal
-        if (P < 20) catIndex = 0;
-        else if (P < 40) catIndex = 1;
-        else if (P <= 60) catIndex = 2;
-        else if (P <= 80) catIndex = 3;
+        if (PVal < 20) catIndex = 0;
+        else if (PVal < 40) catIndex = 1;
+        else if (PVal <= 60) catIndex = 2;
+        else if (PVal <= 80) catIndex = 3;
         else catIndex = 4;
 
-        summaryCategories[catIndex].periods.push(bin.name);
-        summaryCategories[catIndex].debits.push(debitNum);
+        summaryCategories[catIndex].items.push({
+          idx: idx + 1,
+          name: bin.name,
+          debit: debitNum,
+          need: needNum,
+          pemeliharaan: pemeliharaanNum,
+          na: naNum,
+          status: status,
+          P: PVal,
+          rank: bin.rank
+        });
       }
     });
 
@@ -740,16 +750,21 @@ export default function AdminDashboardPage() {
       `;
     });
 
+    // 1. Overview Summary Rows
     let summaryRowsHtml = '';
     summaryCategories.forEach(cat => {
-      const count = cat.periods.length;
+      const count = cat.items.length;
       let debitRange = '-';
+      let avgCatDebit = '-';
       if (count > 0) {
-        const min = Math.min(...cat.debits);
-        const max = Math.max(...cat.debits);
+        const debits = cat.items.map((x: any) => x.debit);
+        const min = Math.min(...debits);
+        const max = Math.max(...debits);
         debitRange = min === max ? `${min.toFixed(2)} m³/s` : `${min.toFixed(2)} - ${max.toFixed(2)} m³/s`;
+        const sum = debits.reduce((a: number, b: number) => a + b, 0);
+        avgCatDebit = `${(sum / count).toFixed(2)} m³/s`;
       }
-      const periodListStr = count > 0 ? cat.periods.join(', ') : '<span style="color:#94a3b8; font-style: italic;">Tidak terlampaui</span>';
+      const periodListStr = count > 0 ? cat.items.map((x: any) => x.name).join(', ') : '<span style="color:#94a3b8; font-style: italic;">Tidak terlampaui</span>';
 
       summaryRowsHtml += `
         <tr>
@@ -761,6 +776,9 @@ export default function AdminDashboardPage() {
           </td>
           <td style="padding: 3.5px 6px; border: 1px solid #cbd5e1; text-align: right; font-weight: bold; font-size: 9px;">
             ${debitRange}
+          </td>
+          <td style="padding: 3.5px 6px; border: 1px solid #cbd5e1; text-align: right; font-weight: bold; font-size: 9px; color: #0284c7;">
+            ${avgCatDebit}
           </td>
           <td style="padding: 3.5px 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold; font-size: 9px;">
             ${count} Periode
@@ -775,18 +793,90 @@ export default function AdminDashboardPage() {
       `;
     });
 
+    // 2. Individual Tables for Each Existing Category
+    let individualCategoryTablesHtml = '';
+    summaryCategories.forEach(cat => {
+      if (cat.items.length === 0) return;
+      
+      const items = cat.items;
+      const count = items.length;
+      const sumDebit = items.reduce((s: number, x: any) => s + x.debit, 0);
+      const sumNeed = items.reduce((s: number, x: any) => s + x.need, 0);
+      const sumPemeliharaan = items.reduce((s: number, x: any) => s + x.pemeliharaan, 0);
+      const sumNA = items.reduce((s: number, x: any) => s + x.na, 0);
+      const avgDebitCat = sumDebit / count;
+      const avgNeedCat = sumNeed / count;
+      const avgPemeliharaanCat = sumPemeliharaan / count;
+      const avgNACat = sumNA / count;
+      const catStatus = avgDebitCat >= (avgNeedCat + avgPemeliharaanCat) ? "Surplus" : "Defisit";
+
+      const catRows = items.map((item: any, itemIdx: number) => `
+        <tr style="background-color: ${itemIdx % 2 === 0 ? '#ffffff' : '#f8fafc'};">
+          <td style="text-align: center; padding: 2.5px 4px; border: 1px solid #cbd5e1;">${itemIdx + 1}</td>
+          <td style="padding: 2.5px 4px; border: 1px solid #cbd5e1; font-weight: bold;">${item.name}</td>
+          <td style="text-align: center; padding: 2.5px 4px; border: 1px solid #cbd5e1; font-family: monospace; font-size: 8.5px; font-weight: bold; color: ${cat.textColor};">P = ${item.P}%</td>
+          <td style="text-align: right; padding: 2.5px 4px; border: 1px solid #cbd5e1; font-weight: bold; color: #0284c7;">${item.debit.toFixed(2)}</td>
+          <td style="text-align: right; padding: 2.5px 4px; border: 1px solid #cbd5e1;">${item.need.toFixed(2)}</td>
+          <td style="text-align: right; padding: 2.5px 4px; border: 1px solid #cbd5e1;">${item.pemeliharaan.toFixed(2)}</td>
+          <td style="text-align: right; padding: 2.5px 4px; border: 1px solid #cbd5e1; font-weight: bold; color: ${item.na >= 0 ? '#047857' : '#dc2626'};">${item.na.toFixed(2)}</td>
+          <td style="text-align: center; padding: 2.5px 4px; border: 1px solid #cbd5e1; background-color: ${item.status === 'Surplus' ? '#d1fae5' : '#fee2e2'}; color: ${item.status === 'Surplus' ? '#065f46' : '#991b1b'}; font-weight: bold;">${item.status}</td>
+        </tr>
+      `).join('');
+
+      individualCategoryTablesHtml += `
+        <div style="margin-top: 10px; page-break-inside: avoid;">
+          <div style="background-color: ${cat.badgeBg}; border: 1px solid #cbd5e1; border-bottom: none; padding: 3.5px 7px; border-radius: 4px 4px 0 0; display: flex; justify-content: space-between; align-items: center;">
+            <div style="font-size: 9.5px; font-weight: bold; color: ${cat.textColor}; display: flex; align-items: center; gap: 4px;">
+              <span>${cat.icon}</span>
+              <span>TABEL PERIODE: ${cat.name.toUpperCase()} (Kriteria: ${cat.prob})</span>
+            </div>
+            <div style="font-size: 8.5px; color: #334155;">
+              Jumlah: <strong>${count} Periode</strong> • <em>${cat.desc}</em>
+            </div>
+          </div>
+          <table style="width: 100%; border-collapse: collapse; margin-top: 0;">
+            <thead>
+              <tr style="background-color: #334155; color: #ffffff;">
+                <th style="width: 24px; text-align: center; padding: 3px 4px; border: 1px solid #94a3b8; font-size: 8.5px; color: #ffffff;">No</th>
+                <th style="padding: 3px 4px; border: 1px solid #94a3b8; font-size: 8.5px; color: #ffffff;">Periode</th>
+                <th style="text-align: center; padding: 3px 4px; border: 1px solid #94a3b8; font-size: 8.5px; width: 85px; color: #ffffff;">Probabilitas (P)</th>
+                <th style="text-align: right; padding: 3px 4px; border: 1px solid #94a3b8; font-size: 8.5px; color: #ffffff;">Ketersediaan (m³/s)</th>
+                <th style="text-align: right; padding: 3px 4px; border: 1px solid #94a3b8; font-size: 8.5px; color: #ffffff;">Kebutuhan (m³/s)</th>
+                <th style="text-align: right; padding: 3px 4px; border: 1px solid #94a3b8; font-size: 8.5px; color: #ffffff;">Pemeliharaan (m³/s)</th>
+                <th style="text-align: right; padding: 3px 4px; border: 1px solid #94a3b8; font-size: 8.5px; color: #ffffff;">Neraca Air (m³/s)</th>
+                <th style="text-align: center; padding: 3px 4px; border: 1px solid #94a3b8; font-size: 8.5px; width: 75px; color: #ffffff;">Status Neraca</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${catRows}
+            </tbody>
+            <tfoot>
+              <tr style="background-color: #f8fafc; font-weight: bold; border-top: 1.5px solid #cbd5e1;">
+                <td colspan="3" style="text-align: center; padding: 3px 4px; border: 1px solid #cbd5e1; color: ${cat.textColor}; font-size: 8.5px;">RATA-RATA KATEGORI ${cat.name.toUpperCase()}</td>
+                <td style="text-align: right; padding: 3px 4px; border: 1px solid #cbd5e1; color: #0284c7; font-size: 8.5px;">${avgDebitCat.toFixed(2)}</td>
+                <td style="text-align: right; padding: 3px 4px; border: 1px solid #cbd5e1; font-size: 8.5px;">${avgNeedCat.toFixed(2)}</td>
+                <td style="text-align: right; padding: 3px 4px; border: 1px solid #cbd5e1; font-size: 8.5px;">${avgPemeliharaanCat.toFixed(2)}</td>
+                <td style="text-align: right; padding: 3px 4px; border: 1px solid #cbd5e1; color: ${avgNACat >= 0 ? '#047857' : '#dc2626'}; font-size: 8.5px;">${avgNACat.toFixed(2)}</td>
+                <td style="text-align: center; padding: 3px 4px; border: 1px solid #cbd5e1; font-size: 8.5px; color: ${catStatus === 'Surplus' ? '#047857' : '#dc2626'};">${catStatus}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      `;
+    });
+
     printWindow.document.write(`
       <!DOCTYPE html>
       <html>
       <head>
         <title>Grafik & Neraca Air - ${regionName} (${chartYear})</title>
         <style>
-          body { font-family: Arial, sans-serif; margin: 6px 10px; color: #0f172a; font-size: 9.5px; }
+          body { font-family: Arial, sans-serif; margin: 6px 10px; color: #0f172a; font-size: 9px; line-height: 1.3; }
           h2 { text-align: center; font-size: 13px; font-weight: bold; margin: 0 0 2px 0; text-transform: uppercase; color: #0f172a; }
-          .subtitle { text-align: center; font-size: 10px; color: #475569; margin-bottom: 6px; }
-          table { width: 100%; border-collapse: collapse; margin-top: 3px; }
-          th { background-color: #f1f5f9; padding: 3px 5px; border: 1px solid #cbd5e1; font-size: 9px; text-transform: uppercase; color: #334155; }
-          td { font-size: 9px; }
+          .subtitle { text-align: center; font-size: 9.5px; color: #475569; margin-bottom: 6px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 2px; }
+          th { background-color: #f1f5f9; padding: 3px 5px; border: 1px solid #cbd5e1; font-size: 8.5px; text-transform: uppercase; color: #334155; }
+          td { font-size: 8.5px; }
           tfoot tr td { font-weight: bold; background-color: #f8fafc; }
           .section-title { font-size: 10px; font-weight: bold; text-transform: uppercase; color: #0f172a; margin-top: 10px; margin-bottom: 2px; border-left: 3px solid #0284c7; padding-left: 5px; }
           @media print {
@@ -835,21 +925,27 @@ export default function AdminDashboardPage() {
           <table>
             <thead>
               <tr style="background-color: #1e293b; color: #ffffff;">
-                <th style="padding: 3.5px 5px; border: 1px solid #64748b; text-align: left; width: 14%; color:#ffffff;">Klasifikasi Periode</th>
-                <th style="padding: 3.5px 5px; border: 1px solid #64748b; text-align: center; width: 15%; color:#ffffff;">Probabilitas Terlampaui (P)</th>
-                <th style="padding: 3.5px 5px; border: 1px solid #64748b; text-align: right; width: 15%; color:#ffffff;">Rentang Debit (m³/s)</th>
-                <th style="padding: 3.5px 5px; border: 1px solid #64748b; text-align: center; width: 11%; color:#ffffff;">Jumlah Periode</th>
-                <th style="padding: 3.5px 5px; border: 1px solid #64748b; text-align: left; width: 22%; color:#ffffff;">Daftar Periode</th>
-                <th style="padding: 3.5px 5px; border: 1px solid #64748b; text-align: left; width: 23%; color:#ffffff;">Penjelasan Teknis</th>
+                <th style="padding: 3.5px 5px; border: 1px solid #64748b; text-align: left; width: 13%; color:#ffffff;">Klasifikasi Periode</th>
+                <th style="padding: 3.5px 5px; border: 1px solid #64748b; text-align: center; width: 14%; color:#ffffff;">Probabilitas Terlampaui (P)</th>
+                <th style="padding: 3.5px 5px; border: 1px solid #64748b; text-align: right; width: 14%; color:#ffffff;">Rentang Debit</th>
+                <th style="padding: 3.5px 5px; border: 1px solid #64748b; text-align: right; width: 12%; color:#ffffff;">Rerata Debit</th>
+                <th style="padding: 3.5px 5px; border: 1px solid #64748b; text-align: center; width: 10%; color:#ffffff;">Jumlah Periode</th>
+                <th style="padding: 3.5px 5px; border: 1px solid #64748b; text-align: left; width: 18%; color:#ffffff;">Daftar Periode</th>
+                <th style="padding: 3.5px 5px; border: 1px solid #64748b; text-align: left; width: 19%; color:#ffffff;">Penjelasan Teknis</th>
               </tr>
             </thead>
             <tbody>
               ${summaryRowsHtml}
             </tbody>
           </table>
-          <div style="margin-top: 4px; font-size: 8px; color: #64748b; font-style: italic; line-height: 1.3;">
+          <div style="margin-top: 3px; font-size: 8px; color: #64748b; font-style: italic; line-height: 1.2;">
             * <strong>Metode Penentuan Probabilitas:</strong> Rumus Weibull <em>P = [m / (N + 1)] × 100%</em>, di mana <em>m</em> adalah peringkat debit terurut menurun (1 s.d. N) dan <em>N</em> = 24 periode data. Klasifikasi mengacu pada kriteria teknis analisis ketersediaan air Ditjen Sumber Daya Air (SDA) Kementerian PUPR.
           </div>
+        </div>
+
+        <div style="margin-top: 10px;">
+          <div class="section-title">3. Tabel Rincian Masing-Masing Kategori Periode Yang Telah Ada</div>
+          ${individualCategoryTablesHtml}
         </div>
 
         <script>
