@@ -526,6 +526,229 @@ export default function Home() {
       }
     }
 
+    // Generator for Kurva Probabilitas Terlampaui (Flow Duration Curve - FDC)
+    const generateFlowDurationCurveSvg = (bins: any[], avgDebitVal: number) => {
+      const W = 750, H = 220;
+      const padL = 52, padR = 25, padT = 32, padB = 35;
+      const plotW = W - padL - padR;
+      const plotH = H - padT - padB;
+      
+      const valid = bins.filter((b: any) => b.hasData || (b.debit && b.debit > 0));
+      if (valid.length === 0) return '';
+      
+      const maxQ = Math.max(...valid.map((b: any) => b.debit || 0), 1);
+      const yMax = maxQ * 1.15;
+      
+      const getX = (p: number) => padL + (p / 100) * plotW;
+      const getY = (q: number) => padT + plotH - (q / yMax) * plotH;
+      
+      const sorted = [...valid].sort((a: any, b: any) => (b.debit || 0) - (a.debit || 0));
+      const N = sorted.length;
+      
+      const zones = [
+        { pStart: 0, pEnd: 20, name: 'Sangat Basah', prob: 'P < 20%', bg: '#eff6ff', border: '#bfdbfe', text: '#1e40af' },
+        { pStart: 20, pEnd: 40, name: 'Basah', prob: '20% - 40%', bg: '#f0f9ff', border: '#bae6fd', text: '#0369a1' },
+        { pStart: 40, pEnd: 60, name: 'Normal', prob: '40% - 60%', bg: '#f0fdf4', border: '#bbf7d0', text: '#15803d' },
+        { pStart: 60, pEnd: 80, name: 'Kering', prob: '60% - 80%', bg: '#fffbeb', border: '#fde68a', text: '#b45309' },
+        { pStart: 80, pEnd: 100, name: 'Sangat Kering', prob: 'P > 80%', bg: '#fef2f2', border: '#fecaca', text: '#b91c1c' }
+      ];
+      
+      let zoneRects = '';
+      zones.forEach(z => {
+        const x1 = getX(z.pStart);
+        const x2 = getX(z.pEnd);
+        const w = x2 - x1;
+        zoneRects += `
+          <rect x="${x1}" y="${padT}" width="${w}" height="${plotH}" fill="${z.bg}" opacity="0.85" />
+          <line x1="${x2}" y1="${padT}" x2="${x2}" y2="${padT + plotH}" stroke="${z.border}" stroke-width="1.2" stroke-dasharray="3,3" />
+          <text x="${x1 + w / 2}" y="${padT - 16}" text-anchor="middle" font-size="8.5" font-weight="bold" fill="${z.text}">${z.name}</text>
+          <text x="${x1 + w / 2}" y="${padT - 6}" text-anchor="middle" font-size="7.5" fill="${z.text}" opacity="0.85">(${z.prob})</text>
+        `;
+      });
+      
+      let yGrid = '';
+      for (let i = 0; i <= 4; i++) {
+        const val = (yMax * i) / 4;
+        const y = getY(val);
+        yGrid += `
+          <line x1="${padL}" y1="${y}" x2="${padL + plotW}" y2="${y}" stroke="#cbd5e1" stroke-width="0.7" stroke-dasharray="2,2" />
+          <text x="${padL - 6}" y="${y + 3}" text-anchor="end" font-size="8" fill="#475569">${val.toFixed(1)}</text>
+        `;
+      }
+      
+      let xGrid = '';
+      [0, 20, 40, 60, 80, 100].forEach(p => {
+        const x = getX(p);
+        xGrid += `
+          <line x1="${x}" y1="${padT + plotH}" x2="${x}" y2="${padT + plotH + 4}" stroke="#64748b" stroke-width="1" />
+          <text x="${x}" y="${padT + plotH + 14}" text-anchor="middle" font-size="8" fill="#475569" font-weight="bold">${p}%</text>
+        `;
+      });
+      
+      const pts: { x: number; y: number; name: string; debit: number; P: number; color: string }[] = [];
+      sorted.forEach((bin: any, idx: number) => {
+        const m = idx + 1;
+        const P = Number(((m / (N + 1)) * 100).toFixed(1));
+        const x = getX(P);
+        const y = getY(bin.debit || 0);
+        
+        let color = '#10b981';
+        if (P < 20) color = '#1d4ed8';
+        else if (P < 40) color = '#0284c7';
+        else if (P <= 60) color = '#10b981';
+        else if (P <= 80) color = '#d97706';
+        else color = '#dc2626';
+        
+        pts.push({ x, y, name: bin.name, debit: bin.debit || 0, P, color });
+      });
+      
+      const polyPoints = pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+      const curveLine = `<polyline points="${polyPoints}" fill="none" stroke="#0284c7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />`;
+      const areaPoints = `${padL},${padT + plotH} ${polyPoints} ${pts[pts.length - 1].x.toFixed(1)},${padT + plotH}`;
+      const curveArea = `<polygon points="${areaPoints}" fill="#0ea5e9" opacity="0.1" />`;
+      
+      let circles = '';
+      pts.forEach((pt, i) => {
+        const labelY = i % 2 === 0 ? pt.y - 7 : pt.y + 11;
+        circles += `
+          <circle cx="${pt.x.toFixed(1)}" cy="${pt.y.toFixed(1)}" r="3" fill="${pt.color}" stroke="#ffffff" stroke-width="1" />
+          <text x="${pt.x.toFixed(1)}" y="${labelY.toFixed(1)}" text-anchor="middle" font-size="6.5" font-weight="bold" fill="#1e293b">${pt.name}</text>
+        `;
+      });
+      
+      let refLine = '';
+      if (avgDebitVal > 0) {
+        const yAvg = getY(avgDebitVal);
+        refLine = `
+          <line x1="${padL}" y1="${yAvg.toFixed(1)}" x2="${padL + plotW}" y2="${yAvg.toFixed(1)}" stroke="#0284c7" stroke-width="1.5" stroke-dasharray="4,4" />
+          <rect x="${padL + plotW - 145}" y="${(yAvg - 12).toFixed(1)}" width="140" height="11" fill="#0284c7" rx="2" />
+          <text x="${padL + plotW - 75}" y="${(yAvg - 3.5).toFixed(1)}" text-anchor="middle" font-size="7.5" font-weight="bold" fill="#ffffff">Q Rerata Tahunan = ${avgDebitVal.toFixed(2)} m³/s</text>
+        `;
+      }
+
+      return `
+        <div style="background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px; margin-bottom: 8px; page-break-inside: avoid;">
+          <div style="font-size: 9.5px; font-weight: bold; color: #0f172a; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 3px;">
+            <span>📈 <strong>Kurva Karakteristik Probabilitas Terlampaui (Flow Duration Curve - FDC) Seluruh Periode</strong></span>
+            <span style="font-size: 8px; color: #64748b; font-weight: normal;">Metode Weibull Ditjen SDA PUPR (N = ${N} Periode)</span>
+          </div>
+          <svg viewBox="0 0 ${W} ${H}" width="100%" height="195" style="display: block; overflow: visible;">
+            ${zoneRects}
+            ${yGrid}
+            ${xGrid}
+            <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT + plotH}" stroke="#64748b" stroke-width="1.2" />
+            <line x1="${padL}" y1="${padT + plotH}" x2="${padL + plotW}" y2="${padT + plotH}" stroke="#64748b" stroke-width="1.2" />
+            <text x="14" y="${padT + plotH / 2}" text-anchor="middle" font-size="7.5" fill="#334155" font-weight="bold" transform="rotate(-90 14 ${padT + plotH / 2})">Debit Ketersediaan Air (m³/s)</text>
+            <text x="${padL + plotW / 2}" y="${H - 4}" text-anchor="middle" font-size="8" fill="#334155" font-weight="bold">Probabilitas Terlampaui P (%)</text>
+            ${curveArea}
+            ${curveLine}
+            ${circles}
+            ${refLine}
+          </svg>
+        </div>
+      `;
+    };
+
+    // Generator for Grafik Batang Neraca Air 24 Periode
+    const generateAllPeriodsBarChartSvg = (bins: any[], avgDebitVal: number) => {
+      const W = 750, H = 185;
+      const padL = 48, padR = 20, padT = 24, padB = 36;
+      const plotW = W - padL - padR;
+      const plotH = H - padT - padB;
+
+      const valid = bins.filter((b: any) => b.hasData || (b.debit && b.debit > 0));
+      if (valid.length === 0) return '';
+
+      const maxVal = Math.max(
+        ...bins.map((b: any) => Math.max(b.debit || 0, b.need || 0, b.na || 0)),
+        1
+      );
+      const minVal = Math.min(...bins.map((b: any) => Math.min(b.na || 0, 0)), 0);
+      const yRange = (maxVal * 1.15) - minVal;
+      
+      const getY = (val: number) => padT + plotH - ((val - minVal) / yRange) * plotH;
+      const zeroY = getY(0);
+
+      let yGrid = '';
+      for (let i = 0; i <= 4; i++) {
+        const val = minVal + (yRange * i) / 4;
+        const y = getY(val);
+        yGrid += `
+          <line x1="${padL}" y1="${y}" x2="${padL + plotW}" y2="${y}" stroke="#cbd5e1" stroke-width="0.7" stroke-dasharray="2,2" />
+          <text x="${padL - 5}" y="${y + 3}" text-anchor="end" font-size="7.5" fill="#475569">${val.toFixed(1)}</text>
+        `;
+      }
+
+      const barGroupW = plotW / bins.length;
+      const barW = Math.max(barGroupW * 0.28, 4);
+
+      let bars = '';
+      bins.forEach((b: any, idx: number) => {
+        const groupX = padL + idx * barGroupW;
+        const centerX = groupX + barGroupW / 2;
+
+        const debitVal = b.debit || 0;
+        const needVal = b.need || 0;
+        const naVal = b.na !== undefined ? b.na : (debitVal - needVal - (b.pemeliharaan || 0));
+
+        const debitY = getY(debitVal);
+        const debitH = Math.max(zeroY - debitY, 1);
+        
+        const P = b.P !== undefined ? b.P : 50;
+        let debitColor = '#10b981';
+        if (P < 20) debitColor = '#1d4ed8';
+        else if (P < 40) debitColor = '#0284c7';
+        else if (P <= 60) debitColor = '#10b981';
+        else if (P <= 80) debitColor = '#d97706';
+        else debitColor = '#dc2626';
+
+        const needY = getY(needVal);
+        const needH = Math.max(zeroY - needY, 1);
+
+        const naY = naVal >= 0 ? getY(naVal) : zeroY;
+        const naH = Math.max(Math.abs(zeroY - getY(naVal)), 1);
+        const naColor = naVal >= 0 ? '#059669' : '#e11d48';
+
+        bars += `
+          <rect x="${centerX - barW * 1.5 - 1}" y="${debitY}" width="${barW}" height="${debitH}" fill="${debitColor}" rx="1" />
+          <rect x="${centerX - barW * 0.5}" y="${needY}" width="${barW}" height="${needH}" fill="#f87171" rx="1" />
+          <rect x="${centerX + barW * 0.5 + 1}" y="${naY}" width="${barW}" height="${naH}" fill="${naColor}" rx="1" />
+          <text x="${centerX}" y="${padT + plotH + 10}" text-anchor="end" font-size="7" fill="#334155" transform="rotate(-45 ${centerX} ${padT + plotH + 10})">${b.name}</text>
+        `;
+      });
+
+      let refLine = '';
+      if (avgDebitVal > 0) {
+        const yAvg = getY(avgDebitVal);
+        refLine = `
+          <line x1="${padL}" y1="${yAvg.toFixed(1)}" x2="${padL + plotW}" y2="${yAvg.toFixed(1)}" stroke="#0284c7" stroke-width="1.5" stroke-dasharray="4,4" />
+          <text x="${padL + plotW}" y="${(yAvg - 3).toFixed(1)}" text-anchor="end" font-size="7.5" font-weight="bold" fill="#0284c7">Q Rerata = ${avgDebitVal.toFixed(2)} m³/s</text>
+        `;
+      }
+
+      return `
+        <div style="background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px; margin-bottom: 8px; page-break-inside: avoid;">
+          <div style="font-size: 9.5px; font-weight: bold; color: #0f172a; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 3px;">
+            <span>📊 <strong>Grafik Batang Bulanan Neraca Air (24 Periode)</strong></span>
+            <div style="display: flex; gap: 10px; font-size: 8px;">
+              <span style="display: inline-flex; align-items: center; gap: 3px;"><span style="display: inline-block; width: 8px; height: 8px; background-color: #0284c7; border-radius: 1px;"></span>Ketersediaan (Debit)</span>
+              <span style="display: inline-flex; align-items: center; gap: 3px;"><span style="display: inline-block; width: 8px; height: 8px; background-color: #f87171; border-radius: 1px;"></span>Kebutuhan Air</span>
+              <span style="display: inline-flex; align-items: center; gap: 3px;"><span style="display: inline-block; width: 8px; height: 8px; background-color: #059669; border-radius: 1px;"></span>Surplus NA</span>
+              <span style="display: inline-flex; align-items: center; gap: 3px;"><span style="display: inline-block; width: 8px; height: 8px; background-color: #e11d48; border-radius: 1px;"></span>Defisit NA</span>
+            </div>
+          </div>
+          <svg viewBox="0 0 ${W} ${H}" width="100%" height="170" style="display: block; overflow: visible;">
+            ${yGrid}
+            <line x1="${padL}" y1="${zeroY}" x2="${padL + plotW}" y2="${zeroY}" stroke="#475569" stroke-width="1" />
+            <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT + plotH}" stroke="#64748b" stroke-width="1.2" />
+            <text x="14" y="${padT + plotH / 2}" text-anchor="middle" font-size="7.5" fill="#334155" font-weight="bold" transform="rotate(-90 14 ${padT + plotH / 2})">Debit (m³/s)</text>
+            ${bars}
+            ${refLine}
+          </svg>
+        </div>
+      `;
+    };
+
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
     
@@ -779,6 +1002,9 @@ export default function Home() {
       `;
     });
 
+    const fdcSvgHtml = generateFlowDurationCurveSvg(chartData, avgDebit);
+    const allPeriodsBarSvgHtml = generateAllPeriodsBarChartSvg(chartData, avgDebit);
+
     printWindow.document.write(`
       <!DOCTYPE html>
       <html>
@@ -792,17 +1018,21 @@ export default function Home() {
           th { background-color: #f1f5f9; padding: 3px 5px; border: 1px solid #cbd5e1; font-size: 8.5px; text-transform: uppercase; color: #334155; }
           td { font-size: 8.5px; }
           tfoot tr td { font-weight: bold; background-color: #f8fafc; }
-          .section-title { font-size: 10px; font-weight: bold; text-transform: uppercase; color: #0f172a; margin-top: 10px; margin-bottom: 2px; border-left: 3px solid #0284c7; padding-left: 5px; }
+          .section-title { font-size: 10px; font-weight: bold; text-transform: uppercase; color: #0f172a; margin-top: 10px; margin-bottom: 3px; border-left: 3px solid #0284c7; padding-left: 5px; }
           @media print {
             @page { size: A4 portrait; margin: 6mm; }
           }
         </style>
       </head>
       <body>
-        <h2>Grafik Bulanan Neraca Air (24 Periode)</h2>
+        <h2>Laporan & Grafik Analisis Neraca Air (24 Periode)</h2>
         <div class="subtitle">Wilayah DAS: <strong>${regionName}</strong> (${regionDesc}) | Tahun: <strong>${chartYear}</strong></div>
 
-        ${chartImgHtml}
+        <div class="section-title">Visualisasi Grafik Analisis Hidrologi & Neraca Air Seluruh Periode</div>
+        <div style="display: flex; flex-direction: column; gap: 4px; margin-bottom: 6px;">
+          ${fdcSvgHtml}
+          ${allPeriodsBarSvgHtml}
+        </div>
 
         <div class="section-title">1. Rincian Data Neraca Air & Probabilitas Terlampaui (24 Periode)</div>
         <table>
