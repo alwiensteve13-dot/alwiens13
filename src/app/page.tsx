@@ -408,12 +408,85 @@ export default function Home() {
     });
 
     const avgDebit = countData > 0 ? Number((sumDebit / countData).toFixed(2)) : 0;
+    
+    // Calculate Exceedance Probability (P) using Weibull Formula: P = [m / (N + 1)] * 100%
+    const validBins = bins.filter(b => b.hasData);
+    const N = validBins.length;
+    const sortedBins = [...validBins].sort((a, b) => (b.debit || 0) - (a.debit || 0));
+    
+    const probMap = new Map<string, { rank: number; P: number; classKey: string; className: string; icon: string; badgeBg: string; badgeText: string; desc: string }>();
+    
+    sortedBins.forEach((b, idx) => {
+      const m = idx + 1;
+      const P = Number(((m / (N + 1)) * 100).toFixed(1));
+      
+      let classKey = 'normal';
+      let className = 'Normal';
+      let icon = '⚖️';
+      let badgeBg = '#d1fae5';
+      let badgeText = '#065f46';
+      let desc = 'Periode rata-rata / median (Q50%)';
+
+      if (P < 20) {
+        classKey = 'sangatBasah';
+        className = 'Sangat Basah';
+        icon = '🌊';
+        badgeBg = '#dbeafe';
+        badgeText = '#1e40af';
+        desc = 'Debit/hujan sangat tinggi (hanya terjadi < 20% waktu)';
+      } else if (P < 40) {
+        classKey = 'basah';
+        className = 'Basah';
+        icon = '💧';
+        badgeBg = '#e0f2fe';
+        badgeText = '#0369a1';
+        desc = 'Debit andalan basah (Q20% - Q40%)';
+      } else if (P <= 60) {
+        classKey = 'normal';
+        className = 'Normal';
+        icon = '⚖️';
+        badgeBg = '#d1fae5';
+        badgeText = '#065f46';
+        desc = 'Periode rata-rata / median (Q50%)';
+      } else if (P <= 80) {
+        classKey = 'kering';
+        className = 'Kering';
+        icon = '☀️';
+        badgeBg = '#fef3c7';
+        badgeText = '#92400e';
+        desc = 'Debit andalan irigasi standar Ditjen SDA (Q80%)';
+      } else {
+        classKey = 'sangatKering';
+        className = 'Sangat Kering';
+        icon = '🔥';
+        badgeBg = '#fee2e2';
+        badgeText = '#991b1b';
+        desc = 'Debit andalan air baku / kritis (Q85% - Q95%)';
+      }
+
+      probMap.set(b.name, { rank: m, P, classKey, className, icon, badgeBg, badgeText, desc });
+    });
+
     bins.forEach(bin => {
       bin.avgDebit = avgDebit;
       if (bin.hasData && avgDebit > 0) {
         bin.season = bin.debit >= avgDebit ? "Basah" : "Kering";
+        const prob = probMap.get(bin.name);
+        if (prob) {
+          bin.rank = prob.rank;
+          bin.P = prob.P;
+          bin.classKey = prob.classKey;
+          bin.className = prob.className;
+          bin.probIcon = prob.icon;
+          bin.badgeBg = prob.badgeBg;
+          bin.badgeText = prob.badgeText;
+          bin.probDesc = prob.desc;
+        }
       } else {
         bin.season = "-";
+        bin.P = 0;
+        bin.className = "-";
+        bin.classKey = "-";
       }
     });
     
@@ -458,8 +531,60 @@ export default function Home() {
     
     let rowsHtml = '';
     let totalDebit = 0, totalNeed = 0, totalPemeliharaan = 0, totalNA = 0;
-    const wetPeriodsList: string[] = [];
-    const dryPeriodsList: string[] = [];
+
+    // Summary categories following Ditjen SDA Exceedance Probability standard
+    const summaryCategories = [
+      {
+        name: 'Sangat Basah',
+        prob: 'P < 20%',
+        desc: 'Debit/hujan sangat tinggi (hanya terjadi < 20% waktu)',
+        icon: '🌊',
+        badgeBg: '#dbeafe',
+        textColor: '#1e40af',
+        periods: [] as string[],
+        debits: [] as number[]
+      },
+      {
+        name: 'Basah',
+        prob: '20% ≤ P < 40%',
+        desc: 'Debit andalan basah (Q20% - Q40%)',
+        icon: '💧',
+        badgeBg: '#e0f2fe',
+        textColor: '#0369a1',
+        periods: [] as string[],
+        debits: [] as number[]
+      },
+      {
+        name: 'Normal',
+        prob: '40% ≤ P ≤ 60%',
+        desc: 'Periode rata-rata / median (Q50%)',
+        icon: '⚖️',
+        badgeBg: '#d1fae5',
+        textColor: '#065f46',
+        periods: [] as string[],
+        debits: [] as number[]
+      },
+      {
+        name: 'Kering',
+        prob: '60% < P ≤ 80%',
+        desc: 'Debit andalan irigasi standar Ditjen SDA (Q80%)',
+        icon: '☀️',
+        badgeBg: '#fef3c7',
+        textColor: '#92400e',
+        periods: [] as string[],
+        debits: [] as number[]
+      },
+      {
+        name: 'Sangat Kering',
+        prob: 'P > 80%',
+        desc: 'Debit andalan air baku / kritis (Q85% - Q95%)',
+        icon: '🔥',
+        badgeBg: '#fee2e2',
+        textColor: '#991b1b',
+        periods: [] as string[],
+        debits: [] as number[]
+      }
+    ];
 
     // Precalculate totals & average
     chartData.forEach((bin: any) => {
@@ -467,6 +592,19 @@ export default function Home() {
       totalNeed += (bin.need || 0);
       totalPemeliharaan += (bin.pemeliharaan || 0);
       totalNA += (bin.na !== undefined ? bin.na : ((bin.debit || 0) - ((bin.need || 0) + (bin.pemeliharaan || 0))));
+
+      if (bin.hasData && bin.P !== undefined) {
+        const P = bin.P;
+        let catIndex = 2; // default Normal
+        if (P < 20) catIndex = 0;
+        else if (P < 40) catIndex = 1;
+        else if (P <= 60) catIndex = 2;
+        else if (P <= 80) catIndex = 3;
+        else catIndex = 4;
+
+        summaryCategories[catIndex].periods.push(bin.name);
+        summaryCategories[catIndex].debits.push(bin.debit);
+      }
     });
     
     const avgDebit = totalDebit / 24;
@@ -481,29 +619,67 @@ export default function Home() {
       const pemeliharaanNum = bin.pemeliharaan || 0;
       const naNum = bin.na !== undefined ? bin.na : (debitNum - (needNum + pemeliharaanNum));
       const status = debitNum >= (needNum + pemeliharaanNum) ? "Surplus" : "Defisit";
-      const isWet = avgDebit > 0 && debitNum >= avgDebit;
-
-      if (avgDebit > 0) {
-        if (isWet) wetPeriodsList.push(bin.name);
-        else dryPeriodsList.push(bin.name);
-      }
       
       const statusBg = status === "Surplus" ? "#d1fae5" : "#fee2e2";
       const statusColor = status === "Surplus" ? "#065f46" : "#991b1b";
-      const seasonLabel = isWet 
-        ? '<span style="color: #0284c7; font-weight: bold; background: #e0f2fe; padding: 2px 6px; border-radius: 4px;">💧 Basah</span>' 
-        : '<span style="color: #d97706; font-weight: bold; background: #fef3c7; padding: 2px 6px; border-radius: 4px;">☀️ Kering</span>';
+
+      const PVal = bin.P !== undefined ? bin.P : 0;
+      const badgeBg = bin.badgeBg || '#f1f5f9';
+      const badgeText = bin.badgeText || '#334155';
+      const icon = bin.probIcon || '📊';
+      const className = bin.className || 'Normal';
+
+      const probLabel = `
+        <span style="background-color: ${badgeBg}; color: ${badgeText}; padding: 2px 5px; border-radius: 4px; font-weight: bold; display: inline-block;">
+          ${icon} ${className} (P=${PVal}%)
+        </span>
+      `;
       
       rowsHtml += `
         <tr>
-          <td style="text-align: center; padding: 3px 5px; border: 1px solid #cbd5e1;">${idx + 1}</td>
-          <td style="padding: 3px 5px; border: 1px solid #cbd5e1; font-weight: bold;">${bin.name}</td>
-          <td style="text-align: right; padding: 3px 5px; border: 1px solid #cbd5e1;">${debitNum.toFixed(2)}</td>
-          <td style="text-align: right; padding: 3px 5px; border: 1px solid #cbd5e1;">${needNum.toFixed(2)}</td>
-          <td style="text-align: right; padding: 3px 5px; border: 1px solid #cbd5e1;">${pemeliharaanNum.toFixed(2)}</td>
-          <td style="text-align: right; padding: 3px 5px; border: 1px solid #cbd5e1; font-weight: bold; color: ${naNum >= 0 ? '#047857' : '#dc2626'};">${naNum.toFixed(2)}</td>
-          <td style="text-align: center; padding: 3px 5px; border: 1px solid #cbd5e1; background-color: ${statusBg}; color: ${statusColor}; font-weight: bold;">${status}</td>
-          <td style="text-align: center; padding: 3px 5px; border: 1px solid #cbd5e1;">${seasonLabel}</td>
+          <td style="text-align: center; padding: 2.5px 4px; border: 1px solid #cbd5e1;">${idx + 1}</td>
+          <td style="padding: 2.5px 4px; border: 1px solid #cbd5e1; font-weight: bold;">${bin.name}</td>
+          <td style="text-align: right; padding: 2.5px 4px; border: 1px solid #cbd5e1;">${debitNum.toFixed(2)}</td>
+          <td style="text-align: right; padding: 2.5px 4px; border: 1px solid #cbd5e1;">${needNum.toFixed(2)}</td>
+          <td style="text-align: right; padding: 2.5px 4px; border: 1px solid #cbd5e1;">${pemeliharaanNum.toFixed(2)}</td>
+          <td style="text-align: right; padding: 2.5px 4px; border: 1px solid #cbd5e1; font-weight: bold; color: ${naNum >= 0 ? '#047857' : '#dc2626'};">${naNum.toFixed(2)}</td>
+          <td style="text-align: center; padding: 2.5px 4px; border: 1px solid #cbd5e1; background-color: ${statusBg}; color: ${statusColor}; font-weight: bold;">${status}</td>
+          <td style="text-align: center; padding: 2.5px 4px; border: 1px solid #cbd5e1;">${probLabel}</td>
+        </tr>
+      `;
+    });
+
+    let summaryRowsHtml = '';
+    summaryCategories.forEach(cat => {
+      const count = cat.periods.length;
+      let debitRange = '-';
+      if (count > 0) {
+        const min = Math.min(...cat.debits);
+        const max = Math.max(...cat.debits);
+        debitRange = min === max ? `${min.toFixed(2)} m³/s` : `${min.toFixed(2)} - ${max.toFixed(2)} m³/s`;
+      }
+      const periodListStr = count > 0 ? cat.periods.join(', ') : '<span style="color:#94a3b8; font-style: italic;">Tidak terlampaui</span>';
+
+      summaryRowsHtml += `
+        <tr>
+          <td style="padding: 3.5px 6px; border: 1px solid #cbd5e1; font-weight: bold; color: ${cat.textColor}; background-color: ${cat.badgeBg}; font-size: 9px;">
+            ${cat.icon} ${cat.name}
+          </td>
+          <td style="padding: 3.5px 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold; font-family: monospace; font-size: 9px;">
+            ${cat.prob}
+          </td>
+          <td style="padding: 3.5px 6px; border: 1px solid #cbd5e1; text-align: right; font-weight: bold; font-size: 9px;">
+            ${debitRange}
+          </td>
+          <td style="padding: 3.5px 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold; font-size: 9px;">
+            ${count} Periode
+          </td>
+          <td style="padding: 3.5px 6px; border: 1px solid #cbd5e1; font-size: 8.5px;">
+            ${periodListStr}
+          </td>
+          <td style="padding: 3.5px 6px; border: 1px solid #cbd5e1; font-size: 8.5px; color: #334155;">
+            ${cat.desc}
+          </td>
         </tr>
       `;
     });
@@ -512,18 +688,18 @@ export default function Home() {
       <!DOCTYPE html>
       <html>
       <head>
-        <title>Grafik Bulanan Neraca Air - ${regionName} (${chartYear})</title>
+        <title>Grafik & Neraca Air - ${regionName} (${chartYear})</title>
         <style>
-          body { font-family: Arial, sans-serif; margin: 8px 12px; color: #0f172a; font-size: 10px; }
-          h2 { text-align: center; font-size: 14px; font-weight: bold; margin: 0 0 2px 0; text-transform: uppercase; color: #0f172a; }
-          .subtitle { text-align: center; font-size: 10.5px; color: #475569; margin-bottom: 8px; }
-          table { width: 100%; border-collapse: collapse; margin-top: 4px; }
-          th { background-color: #f1f5f9; padding: 4px 6px; border: 1px solid #cbd5e1; font-size: 9.5px; text-transform: uppercase; color: #334155; }
-          td { font-size: 9.5px; }
+          body { font-family: Arial, sans-serif; margin: 6px 10px; color: #0f172a; font-size: 9.5px; }
+          h2 { text-align: center; font-size: 13px; font-weight: bold; margin: 0 0 2px 0; text-transform: uppercase; color: #0f172a; }
+          .subtitle { text-align: center; font-size: 10px; color: #475569; margin-bottom: 6px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 3px; }
+          th { background-color: #f1f5f9; padding: 3px 5px; border: 1px solid #cbd5e1; font-size: 9px; text-transform: uppercase; color: #334155; }
+          td { font-size: 9px; }
           tfoot tr td { font-weight: bold; background-color: #f8fafc; }
-          .season-box { margin-top: 8px; padding: 8px 12px; background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 9.5px; line-height: 1.5; }
+          .section-title { font-size: 10px; font-weight: bold; text-transform: uppercase; color: #0f172a; margin-top: 10px; margin-bottom: 2px; border-left: 3px solid #0284c7; padding-left: 5px; }
           @media print {
-            @page { size: A4 portrait; margin: 8mm; }
+            @page { size: A4 portrait; margin: 6mm; }
           }
         </style>
       </head>
@@ -533,17 +709,18 @@ export default function Home() {
 
         ${chartImgHtml}
 
+        <div class="section-title">1. Rincian Data Neraca Air & Probabilitas Terlampaui (24 Periode)</div>
         <table>
           <thead>
             <tr>
-              <th style="width: 25px;">No</th>
+              <th style="width: 22px;">No</th>
               <th>Periode</th>
               <th style="text-align: right;">Ketersediaan (m³/s)</th>
               <th style="text-align: right;">Kebutuhan (m³/s)</th>
               <th style="text-align: right;">Pemeliharaan (m³/s)</th>
               <th style="text-align: right;">Neraca Air (m³/s)</th>
               <th style="text-align: center;">Status Neraca</th>
-              <th style="text-align: center;">Klasifikasi Musim</th>
+              <th style="text-align: center;">Klasifikasi Probabilitas (P)</th>
             </tr>
           </thead>
           <tbody>
@@ -551,21 +728,37 @@ export default function Home() {
           </tbody>
           <tfoot>
             <tr>
-              <td colspan="2" style="text-align: center; padding: 4px 6px; border: 1px solid #cbd5e1;">RATA-RATA TAHUNAN</td>
-              <td style="text-align: right; padding: 4px 6px; border: 1px solid #cbd5e1;">${avgDebit.toFixed(2)}</td>
-              <td style="text-align: right; padding: 4px 6px; border: 1px solid #cbd5e1;">${avgNeed.toFixed(2)}</td>
-              <td style="text-align: right; padding: 4px 6px; border: 1px solid #cbd5e1;">${avgPemeliharaan.toFixed(2)}</td>
-              <td style="text-align: right; padding: 4px 6px; border: 1px solid #cbd5e1; color: ${avgNA >= 0 ? '#047857' : '#dc2626'};">${avgNA.toFixed(2)}</td>
-              <td style="text-align: center; padding: 4px 6px; border: 1px solid #cbd5e1;">${overallStatus}</td>
-              <td style="text-align: center; padding: 4px 6px; border: 1px solid #cbd5e1; font-size: 8.5px; color: #64748b;">(Batas: ${avgDebit.toFixed(2)} m³/s)</td>
+              <td colspan="2" style="text-align: center; padding: 3px 5px; border: 1px solid #cbd5e1;">RATA-RATA TAHUNAN</td>
+              <td style="text-align: right; padding: 3px 5px; border: 1px solid #cbd5e1;">${avgDebit.toFixed(2)}</td>
+              <td style="text-align: right; padding: 3px 5px; border: 1px solid #cbd5e1;">${avgNeed.toFixed(2)}</td>
+              <td style="text-align: right; padding: 3px 5px; border: 1px solid #cbd5e1;">${avgPemeliharaan.toFixed(2)}</td>
+              <td style="text-align: right; padding: 3px 5px; border: 1px solid #cbd5e1; color: ${avgNA >= 0 ? '#047857' : '#dc2626'};">${avgNA.toFixed(2)}</td>
+              <td style="text-align: center; padding: 3px 5px; border: 1px solid #cbd5e1;">${overallStatus}</td>
+              <td style="text-align: center; padding: 3px 5px; border: 1px solid #cbd5e1; font-size: 8px; color: #64748b;">(Q Rerata: ${avgDebit.toFixed(2)} m³/s)</td>
             </tr>
           </tfoot>
         </table>
 
-        <div class="season-box">
-          <div style="font-weight: bold; margin-bottom: 3px; color: #1e293b;">Analisis Hidrologi Periode Basah & Kering (Batas Rata-rata Tahunan = ${avgDebit.toFixed(2)} m³/s):</div>
-          <div>• <strong style="color: #0284c7;">💧 Periode Basah (Debit ≥ Rerata):</strong> ${wetPeriodsList.length > 0 ? wetPeriodsList.join(", ") : "Tidak ada periode basah teridentifikasi"}</div>
-          <div>• <strong style="color: #d97706;">☀️ Periode Kering (Debit &lt; Rerata):</strong> ${dryPeriodsList.length > 0 ? dryPeriodsList.join(", ") : "Tidak ada periode kering teridentifikasi"}</div>
+        <div style="margin-top: 10px; page-break-inside: avoid;">
+          <div class="section-title">2. Tabel Ringkasan Klasifikasi Periode Probabilitas Terlampaui (P) - Standar Ditjen SDA</div>
+          <table>
+            <thead>
+              <tr style="background-color: #1e293b; color: #ffffff;">
+                <th style="padding: 3.5px 5px; border: 1px solid #64748b; text-align: left; width: 14%; color:#ffffff;">Klasifikasi Periode</th>
+                <th style="padding: 3.5px 5px; border: 1px solid #64748b; text-align: center; width: 15%; color:#ffffff;">Probabilitas Terlampaui (P)</th>
+                <th style="padding: 3.5px 5px; border: 1px solid #64748b; text-align: right; width: 15%; color:#ffffff;">Rentang Debit (m³/s)</th>
+                <th style="padding: 3.5px 5px; border: 1px solid #64748b; text-align: center; width: 11%; color:#ffffff;">Jumlah Periode</th>
+                <th style="padding: 3.5px 5px; border: 1px solid #64748b; text-align: left; width: 22%; color:#ffffff;">Daftar Periode</th>
+                <th style="padding: 3.5px 5px; border: 1px solid #64748b; text-align: left; width: 23%; color:#ffffff;">Penjelasan Teknis</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${summaryRowsHtml}
+            </tbody>
+          </table>
+          <div style="margin-top: 4px; font-size: 8px; color: #64748b; font-style: italic; line-height: 1.3;">
+            * <strong>Metode Penentuan Probabilitas:</strong> Rumus Weibull <em>P = [m / (N + 1)] × 100%</em>, di mana <em>m</em> adalah peringkat debit terurut menurun (1 s.d. N) dan <em>N</em> = 24 periode data. Klasifikasi mengacu pada kriteria teknis analisis ketersediaan air Ditjen Sumber Daya Air (SDA) Kementerian PUPR.
+          </div>
         </div>
 
         <script>
@@ -646,6 +839,14 @@ export default function Home() {
     const wetPeriods: string[] = [];
     const dryPeriods: string[] = [];
 
+    const probCategories = [
+      { key: 'sangatBasah', name: 'Sangat Basah', prob: 'P < 20%', desc: 'Debit/hujan sangat tinggi (hanya terjadi < 20% waktu)', icon: '🌊', bg: 'bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-300', badge: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200', periods: [] as string[], debits: [] as number[] },
+      { key: 'basah', name: 'Basah', prob: '20% ≤ P < 40%', desc: 'Debit andalan basah (Q20% - Q40%)', icon: '💧', bg: 'bg-sky-50 dark:bg-sky-950/40 border-sky-200 dark:border-sky-800 text-sky-800 dark:text-sky-300', badge: 'bg-sky-100 text-sky-800 dark:bg-sky-900 dark:text-sky-200', periods: [] as string[], debits: [] as number[] },
+      { key: 'normal', name: 'Normal', prob: '40% ≤ P ≤ 60%', desc: 'Periode rata-rata / median (Q50%)', icon: '⚖️', bg: 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300', badge: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200', periods: [] as string[], debits: [] as number[] },
+      { key: 'kering', name: 'Kering', prob: '60% < P ≤ 80%', desc: 'Debit andalan irigasi standar Ditjen SDA (Q80%)', icon: '☀️', bg: 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300', badge: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200', periods: [] as string[], debits: [] as number[] },
+      { key: 'sangatKering', name: 'Sangat Kering', prob: 'P > 80%', desc: 'Debit andalan air baku / kritis (Q85% - Q95%)', icon: '🔥', bg: 'bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300', badge: 'bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200', periods: [] as string[], debits: [] as number[] },
+    ];
+
     const dataBins = chartData.filter(b => b.hasData);
     const avgDebit = dataBins.length > 0 ? dataBins[0].avgDebit || 0 : 0;
     
@@ -678,6 +879,12 @@ export default function Home() {
           minDebit = bin.debit;
           minPeriod = bin.name;
         }
+
+        const cat = probCategories.find(c => c.key === bin.classKey);
+        if (cat) {
+          cat.periods.push(bin.name);
+          cat.debits.push(bin.debit);
+        }
       }
     });
 
@@ -693,6 +900,7 @@ export default function Home() {
       maxPeriod, 
       minDebit, 
       minPeriod,
+      probCategories,
       hasData: dataBins.length > 0
     };
   }, [chartData]);
@@ -959,18 +1167,16 @@ export default function Home() {
                                 const data = payload[0]?.payload;
                                 if (!data) return null;
                                 const avgDebit = chartSummary.avgDebit || 0;
-                                const isWet = avgDebit > 0 && data.debit >= avgDebit;
                                 return (
-                                  <div className="p-3 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md text-xs space-y-1.5 min-w-[200px]">
+                                  <div className="p-3 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md text-xs space-y-1.5 min-w-[210px]">
                                     <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-1.5 mb-1 gap-2">
                                       <span className="font-bold text-slate-800 dark:text-slate-100">{label}</span>
-                                      {data.hasData && avgDebit > 0 && (
-                                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                                          isWet 
-                                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200' 
-                                            : 'bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200'
-                                        }`}>
-                                          {isWet ? '💧 Periode Basah' : '☀️ Periode Kering'}
+                                      {data.hasData && data.P !== undefined && (
+                                        <span 
+                                          className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold"
+                                          style={{ backgroundColor: data.badgeBg, color: data.badgeText }}
+                                        >
+                                          {data.probIcon} {data.className} (P={data.P}%)
                                         </span>
                                       )}
                                     </div>
@@ -993,10 +1199,9 @@ export default function Home() {
                                           {data.na} m³/s ({data.debit >= (data.need + data.pemeliharaan) ? 'Surplus' : 'Defisit'})
                                         </span>
                                       </div>
-                                      {avgDebit > 0 && (
-                                        <div className="text-[10px] text-slate-400 dark:text-slate-500 pt-1 border-t border-dashed border-slate-200 dark:border-slate-800 flex justify-between">
-                                          <span>Batas Rerata Tahunan:</span>
-                                          <span className="font-medium text-slate-600 dark:text-slate-300">{avgDebit} m³/s</span>
+                                      {data.probDesc && (
+                                        <div className="text-[9.5px] text-slate-500 dark:text-slate-400 border-t border-dashed border-slate-200 dark:border-slate-800 pt-1 leading-tight italic">
+                                          {data.probDesc}
                                         </div>
                                       )}
                                     </div>
@@ -1015,41 +1220,37 @@ export default function Home() {
                       </ResponsiveContainer>
                     </div>
 
-                    {/* Chart Summary Notes & Wet/Dry Season Analysis */}
+                    {/* Chart Summary Notes & Probabilitas Terlampaui Breakdown */}
                     <div className="mt-4 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 text-xs transition-colors duration-300 space-y-2.5">
                       <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2">
                         <p className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                          <span>📊</span> Analisis Periode & Neraca Air ({chartYear})
+                          <span>📊</span> Analisis Probabilitas Terlampaui (P) - {chartYear}
                         </p>
                         {chartSummary.avgDebit > 0 && (
                           <span className="text-[10px] font-bold text-cyan-700 dark:text-cyan-300 bg-cyan-100/80 dark:bg-cyan-950/80 px-2 py-0.5 rounded-full border border-cyan-200 dark:border-cyan-800">
-                            Rerata: {chartSummary.avgDebit} m³/s
+                            Q Rerata: {chartSummary.avgDebit} m³/s
                           </span>
                         )}
                       </div>
 
-                      {/* Periode Basah & Kering Badges */}
-                      {chartSummary.avgDebit > 0 && (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                          <div className="p-2.5 rounded-lg bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/70 dark:border-blue-800/50">
-                            <div className="flex items-center gap-1.5 text-blue-700 dark:text-blue-300 font-bold text-xs mb-1">
-                              <span>💧</span>
-                              <span>Periode Basah (Q ≥ {chartSummary.avgDebit} m³/s)</span>
+                      {/* 5-tier Exceedance Probability Summary Grid */}
+                      {chartSummary.probCategories && (
+                        <div className="grid grid-cols-1 gap-1.5">
+                          {chartSummary.probCategories.map(cat => (
+                            <div key={cat.key} className={`p-2 rounded-lg border text-[11px] ${cat.bg}`}>
+                              <div className="flex items-center justify-between font-bold mb-0.5">
+                                <span className="flex items-center gap-1.5">
+                                  <span>{cat.icon}</span> {cat.name} ({cat.prob})
+                                </span>
+                                <span className={`text-[10px] px-2 py-0.2 rounded-full font-bold ${cat.badge}`}>
+                                  {cat.periods.length} Periode
+                                </span>
+                              </div>
+                              <div className="text-[10.5px] opacity-90 truncate" title={cat.periods.join(', ')}>
+                                {cat.periods.length > 0 ? cat.periods.join(', ') : 'Tidak terlampaui'}
+                              </div>
                             </div>
-                            <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
-                              {chartSummary.wetPeriods.length > 0 ? chartSummary.wetPeriods.join(", ") : "Tidak terdeteksi periode basah"}
-                            </p>
-                          </div>
-
-                          <div className="p-2.5 rounded-lg bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200/70 dark:border-amber-800/50">
-                            <div className="flex items-center gap-1.5 text-amber-700 dark:text-amber-300 font-bold text-xs mb-1">
-                              <span>☀️</span>
-                              <span>Periode Kering (Q &lt; {chartSummary.avgDebit} m³/s)</span>
-                            </div>
-                            <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
-                              {chartSummary.dryPeriods.length > 0 ? chartSummary.dryPeriods.join(", ") : "Tidak terdeteksi periode kering"}
-                            </p>
-                          </div>
+                          ))}
                         </div>
                       )}
 
@@ -1062,7 +1263,7 @@ export default function Home() {
                       )}
 
                       {/* Deficit / Surplus Note */}
-                      <div className="pt-1">
+                      <div className="pt-0.5">
                         {chartSummary.defisit.length > 0 ? (
                           <div className="flex items-start gap-2 text-red-600 dark:text-red-400">
                             <svg className="w-4 h-4 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1317,18 +1518,16 @@ export default function Home() {
                           const data = payload[0]?.payload;
                           if (!data) return null;
                           const avgDebit = chartSummary.avgDebit || 0;
-                          const isWet = avgDebit > 0 && data.debit >= avgDebit;
                           return (
                             <div className="p-3.5 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md text-xs space-y-2 min-w-[220px]">
                               <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2 mb-1 gap-2">
                                 <span className="font-bold text-slate-800 dark:text-slate-100 text-sm">{label}</span>
-                                {data.hasData && avgDebit > 0 && (
-                                  <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
-                                    isWet 
-                                      ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200' 
-                                      : 'bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200'
-                                  }`}>
-                                    {isWet ? '💧 Periode Basah' : '☀️ Periode Kering'}
+                                {data.hasData && data.P !== undefined && (
+                                  <span 
+                                    className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold"
+                                    style={{ backgroundColor: data.badgeBg, color: data.badgeText }}
+                                  >
+                                    {data.probIcon} {data.className} (P={data.P}%)
                                   </span>
                                 )}
                               </div>
@@ -1351,10 +1550,9 @@ export default function Home() {
                                     {data.na} m³/s ({data.debit >= (data.need + data.pemeliharaan) ? 'Surplus' : 'Defisit'})
                                   </span>
                                 </div>
-                                {avgDebit > 0 && (
-                                  <div className="text-[11px] text-slate-400 dark:text-slate-500 pt-1 border-t border-dashed border-slate-200 dark:border-slate-800 flex justify-between">
-                                    <span>Batas Rerata Tahunan:</span>
-                                    <span className="font-semibold text-slate-700 dark:text-slate-300">{avgDebit} m³/s</span>
+                                {data.probDesc && (
+                                  <div className="text-[10px] text-slate-500 dark:text-slate-400 border-t border-dashed border-slate-200 dark:border-slate-800 pt-1 leading-tight italic">
+                                    {data.probDesc}
                                   </div>
                                 )}
                               </div>
@@ -1373,51 +1571,44 @@ export default function Home() {
                 </ResponsiveContainer>
               </div>
 
-              {/* Modal Wet/Dry Season Breakdown Cards */}
-              {chartSummary.avgDebit > 0 && (
-                <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <div className="p-3.5 rounded-2xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/70 dark:border-blue-800/50">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="flex items-center gap-1.5 text-blue-700 dark:text-blue-300 font-bold text-xs">
-                        <span>💧</span> Periode Basah (Q ≥ {chartSummary.avgDebit} m³/s)
+              {/* Modal Ditjen SDA Exceedance Probability 5-Tier Breakdown */}
+              {chartSummary.probCategories && (
+                <div className="mt-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                      <span>📋</span> Ringkasan Klasifikasi Periode Probabilitas Terlampaui (P) - Standar Ditjen SDA
+                    </span>
+                    {chartSummary.avgDebit > 0 && (
+                      <span className="text-xs font-bold text-cyan-700 dark:text-cyan-300 bg-cyan-100/80 dark:bg-cyan-950/80 px-3 py-1 rounded-full border border-cyan-200 dark:border-cyan-800">
+                        Q Rerata Tahunan: {chartSummary.avgDebit} m³/s
                       </span>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-200/80 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
-                        {chartSummary.wetPeriods.length} Periode
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
-                      {chartSummary.wetPeriods.length > 0 ? chartSummary.wetPeriods.join(", ") : "Tidak ada"}
-                    </p>
+                    )}
                   </div>
 
-                  <div className="p-3.5 rounded-2xl bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200/70 dark:border-amber-800/50">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="flex items-center gap-1.5 text-amber-700 dark:text-amber-300 font-bold text-xs">
-                        <span>☀️</span> Periode Kering (Q &lt; {chartSummary.avgDebit} m³/s)
-                      </span>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-200/80 dark:bg-amber-900 text-amber-800 dark:text-amber-200">
-                        {chartSummary.dryPeriods.length} Periode
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
-                      {chartSummary.dryPeriods.length > 0 ? chartSummary.dryPeriods.join(", ") : "Tidak ada"}
-                    </p>
-                  </div>
-
-                  <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-xs space-y-1">
-                    <div className="font-bold text-slate-800 dark:text-slate-200 mb-1">Statistik Ekstrem Debit:</div>
-                    <div className="flex justify-between text-slate-600 dark:text-slate-300">
-                      <span>Debit Maksimum:</span>
-                      <strong className="text-blue-600 dark:text-blue-400">{chartSummary.maxDebit} m³/s ({chartSummary.maxPeriod})</strong>
-                    </div>
-                    <div className="flex justify-between text-slate-600 dark:text-slate-300">
-                      <span>Debit Minimum:</span>
-                      <strong className="text-amber-600 dark:text-amber-400">{chartSummary.minDebit} m³/s ({chartSummary.minPeriod})</strong>
-                    </div>
-                    <div className="flex justify-between text-slate-600 dark:text-slate-300 border-t border-slate-200 dark:border-slate-700 pt-1">
-                      <span>Rerata Tahunan:</span>
-                      <strong className="text-cyan-600 dark:text-cyan-400">{chartSummary.avgDebit} m³/s</strong>
-                    </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
+                    {chartSummary.probCategories.map(cat => (
+                      <div key={cat.key} className={`p-3 rounded-2xl border ${cat.bg} flex flex-col justify-between`}>
+                        <div>
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="font-bold text-xs flex items-center gap-1">
+                              <span>{cat.icon}</span> {cat.name}
+                            </span>
+                            <span className={`text-[10px] px-2 py-0.2 rounded-full font-bold ${cat.badge}`}>
+                              {cat.periods.length}
+                            </span>
+                          </div>
+                          <div className="text-[10px] font-mono font-bold opacity-85 mb-1.5">
+                            {cat.prob}
+                          </div>
+                          <p className="text-[10.5px] leading-relaxed opacity-95">
+                            {cat.periods.length > 0 ? cat.periods.join(', ') : <span className="italic opacity-60">Tidak terlampaui</span>}
+                          </p>
+                        </div>
+                        <div className="mt-2 pt-1.5 border-t border-current/10 text-[9.5px] opacity-75 italic leading-tight">
+                          {cat.desc}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
