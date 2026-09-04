@@ -432,31 +432,154 @@ export default function Home() {
     }
   }, [selectedDasId, selectedDas]);
 
-  const handlePrintPublicChart = async (containerId: string) => {
+  const buildPrintSvgChart = (bins: any[], avgDebitVal: number) => {
+    const W = 760;
+    const H = 225;
+    const padL = 52;
+    const padR = 18;
+    const padT = 36;
+    const padB = 42;
+    const plotW = W - padL - padR;
+    const plotH = H - padT - padB;
+
+    if (!bins || bins.length === 0) return '';
+
+    let maxVal = Math.max(
+      ...bins.map((b: any) => Math.max(b.debit || 0, b.need || 0, b.pemeliharaan || 0, Math.max(b.na || 0, 0))),
+      avgDebitVal,
+      1
+    );
+    let minVal = Math.min(
+      ...bins.map((b: any) => Math.min(b.na || 0, 0)),
+      0
+    );
+
+    maxVal = maxVal * 1.15;
+    if (minVal < 0) minVal = minVal * 1.15;
+    const yRange = maxVal - minVal;
+
+    const getY = (val: number) => padT + plotH - ((val - minVal) / yRange) * plotH;
+    const zeroY = getY(0);
+
+    // Y-axis grid & labels (5 levels)
+    let yGrid = '';
+    for (let i = 0; i <= 4; i++) {
+      const val = minVal + (yRange * i) / 4;
+      const y = getY(val);
+      yGrid += `
+        <line x1="${padL}" y1="${y.toFixed(1)}" x2="${(padL + plotW).toFixed(1)}" y2="${y.toFixed(1)}" stroke="#e2e8f0" stroke-width="0.8" stroke-dasharray="2,2" />
+        <text x="${padL - 6}" y="${(y + 3).toFixed(1)}" text-anchor="end" font-size="7.5" fill="#475569" font-family="monospace">${val.toFixed(1)}</text>
+      `;
+    }
+
+    const barGroupW = plotW / bins.length;
+    const barW = 4.8;
+    const gap = 1;
+    const totalBarsW = 4 * barW + 3 * gap;
+
+    let bars = '';
+    bins.forEach((b: any, idx: number) => {
+      const centerX = padL + (idx + 0.5) * barGroupW;
+      const startX = centerX - totalBarsW / 2;
+
+      const debitVal = b.debit || 0;
+      const needVal = b.need || 0;
+      const pemVal = b.pemeliharaan || 0;
+      const naVal = b.na !== undefined ? b.na : (debitVal - (needVal + pemVal));
+
+      const debitX = startX;
+      const needX = startX + barW + gap;
+      const pemX = startX + (barW + gap) * 2;
+      const naX = startX + (barW + gap) * 3;
+
+      const debitY = getY(Math.max(debitVal, 0));
+      const debitH = Math.max(Math.abs(zeroY - debitY), 0.5);
+
+      const needY = getY(Math.max(needVal, 0));
+      const needH = Math.max(Math.abs(zeroY - needY), 0.5);
+
+      const pemY = getY(Math.max(pemVal, 0));
+      const pemH = Math.max(Math.abs(zeroY - pemY), 0.5);
+
+      const isSurplus = naVal >= 0;
+      const naY = isSurplus ? getY(naVal) : zeroY;
+      const naH = Math.max(Math.abs(getY(naVal) - zeroY), 0.5);
+      const naFill = isSurplus ? "#10b981" : "#dc2626";
+      const naStroke = isSurplus ? "#059669" : "#b91c1c";
+
+      const bgAlt = idx % 2 === 0
+        ? `<rect x="${(padL + idx * barGroupW).toFixed(1)}" y="${padT}" width="${barGroupW.toFixed(1)}" height="${plotH}" fill="#f8fafc" opacity="0.75" />`
+        : '';
+
+      bars += `
+        ${bgAlt}
+        <!-- 1. Ketersediaan (Debit) -->
+        <rect x="${debitX.toFixed(1)}" y="${debitY.toFixed(1)}" width="${barW.toFixed(1)}" height="${debitH.toFixed(1)}" fill="#0284c7" stroke="#0369a1" stroke-width="0.5" rx="1" />
+        <!-- 2. Kebutuhan Air -->
+        <rect x="${needX.toFixed(1)}" y="${needY.toFixed(1)}" width="${barW.toFixed(1)}" height="${needH.toFixed(1)}" fill="#ef4444" stroke="#b91c1c" stroke-width="0.5" rx="1" />
+        <!-- 3. Pemeliharaan Sungai -->
+        <rect x="${pemX.toFixed(1)}" y="${pemY.toFixed(1)}" width="${barW.toFixed(1)}" height="${pemH.toFixed(1)}" fill="#f59e0b" stroke="#d97706" stroke-width="0.5" rx="1" />
+        <!-- 4. Neraca Air -->
+        <rect x="${naX.toFixed(1)}" y="${naY.toFixed(1)}" width="${barW.toFixed(1)}" height="${naH.toFixed(1)}" fill="${naFill}" stroke="${naStroke}" stroke-width="0.5" rx="1" />
+        <!-- Periode Label -->
+        <text x="${centerX.toFixed(1)}" y="${(padT + plotH + 11).toFixed(1)}" text-anchor="end" font-size="7" font-weight="bold" fill="#1e293b" transform="rotate(-45 ${centerX.toFixed(1)} ${(padT + plotH + 11).toFixed(1)})">${b.name}</text>
+      `;
+    });
+
+    let refLine = '';
+    if (avgDebitVal > 0) {
+      const yAvg = getY(avgDebitVal);
+      refLine = `
+        <line x1="${padL}" y1="${yAvg.toFixed(1)}" x2="${(padL + plotW).toFixed(1)}" y2="${yAvg.toFixed(1)}" stroke="#0284c7" stroke-width="1.5" stroke-dasharray="4,4" />
+        <rect x="${(padL + plotW - 132).toFixed(1)}" y="${(yAvg - 11).toFixed(1)}" width="128" height="10" fill="#0284c7" rx="2" />
+        <text x="${(padL + plotW - 68).toFixed(1)}" y="${(yAvg - 3.5).toFixed(1)}" text-anchor="middle" font-size="7" font-weight="bold" fill="#ffffff">Q Rerata = ${avgDebitVal.toFixed(2)} m³/s</text>
+      `;
+    }
+
+    return `
+      <div style="background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 8px; margin-bottom: 8px; page-break-inside: avoid; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+        <div style="font-size: 9.5px; font-weight: bold; color: #0f172a; margin-bottom: 3px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 3px;">
+          <span>Grafik Batang Bulanan Neraca Air (24 Periode)</span>
+          <span style="font-size: 8px; color: #475569; font-weight: normal;">Satuan Debit: <strong>m³/detik</strong></span>
+        </div>
+        <svg viewBox="0 0 ${W} ${H}" width="100%" height="215" style="display: block; overflow: visible;">
+          <!-- SVG Legend: immune to print color stripping -->
+          <g transform="translate(60, 12)">
+            <rect x="0" y="0" width="10" height="9" fill="#0284c7" stroke="#0369a1" stroke-width="0.5" rx="1.5" />
+            <text x="14" y="7.5" font-size="7.5" font-weight="bold" fill="#0f172a">Ketersediaan (Debit)</text>
+
+            <rect x="132" y="0" width="10" height="9" fill="#ef4444" stroke="#b91c1c" stroke-width="0.5" rx="1.5" />
+            <text x="146" y="7.5" font-size="7.5" font-weight="bold" fill="#0f172a">Kebutuhan Air</text>
+
+            <rect x="238" y="0" width="10" height="9" fill="#f59e0b" stroke="#d97706" stroke-width="0.5" rx="1.5" />
+            <text x="252" y="7.5" font-size="7.5" font-weight="bold" fill="#0f172a">Pemeliharaan Sungai</text>
+
+            <rect x="375" y="0" width="10" height="9" fill="#10b981" stroke="#047857" stroke-width="0.5" rx="1.5" />
+            <text x="389" y="7.5" font-size="7.5" font-weight="bold" fill="#0f172a">Surplus Neraca Air</text>
+
+            <rect x="505" y="0" width="10" height="9" fill="#dc2626" stroke="#991b1b" stroke-width="0.5" rx="1.5" />
+            <text x="519" y="7.5" font-size="7.5" font-weight="bold" fill="#0f172a">Defisit Neraca Air</text>
+          </g>
+
+          <!-- Grids & Axes -->
+          ${yGrid}
+          <line x1="${padL}" y1="${zeroY.toFixed(1)}" x2="${(padL + plotW).toFixed(1)}" y2="${zeroY.toFixed(1)}" stroke="#334155" stroke-width="1.2" />
+          <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${(padT + plotH).toFixed(1)}" stroke="#64748b" stroke-width="1.2" />
+          <text x="16" y="${(padT + plotH / 2).toFixed(1)}" text-anchor="middle" font-size="7.5" fill="#334155" font-weight="bold" transform="rotate(-90 16 ${(padT + plotH / 2).toFixed(1)})">Debit &amp; Kebutuhan (m³/s)</text>
+
+          <!-- Bars & Ref Line -->
+          ${bars}
+          ${refLine}
+        </svg>
+      </div>
+    `;
+  };
+
+  const handlePrintPublicChart = (containerId?: string) => {
     if (!selectedDas) return;
     const regionName = selectedDas.name;
     const regionDesc = selectedDas.region || "Maluku";
-    
-    let chartImgHtml = '';
-    const chartContainer = document.getElementById(containerId);
-    if (chartContainer) {
-      try {
-        const { toPng } = await import('html-to-image');
-        const dataUrl = await toPng(chartContainer, { backgroundColor: '#0f172a', quality: 0.95 });
-        chartImgHtml = `
-          <div style="margin-bottom: 6px; text-align: center; page-break-inside: avoid;">
-            <img src="${dataUrl}" style="width: 100%; max-height: 260px; object-fit: contain; border-radius: 6px; border: 1px solid #cbd5e1;" />
-          </div>
-        `;
-      } catch (err) {
-        console.warn("Failed to capture public chart image:", err);
-      }
-    }
 
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
-    
-    let rowsHtml = '';
     let totalDebit = 0, totalNeed = 0, totalPemeliharaan = 0, totalNA = 0;
     const wetPeriodsList: string[] = [];
     const dryPeriodsList: string[] = [];
@@ -475,6 +598,7 @@ export default function Home() {
     const avgNA = totalNA / 24;
     const overallStatus = avgDebit >= (avgNeed + avgPemeliharaan) ? "Surplus" : "Defisit";
     
+    let rowsHtml = '';
     chartData.forEach((bin: any, idx: number) => {
       const debitNum = bin.debit || 0;
       const needNum = bin.need || 0;
@@ -491,22 +615,27 @@ export default function Home() {
       const statusBg = status === "Surplus" ? "#d1fae5" : "#fee2e2";
       const statusColor = status === "Surplus" ? "#065f46" : "#991b1b";
       const seasonLabel = isWet 
-        ? '<span style="color: #0284c7; font-weight: bold; background: #e0f2fe; padding: 2px 6px; border-radius: 4px;">💧 Basah</span>' 
-        : '<span style="color: #d97706; font-weight: bold; background: #fef3c7; padding: 2px 6px; border-radius: 4px;">☀️ Kering</span>';
+        ? '<span style="color: #0369a1; font-weight: bold; background-color: #e0f2fe; padding: 2px 6px; border-radius: 4px; font-size: 8.5px;">Basah</span>' 
+        : '<span style="color: #b45309; font-weight: bold; background-color: #fef3c7; padding: 2px 6px; border-radius: 4px; font-size: 8.5px;">Kering</span>';
       
       rowsHtml += `
         <tr>
-          <td style="text-align: center; padding: 3px 5px; border: 1px solid #cbd5e1;">${idx + 1}</td>
-          <td style="padding: 3px 5px; border: 1px solid #cbd5e1; font-weight: bold;">${bin.name}</td>
-          <td style="text-align: right; padding: 3px 5px; border: 1px solid #cbd5e1;">${debitNum.toFixed(2)}</td>
-          <td style="text-align: right; padding: 3px 5px; border: 1px solid #cbd5e1;">${needNum.toFixed(2)}</td>
-          <td style="text-align: right; padding: 3px 5px; border: 1px solid #cbd5e1;">${pemeliharaanNum.toFixed(2)}</td>
-          <td style="text-align: right; padding: 3px 5px; border: 1px solid #cbd5e1; font-weight: bold; color: ${naNum >= 0 ? '#047857' : '#dc2626'};">${naNum.toFixed(2)}</td>
-          <td style="text-align: center; padding: 3px 5px; border: 1px solid #cbd5e1; background-color: ${statusBg}; color: ${statusColor}; font-weight: bold;">${status}</td>
-          <td style="text-align: center; padding: 3px 5px; border: 1px solid #cbd5e1;">${seasonLabel}</td>
+          <td style="text-align: center; padding: 3.5px 5px; border: 1px solid #cbd5e1;">${idx + 1}</td>
+          <td style="padding: 3.5px 5px; border: 1px solid #cbd5e1; font-weight: bold;">${bin.name}</td>
+          <td style="text-align: right; padding: 3.5px 5px; border: 1px solid #cbd5e1;">${debitNum.toFixed(2)}</td>
+          <td style="text-align: right; padding: 3.5px 5px; border: 1px solid #cbd5e1;">${needNum.toFixed(2)}</td>
+          <td style="text-align: right; padding: 3.5px 5px; border: 1px solid #cbd5e1;">${pemeliharaanNum.toFixed(2)}</td>
+          <td style="text-align: right; padding: 3.5px 5px; border: 1px solid #cbd5e1; font-weight: bold; color: ${naNum >= 0 ? '#047857' : '#dc2626'};">${naNum.toFixed(2)}</td>
+          <td style="text-align: center; padding: 3.5px 5px; border: 1px solid #cbd5e1; background-color: ${statusBg}; color: ${statusColor}; font-weight: bold;">${status}</td>
+          <td style="text-align: center; padding: 3.5px 5px; border: 1px solid #cbd5e1;">${seasonLabel}</td>
         </tr>
       `;
     });
+
+    const chartSvgHtml = buildPrintSvgChart(chartData, avgDebit);
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
 
     printWindow.document.write(`
       <!DOCTYPE html>
@@ -514,16 +643,21 @@ export default function Home() {
       <head>
         <title>Grafik Bulanan Neraca Air - ${regionName} (${chartYear})</title>
         <style>
-          body { font-family: Arial, sans-serif; margin: 8px 12px; color: #0f172a; font-size: 10px; }
-          h2 { text-align: center; font-size: 14px; font-weight: bold; margin: 0 0 2px 0; text-transform: uppercase; color: #0f172a; }
-          .subtitle { text-align: center; font-size: 10.5px; color: #475569; margin-bottom: 8px; }
-          table { width: 100%; border-collapse: collapse; margin-top: 4px; }
-          th { background-color: #f1f5f9; padding: 4px 6px; border: 1px solid #cbd5e1; font-size: 9.5px; text-transform: uppercase; color: #334155; }
-          td { font-size: 9.5px; }
-          tfoot tr td { font-weight: bold; background-color: #f8fafc; }
-          .season-box { margin-top: 8px; padding: 8px 12px; background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 9.5px; line-height: 1.5; }
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            color-adjust: exact !important;
+          }
+          body { font-family: Arial, sans-serif; margin: 6px 10px; color: #0f172a; font-size: 9px; line-height: 1.3; }
+          h2 { text-align: center; font-size: 13px; font-weight: bold; margin: 0 0 2px 0; text-transform: uppercase; color: #0f172a; }
+          .subtitle { text-align: center; font-size: 9.5px; color: #475569; margin-bottom: 6px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 2px; }
+          th { background-color: #1e293b !important; color: #ffffff !important; padding: 3.5px 5px; border: 1px solid #0f172a; font-size: 8.5px; text-transform: uppercase; }
+          td { font-size: 8.5px; border: 1px solid #cbd5e1; }
+          tfoot tr td { font-weight: bold; background-color: #f8fafc; border: 1px solid #cbd5e1; }
+          .season-box { margin-top: 6px; padding: 6px 10px; background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 8.5px; line-height: 1.45; }
           @media print {
-            @page { size: A4 portrait; margin: 8mm; }
+            @page { size: A4 portrait; margin: 7mm; }
           }
         </style>
       </head>
@@ -531,12 +665,12 @@ export default function Home() {
         <h2>Grafik Bulanan Neraca Air (24 Periode)</h2>
         <div class="subtitle">Wilayah DAS: <strong>${regionName}</strong> (${regionDesc}) | Tahun: <strong>${chartYear}</strong></div>
 
-        ${chartImgHtml}
+        ${chartSvgHtml}
 
         <table>
           <thead>
             <tr>
-              <th style="width: 25px;">No</th>
+              <th style="width: 25px; text-align: center;">No</th>
               <th>Periode</th>
               <th style="text-align: right;">Ketersediaan (m³/s)</th>
               <th style="text-align: right;">Kebutuhan (m³/s)</th>
@@ -564,8 +698,8 @@ export default function Home() {
 
         <div class="season-box">
           <div style="font-weight: bold; margin-bottom: 3px; color: #1e293b;">Analisis Hidrologi Periode Basah & Kering (Batas Rata-rata Tahunan = ${avgDebit.toFixed(2)} m³/s):</div>
-          <div>• <strong style="color: #0284c7;">💧 Periode Basah (Debit ≥ Rerata):</strong> ${wetPeriodsList.length > 0 ? wetPeriodsList.join(", ") : "Tidak ada periode basah teridentifikasi"}</div>
-          <div>• <strong style="color: #d97706;">☀️ Periode Kering (Debit &lt; Rerata):</strong> ${dryPeriodsList.length > 0 ? dryPeriodsList.join(", ") : "Tidak ada periode kering teridentifikasi"}</div>
+          <div>• <strong style="color: #0369a1;">Periode Basah (Debit ≥ Rerata):</strong> ${wetPeriodsList.length > 0 ? wetPeriodsList.join(", ") : "Tidak ada periode basah teridentifikasi"}</div>
+          <div>• <strong style="color: #b45309;">Periode Kering (Debit &lt; Rerata):</strong> ${dryPeriodsList.length > 0 ? dryPeriodsList.join(", ") : "Tidak ada periode kering teridentifikasi"}</div>
         </div>
 
         <script>
@@ -970,7 +1104,7 @@ export default function Home() {
                                             ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200' 
                                             : 'bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200'
                                         }`}>
-                                          {isWet ? '💧 Periode Basah' : '☀️ Periode Kering'}
+                                          {isWet ? 'Periode Basah' : 'Periode Kering'}
                                         </span>
                                       )}
                                     </div>
@@ -1018,8 +1152,8 @@ export default function Home() {
                     {/* Chart Summary Notes & Wet/Dry Season Analysis */}
                     <div className="mt-4 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 text-xs transition-colors duration-300 space-y-2.5">
                       <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2">
-                        <p className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                          <span>📊</span> Analisis Periode & Neraca Air ({chartYear})
+                        <p className="font-bold text-slate-800 dark:text-slate-200">
+                          Analisis Periode & Neraca Air ({chartYear})
                         </p>
                         {chartSummary.avgDebit > 0 && (
                           <span className="text-[10px] font-bold text-cyan-700 dark:text-cyan-300 bg-cyan-100/80 dark:bg-cyan-950/80 px-2 py-0.5 rounded-full border border-cyan-200 dark:border-cyan-800">
@@ -1032,9 +1166,8 @@ export default function Home() {
                       {chartSummary.avgDebit > 0 && (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           <div className="p-2.5 rounded-lg bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/70 dark:border-blue-800/50">
-                            <div className="flex items-center gap-1.5 text-blue-700 dark:text-blue-300 font-bold text-xs mb-1">
-                              <span>💧</span>
-                              <span>Periode Basah (Q ≥ {chartSummary.avgDebit} m³/s)</span>
+                            <div className="text-blue-700 dark:text-blue-300 font-bold text-xs mb-1">
+                              Periode Basah (Q ≥ {chartSummary.avgDebit} m³/s)
                             </div>
                             <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
                               {chartSummary.wetPeriods.length > 0 ? chartSummary.wetPeriods.join(", ") : "Tidak terdeteksi periode basah"}
@@ -1042,9 +1175,8 @@ export default function Home() {
                           </div>
 
                           <div className="p-2.5 rounded-lg bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200/70 dark:border-amber-800/50">
-                            <div className="flex items-center gap-1.5 text-amber-700 dark:text-amber-300 font-bold text-xs mb-1">
-                              <span>☀️</span>
-                              <span>Periode Kering (Q &lt; {chartSummary.avgDebit} m³/s)</span>
+                            <div className="text-amber-700 dark:text-amber-300 font-bold text-xs mb-1">
+                              Periode Kering (Q &lt; {chartSummary.avgDebit} m³/s)
                             </div>
                             <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
                               {chartSummary.dryPeriods.length > 0 ? chartSummary.dryPeriods.join(", ") : "Tidak terdeteksi periode kering"}
@@ -1240,8 +1372,8 @@ export default function Home() {
           <div className="w-full max-w-6xl max-h-[92vh] flex flex-col rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden">
             <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
               <div>
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  <span>📊</span> Grafik Neraca Air - {selectedDas.name} ({selectedDas.region})
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+                  Grafik Neraca Air - {selectedDas.name} ({selectedDas.region})
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Tampilan Layar Penuh 24 Periode Setengah Bulanan</p>
               </div>
@@ -1265,7 +1397,7 @@ export default function Home() {
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                   </svg>
-                  <span>Cetak Grafik</span>
+                  <span>Cetak Ringkasan</span>
                 </button>
 
                 <button
@@ -1328,7 +1460,7 @@ export default function Home() {
                                       ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200' 
                                       : 'bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200'
                                   }`}>
-                                    {isWet ? '💧 Periode Basah' : '☀️ Periode Kering'}
+                                    {isWet ? 'Periode Basah' : 'Periode Kering'}
                                   </span>
                                 )}
                               </div>
@@ -1378,8 +1510,8 @@ export default function Home() {
                 <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div className="p-3.5 rounded-2xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/70 dark:border-blue-800/50">
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="flex items-center gap-1.5 text-blue-700 dark:text-blue-300 font-bold text-xs">
-                        <span>💧</span> Periode Basah (Q ≥ {chartSummary.avgDebit} m³/s)
+                      <span className="text-blue-700 dark:text-blue-300 font-bold text-xs">
+                        Periode Basah (Q ≥ {chartSummary.avgDebit} m³/s)
                       </span>
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-200/80 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
                         {chartSummary.wetPeriods.length} Periode
@@ -1392,8 +1524,8 @@ export default function Home() {
 
                   <div className="p-3.5 rounded-2xl bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200/70 dark:border-amber-800/50">
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="flex items-center gap-1.5 text-amber-700 dark:text-amber-300 font-bold text-xs">
-                        <span>☀️</span> Periode Kering (Q &lt; {chartSummary.avgDebit} m³/s)
+                      <span className="text-amber-700 dark:text-amber-300 font-bold text-xs">
+                        Periode Kering (Q &lt; {chartSummary.avgDebit} m³/s)
                       </span>
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-200/80 dark:bg-amber-900 text-amber-800 dark:text-amber-200">
                         {chartSummary.dryPeriods.length} Periode
@@ -1437,7 +1569,7 @@ export default function Home() {
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                   </svg>
-                  <span>🖨️ Cetak Grafik PDF</span>
+                  <span>Cetak Ringkasan (PDF)</span>
                 </button>
                 <button
                   onClick={() => setIsChartModalOpen(false)}
