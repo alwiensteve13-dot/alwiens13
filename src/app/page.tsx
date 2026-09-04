@@ -651,97 +651,154 @@ export default function Home() {
 
     // Generator for Grafik Batang Neraca Air 24 Periode
     const generateAllPeriodsBarChartSvg = (bins: any[], avgDebitVal: number) => {
-      const W = 750, H = 185;
-      const padL = 48, padR = 20, padT = 24, padB = 36;
+      const W = 750, H = 220;
+      const padL = 55, padR = 20, padT = 38, padB = 44;
       const plotW = W - padL - padR;
       const plotH = H - padT - padB;
 
-      const valid = bins.filter((b: any) => b.hasData || (b.debit && b.debit > 0));
-      if (valid.length === 0) return '';
+      if (!bins || bins.length === 0) return '';
 
-      const maxVal = Math.max(
-        ...bins.map((b: any) => Math.max(b.debit || 0, b.need || 0, b.na || 0)),
+      // Find max value across all 4 parameters
+      let maxVal = Math.max(
+        ...bins.map((b: any) => Math.max(b.debit || 0, b.need || 0, b.pemeliharaan || 0, Math.max(b.na || 0, 0))),
         1
       );
-      const minVal = Math.min(...bins.map((b: any) => Math.min(b.na || 0, 0)), 0);
-      const yRange = (maxVal * 1.15) - minVal;
-      
+      let minVal = Math.min(
+        ...bins.map((b: any) => Math.min(b.na || 0, 0)),
+        0
+      );
+
+      maxVal = maxVal * 1.15;
+      if (minVal < 0) minVal = minVal * 1.15;
+      const yRange = maxVal - minVal;
+
       const getY = (val: number) => padT + plotH - ((val - minVal) / yRange) * plotH;
       const zeroY = getY(0);
 
+      // Y-axis grid & labels (5 levels)
       let yGrid = '';
       for (let i = 0; i <= 4; i++) {
         const val = minVal + (yRange * i) / 4;
         const y = getY(val);
         yGrid += `
-          <line x1="${padL}" y1="${y}" x2="${padL + plotW}" y2="${y}" stroke="#cbd5e1" stroke-width="0.7" stroke-dasharray="2,2" />
-          <text x="${padL - 5}" y="${y + 3}" text-anchor="end" font-size="7.5" fill="#475569">${val.toFixed(1)}</text>
+          <line x1="${padL}" y1="${y.toFixed(1)}" x2="${(padL + plotW).toFixed(1)}" y2="${y.toFixed(1)}" stroke="#e2e8f0" stroke-width="0.8" stroke-dasharray="2,2" />
+          <text x="${padL - 6}" y="${(y + 3).toFixed(1)}" text-anchor="end" font-size="7.5" fill="#475569" font-family="monospace">${val.toFixed(1)}</text>
         `;
       }
 
       const barGroupW = plotW / bins.length;
-      const barW = Math.max(barGroupW * 0.28, 4);
+      const barW = Math.max(Math.min(barGroupW * 0.20, 5.2), 3.5);
+      const gap = 0.8;
+      const totalGroupBarsW = 4 * barW + 3 * gap;
 
       let bars = '';
       bins.forEach((b: any, idx: number) => {
         const groupX = padL + idx * barGroupW;
         const centerX = groupX + barGroupW / 2;
+        const startX = centerX - totalGroupBarsW / 2;
 
         const debitVal = b.debit || 0;
         const needVal = b.need || 0;
-        const naVal = b.na !== undefined ? b.na : (debitVal - needVal - (b.pemeliharaan || 0));
+        const pemeliharaanVal = (b.pemeliharaan !== undefined && b.pemeliharaan !== null)
+          ? b.pemeliharaan
+          : Number((0.095 * debitVal).toFixed(2));
+        const naVal = b.na !== undefined ? b.na : (debitVal - (needVal + pemeliharaanVal));
 
-        const debitY = getY(debitVal);
-        const debitH = Math.max(zeroY - debitY, 1);
-        
-        const P = b.P !== undefined ? b.P : 50;
-        let debitColor = '#10b981';
-        if (P < 20) debitColor = '#1d4ed8';
-        else if (P < 40) debitColor = '#0284c7';
-        else if (P <= 60) debitColor = '#10b981';
-        else if (P <= 80) debitColor = '#d97706';
-        else debitColor = '#dc2626';
+        // Bar 1: Ketersediaan (Debit) -> Vibrant Sky Blue #0284c7
+        const debitX = startX;
+        const debitY = debitVal > 0 ? getY(debitVal) : zeroY;
+        const debitH = debitVal > 0 ? Math.max(zeroY - debitY, 1) : 0;
 
-        const needY = getY(needVal);
-        const needH = Math.max(zeroY - needY, 1);
+        // Bar 2: Kebutuhan Air -> Vibrant Coral Red #ef4444
+        const needX = startX + barW + gap;
+        const needY = needVal > 0 ? getY(needVal) : zeroY;
+        const needH = needVal > 0 ? Math.max(zeroY - needY, 1) : 0;
 
-        const naY = naVal >= 0 ? getY(naVal) : zeroY;
-        const naH = Math.max(Math.abs(zeroY - getY(naVal)), 1);
-        const naColor = naVal >= 0 ? '#059669' : '#e11d48';
+        // Bar 3: Pemeliharaan Sungai -> Vibrant Amber #f59e0b
+        const pemX = startX + 2 * (barW + gap);
+        const pemY = pemeliharaanVal > 0 ? getY(pemeliharaanVal) : zeroY;
+        const pemH = pemeliharaanVal > 0 ? Math.max(zeroY - pemY, 1) : 0;
+
+        // Bar 4: Neraca Air -> Emerald Green #10b981 (Surplus) or Dark Red #dc2626 (Defisit)
+        const naX = startX + 3 * (barW + gap);
+        let naY = zeroY;
+        let naH = 0;
+        let naFill = '#10b981';
+        let naStroke = '#047857';
+        if (naVal >= 0) {
+          naY = getY(naVal);
+          naH = Math.max(zeroY - naY, 1);
+          naFill = '#10b981';
+          naStroke = '#047857';
+        } else {
+          naY = zeroY;
+          naH = Math.max(getY(naVal) - zeroY, 1);
+          naFill = '#dc2626';
+          naStroke = '#991b1b';
+        }
+
+        // Alternating background band for easy period reading
+        const bgAlt = idx % 2 === 0 ? `<rect x="${groupX.toFixed(1)}" y="${padT}" width="${barGroupW.toFixed(1)}" height="${plotH}" fill="#f8fafc" opacity="0.6" />` : '';
 
         bars += `
-          <rect x="${centerX - barW * 1.5 - 1}" y="${debitY}" width="${barW}" height="${debitH}" fill="${debitColor}" rx="1" />
-          <rect x="${centerX - barW * 0.5}" y="${needY}" width="${barW}" height="${needH}" fill="#f87171" rx="1" />
-          <rect x="${centerX + barW * 0.5 + 1}" y="${naY}" width="${barW}" height="${naH}" fill="${naColor}" rx="1" />
-          <text x="${centerX}" y="${padT + plotH + 10}" text-anchor="end" font-size="7" fill="#334155" transform="rotate(-45 ${centerX} ${padT + plotH + 10})">${b.name}</text>
+          ${bgAlt}
+          <!-- 1. Ketersediaan (Debit) -->
+          <rect x="${debitX.toFixed(1)}" y="${debitY.toFixed(1)}" width="${barW.toFixed(1)}" height="${debitH.toFixed(1)}" fill="#0284c7" stroke="#0369a1" stroke-width="0.5" rx="1" />
+          <!-- 2. Kebutuhan Air -->
+          <rect x="${needX.toFixed(1)}" y="${needY.toFixed(1)}" width="${barW.toFixed(1)}" height="${needH.toFixed(1)}" fill="#ef4444" stroke="#b91c1c" stroke-width="0.5" rx="1" />
+          <!-- 3. Pemeliharaan Sungai -->
+          <rect x="${pemX.toFixed(1)}" y="${pemY.toFixed(1)}" width="${barW.toFixed(1)}" height="${pemH.toFixed(1)}" fill="#f59e0b" stroke="#d97706" stroke-width="0.5" rx="1" />
+          <!-- 4. Neraca Air -->
+          <rect x="${naX.toFixed(1)}" y="${naY.toFixed(1)}" width="${barW.toFixed(1)}" height="${naH.toFixed(1)}" fill="${naFill}" stroke="${naStroke}" stroke-width="0.5" rx="1" />
+          
+          <!-- Periode Label -->
+          <text x="${centerX.toFixed(1)}" y="${(padT + plotH + 11).toFixed(1)}" text-anchor="end" font-size="7" font-weight="bold" fill="#1e293b" transform="rotate(-45 ${centerX.toFixed(1)} ${(padT + plotH + 11).toFixed(1)})">${b.name}</text>
         `;
       });
 
+      // Reference line for Q Rerata
       let refLine = '';
       if (avgDebitVal > 0) {
         const yAvg = getY(avgDebitVal);
         refLine = `
-          <line x1="${padL}" y1="${yAvg.toFixed(1)}" x2="${padL + plotW}" y2="${yAvg.toFixed(1)}" stroke="#0284c7" stroke-width="1.5" stroke-dasharray="4,4" />
-          <text x="${padL + plotW}" y="${(yAvg - 3).toFixed(1)}" text-anchor="end" font-size="7.5" font-weight="bold" fill="#0284c7">Q Rerata = ${avgDebitVal.toFixed(2)} m³/s</text>
+          <line x1="${padL}" y1="${yAvg.toFixed(1)}" x2="${(padL + plotW).toFixed(1)}" y2="${yAvg.toFixed(1)}" stroke="#0284c7" stroke-width="1.5" stroke-dasharray="4,4" />
+          <rect x="${(padL + plotW - 130).toFixed(1)}" y="${(yAvg - 11).toFixed(1)}" width="126" height="10" fill="#0284c7" rx="2" />
+          <text x="${(padL + plotW - 67).toFixed(1)}" y="${(yAvg - 3.5).toFixed(1)}" text-anchor="middle" font-size="7" font-weight="bold" fill="#ffffff">Q Rerata = ${avgDebitVal.toFixed(2)} m³/s</text>
         `;
       }
 
       return `
-        <div style="background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px; margin-bottom: 8px; page-break-inside: avoid;">
-          <div style="font-size: 9.5px; font-weight: bold; color: #0f172a; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 3px;">
+        <div style="background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px; margin-bottom: 8px; page-break-inside: avoid; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+          <div style="font-size: 9.5px; font-weight: bold; color: #0f172a; margin-bottom: 3px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 3px;">
             <span>📊 <strong>Grafik Batang Bulanan Neraca Air (24 Periode)</strong></span>
-            <div style="display: flex; gap: 10px; font-size: 8px;">
-              <span style="display: inline-flex; align-items: center; gap: 3px;"><span style="display: inline-block; width: 8px; height: 8px; background-color: #0284c7; border-radius: 1px;"></span>Ketersediaan (Debit)</span>
-              <span style="display: inline-flex; align-items: center; gap: 3px;"><span style="display: inline-block; width: 8px; height: 8px; background-color: #f87171; border-radius: 1px;"></span>Kebutuhan Air</span>
-              <span style="display: inline-flex; align-items: center; gap: 3px;"><span style="display: inline-block; width: 8px; height: 8px; background-color: #059669; border-radius: 1px;"></span>Surplus NA</span>
-              <span style="display: inline-flex; align-items: center; gap: 3px;"><span style="display: inline-block; width: 8px; height: 8px; background-color: #e11d48; border-radius: 1px;"></span>Defisit NA</span>
-            </div>
+            <span style="font-size: 8px; color: #475569;">Satuan Debit: <strong>m³/detik</strong></span>
           </div>
-          <svg viewBox="0 0 ${W} ${H}" width="100%" height="170" style="display: block; overflow: visible;">
+          <svg viewBox="0 0 ${W} ${H}" width="100%" height="205" style="display: block; overflow: visible;">
+            <!-- SVG Legend Bar: immune to CSS print color stripping -->
+            <g transform="translate(55, 12)">
+              <rect x="0" y="0" width="10" height="9" fill="#0284c7" stroke="#0369a1" stroke-width="0.5" rx="1.5" />
+              <text x="14" y="7.5" font-size="7.5" font-weight="bold" fill="#0f172a">Ketersediaan (Debit)</text>
+
+              <rect x="132" y="0" width="10" height="9" fill="#ef4444" stroke="#b91c1c" stroke-width="0.5" rx="1.5" />
+              <text x="146" y="7.5" font-size="7.5" font-weight="bold" fill="#0f172a">Kebutuhan Air</text>
+
+              <rect x="238" y="0" width="10" height="9" fill="#f59e0b" stroke="#d97706" stroke-width="0.5" rx="1.5" />
+              <text x="252" y="7.5" font-size="7.5" font-weight="bold" fill="#0f172a">Pemeliharaan Sungai</text>
+
+              <rect x="375" y="0" width="10" height="9" fill="#10b981" stroke="#047857" stroke-width="0.5" rx="1.5" />
+              <text x="389" y="7.5" font-size="7.5" font-weight="bold" fill="#0f172a">Surplus Neraca Air</text>
+
+              <rect x="505" y="0" width="10" height="9" fill="#dc2626" stroke="#991b1b" stroke-width="0.5" rx="1.5" />
+              <text x="519" y="7.5" font-size="7.5" font-weight="bold" fill="#0f172a">Defisit Neraca Air</text>
+            </g>
+
+            <!-- Grids & Axes -->
             ${yGrid}
-            <line x1="${padL}" y1="${zeroY}" x2="${padL + plotW}" y2="${zeroY}" stroke="#475569" stroke-width="1" />
-            <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT + plotH}" stroke="#64748b" stroke-width="1.2" />
-            <text x="14" y="${padT + plotH / 2}" text-anchor="middle" font-size="7.5" fill="#334155" font-weight="bold" transform="rotate(-90 14 ${padT + plotH / 2})">Debit (m³/s)</text>
+            <line x1="${padL}" y1="${zeroY.toFixed(1)}" x2="${(padL + plotW).toFixed(1)}" y2="${zeroY.toFixed(1)}" stroke="#334155" stroke-width="1.2" />
+            <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${(padT + plotH).toFixed(1)}" stroke="#64748b" stroke-width="1.2" />
+            <text x="16" y="${(padT + plotH / 2).toFixed(1)}" text-anchor="middle" font-size="7.5" fill="#334155" font-weight="bold" transform="rotate(-90 16 ${(padT + plotH / 2).toFixed(1)})">Debit &amp; Kebutuhan Air (m³/s)</text>
+
+            <!-- Bars & Ref Line -->
             ${bars}
             ${refLine}
           </svg>
@@ -1011,6 +1068,11 @@ export default function Home() {
       <head>
         <title>Grafik & Neraca Air - ${regionName} (${chartYear})</title>
         <style>
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            color-adjust: exact !important;
+          }
           body { font-family: Arial, sans-serif; margin: 6px 10px; color: #0f172a; font-size: 9px; line-height: 1.3; }
           h2 { text-align: center; font-size: 13px; font-weight: bold; margin: 0 0 2px 0; text-transform: uppercase; color: #0f172a; }
           .subtitle { text-align: center; font-size: 9.5px; color: #475569; margin-bottom: 6px; }
