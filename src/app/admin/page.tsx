@@ -699,7 +699,7 @@ export default function AdminDashboardPage() {
       return `
         <div style="background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px; margin-bottom: 8px; page-break-inside: avoid;">
           <div style="font-size: 9.5px; font-weight: bold; color: #0f172a; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 3px;">
-            <span>📈 <strong>Kurva Karakteristik Probabilitas Terlampaui (Flow Duration Curve - FDC) Seluruh Periode</strong></span>
+            <span><strong>Kurva Karakteristik Probabilitas Terlampaui (Flow Duration Curve - FDC) Seluruh Periode</strong></span>
             <span style="font-size: 8px; color: #64748b; font-weight: normal;">Metode Weibull Ditjen SDA PUPR (N = ${N} Periode)</span>
           </div>
           <svg viewBox="0 0 ${W} ${H}" width="100%" height="195" style="display: block; overflow: visible;">
@@ -840,7 +840,7 @@ export default function AdminDashboardPage() {
       return `
         <div style="background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px; margin-bottom: 8px; page-break-inside: avoid; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
           <div style="font-size: 9.5px; font-weight: bold; color: #0f172a; margin-bottom: 3px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 3px;">
-            <span>📊 <strong>Grafik Batang Bulanan Neraca Air (24 Periode)</strong></span>
+            <span><strong>Grafik Batang Bulanan Neraca Air (24 Periode)</strong></span>
             <span style="font-size: 8px; color: #475569;">Satuan Debit: <strong>m³/detik</strong></span>
           </div>
           <svg viewBox="0 0 ${W} ${H}" width="100%" height="205" style="display: block; overflow: visible;">
@@ -889,7 +889,7 @@ export default function AdminDashboardPage() {
         name: 'Sangat Basah',
         prob: 'P < 20%',
         desc: 'Debit/hujan sangat tinggi (hanya terjadi < 20% waktu)',
-        icon: '🌊',
+        icon: '',
         badgeBg: '#dbeafe',
         textColor: '#1e40af',
         items: [] as any[]
@@ -899,7 +899,7 @@ export default function AdminDashboardPage() {
         name: 'Basah',
         prob: '20% ≤ P < 40%',
         desc: 'Debit andalan basah (Q20% - Q40%)',
-        icon: '💧',
+        icon: '',
         badgeBg: '#e0f2fe',
         textColor: '#0369a1',
         items: [] as any[]
@@ -909,7 +909,7 @@ export default function AdminDashboardPage() {
         name: 'Normal',
         prob: '40% ≤ P ≤ 60%',
         desc: 'Periode rata-rata / median (Q50%)',
-        icon: '⚖️',
+        icon: '',
         badgeBg: '#d1fae5',
         textColor: '#065f46',
         items: [] as any[]
@@ -919,7 +919,7 @@ export default function AdminDashboardPage() {
         name: 'Kering',
         prob: '60% < P ≤ 80%',
         desc: 'Debit andalan irigasi standar Ditjen SDA (Q80%)',
-        icon: '☀️',
+        icon: '',
         badgeBg: '#fef3c7',
         textColor: '#92400e',
         items: [] as any[]
@@ -929,7 +929,7 @@ export default function AdminDashboardPage() {
         name: 'Sangat Kering',
         prob: 'P > 80%',
         desc: 'Debit andalan air baku / kritis (Q85% - Q95%)',
-        icon: '🔥',
+        icon: '',
         badgeBg: '#fee2e2',
         textColor: '#991b1b',
         items: [] as any[]
@@ -1020,12 +1020,11 @@ export default function AdminDashboardPage() {
       const PVal = bin.P !== undefined ? bin.P : 0;
       const badgeBg = bin.badgeBg || '#f1f5f9';
       const badgeText = bin.badgeText || '#334155';
-      const icon = bin.probIcon || '📊';
       const className = bin.className || 'Normal';
 
       const probLabel = `
         <span style="background-color: ${badgeBg}; color: ${badgeText}; padding: 2px 5px; border-radius: 4px; font-weight: bold; display: inline-block;">
-          ${icon} ${className} (P=${PVal}%)
+          ${className} (P=${PVal}%)
         </span>
       `;
       
@@ -1062,7 +1061,7 @@ export default function AdminDashboardPage() {
       summaryRowsHtml += `
         <tr>
           <td style="padding: 3.5px 6px; border: 1px solid #cbd5e1; font-weight: bold; color: ${cat.textColor}; background-color: ${cat.badgeBg}; font-size: 9px;">
-            ${cat.icon} ${cat.name}
+            ${cat.name}
           </td>
           <td style="padding: 3.5px 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold; font-family: monospace; font-size: 9px;">
             ${cat.prob}
@@ -1119,9 +1118,8 @@ export default function AdminDashboardPage() {
       individualCategoryTablesHtml += `
         <div style="margin-top: 10px; page-break-inside: avoid;">
           <div style="background-color: ${cat.badgeBg}; border: 1px solid #cbd5e1; border-bottom: none; padding: 3.5px 7px; border-radius: 4px 4px 0 0; display: flex; justify-content: space-between; align-items: center;">
-            <div style="font-size: 9.5px; font-weight: bold; color: ${cat.textColor}; display: flex; align-items: center; gap: 4px;">
-              <span>${cat.icon}</span>
-              <span>TABEL PERIODE: ${cat.name.toUpperCase()} (Kriteria: ${cat.prob})</span>
+            <div style="font-size: 9.5px; font-weight: bold; color: ${cat.textColor};">
+              TABEL PERIODE: ${cat.name.toUpperCase()} (Kriteria: ${cat.prob})
             </div>
             <div style="font-size: 8.5px; color: #334155;">
               Jumlah: <strong>${count} Periode</strong> • <em>${cat.desc}</em>
