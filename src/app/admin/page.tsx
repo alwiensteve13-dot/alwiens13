@@ -1127,15 +1127,15 @@ export default function AdminDashboardPage() {
           </div>
           <table style="width: 100%; border-collapse: collapse; margin-top: 0;">
             <thead>
-              <tr style="background-color: #334155; color: #ffffff;">
-                <th style="width: 24px; text-align: center; padding: 3px 4px; border: 1px solid #94a3b8; font-size: 8.5px; color: #ffffff;">No</th>
-                <th style="padding: 3px 4px; border: 1px solid #94a3b8; font-size: 8.5px; color: #ffffff;">Periode</th>
-                <th style="text-align: center; padding: 3px 4px; border: 1px solid #94a3b8; font-size: 8.5px; width: 85px; color: #ffffff;">Probabilitas (P)</th>
-                <th style="text-align: right; padding: 3px 4px; border: 1px solid #94a3b8; font-size: 8.5px; color: #ffffff;">Ketersediaan (m³/s)</th>
-                <th style="text-align: right; padding: 3px 4px; border: 1px solid #94a3b8; font-size: 8.5px; color: #ffffff;">Kebutuhan (m³/s)</th>
-                <th style="text-align: right; padding: 3px 4px; border: 1px solid #94a3b8; font-size: 8.5px; color: #ffffff;">Pemeliharaan (m³/s)</th>
-                <th style="text-align: right; padding: 3px 4px; border: 1px solid #94a3b8; font-size: 8.5px; color: #ffffff;">Neraca Air (m³/s)</th>
-                <th style="text-align: center; padding: 3px 4px; border: 1px solid #94a3b8; font-size: 8.5px; width: 75px; color: #ffffff;">Status Neraca</th>
+              <tr class="table-dark-header" style="background-color: #1e293b; color: #ffffff;">
+                <th style="background-color: #1e293b !important; color: #ffffff !important; width: 24px; text-align: center; padding: 3px 4px; border: 1px solid #475569; font-size: 8.5px; font-weight: bold;">No</th>
+                <th style="background-color: #1e293b !important; color: #ffffff !important; padding: 3px 4px; border: 1px solid #475569; font-size: 8.5px; font-weight: bold;">Periode</th>
+                <th style="background-color: #1e293b !important; color: #ffffff !important; text-align: center; padding: 3px 4px; border: 1px solid #475569; font-size: 8.5px; width: 85px; font-weight: bold;">Probabilitas (P)</th>
+                <th style="background-color: #1e293b !important; color: #ffffff !important; text-align: right; padding: 3px 4px; border: 1px solid #475569; font-size: 8.5px; font-weight: bold;">Ketersediaan (m³/s)</th>
+                <th style="background-color: #1e293b !important; color: #ffffff !important; text-align: right; padding: 3px 4px; border: 1px solid #475569; font-size: 8.5px; font-weight: bold;">Kebutuhan (m³/s)</th>
+                <th style="background-color: #1e293b !important; color: #ffffff !important; text-align: right; padding: 3px 4px; border: 1px solid #475569; font-size: 8.5px; font-weight: bold;">Pemeliharaan (m³/s)</th>
+                <th style="background-color: #1e293b !important; color: #ffffff !important; text-align: right; padding: 3px 4px; border: 1px solid #475569; font-size: 8.5px; font-weight: bold;">Neraca Air (m³/s)</th>
+                <th style="background-color: #1e293b !important; color: #ffffff !important; text-align: center; padding: 3px 4px; border: 1px solid #475569; font-size: 8.5px; width: 75px; font-weight: bold;">Status Neraca</th>
               </tr>
             </thead>
             <tbody>
@@ -1174,7 +1174,12 @@ export default function AdminDashboardPage() {
           h2 { text-align: center; font-size: 13px; font-weight: bold; margin: 0 0 2px 0; text-transform: uppercase; color: #0f172a; }
           .subtitle { text-align: center; font-size: 9.5px; color: #475569; margin-bottom: 6px; }
           table { width: 100%; border-collapse: collapse; margin-top: 2px; }
-          th { background-color: #f1f5f9; padding: 3px 5px; border: 1px solid #cbd5e1; font-size: 8.5px; text-transform: uppercase; color: #334155; }
+          th { background-color: #f1f5f9; padding: 3.5px 5px; border: 1px solid #cbd5e1; font-size: 8.5px; text-transform: uppercase; color: #1e293b; font-weight: bold; }
+          .table-dark-header th {
+            background-color: #1e293b !important;
+            color: #ffffff !important;
+            border: 1px solid #475569 !important;
+          }
           td { font-size: 8.5px; }
           tfoot tr td { font-weight: bold; background-color: #f8fafc; }
           .section-title { font-size: 10px; font-weight: bold; text-transform: uppercase; color: #0f172a; margin-top: 10px; margin-bottom: 3px; border-left: 3px solid #0284c7; padding-left: 5px; }
@@ -1227,14 +1232,14 @@ export default function AdminDashboardPage() {
           <div class="section-title">2. Tabel Ringkasan Klasifikasi Periode Probabilitas Terlampaui (P) - Standar Ditjen SDA</div>
           <table>
             <thead>
-              <tr style="background-color: #1e293b; color: #ffffff;">
-                <th style="padding: 3.5px 5px; border: 1px solid #64748b; text-align: left; width: 13%; color:#ffffff;">Klasifikasi Periode</th>
-                <th style="padding: 3.5px 5px; border: 1px solid #64748b; text-align: center; width: 14%; color:#ffffff;">Probabilitas Terlampaui (P)</th>
-                <th style="padding: 3.5px 5px; border: 1px solid #64748b; text-align: right; width: 14%; color:#ffffff;">Rentang Debit</th>
-                <th style="padding: 3.5px 5px; border: 1px solid #64748b; text-align: right; width: 12%; color:#ffffff;">Rerata Debit</th>
-                <th style="padding: 3.5px 5px; border: 1px solid #64748b; text-align: center; width: 10%; color:#ffffff;">Jumlah Periode</th>
-                <th style="padding: 3.5px 5px; border: 1px solid #64748b; text-align: left; width: 18%; color:#ffffff;">Daftar Periode</th>
-                <th style="padding: 3.5px 5px; border: 1px solid #64748b; text-align: left; width: 19%; color:#ffffff;">Penjelasan Teknis</th>
+              <tr class="table-dark-header" style="background-color: #1e293b; color: #ffffff;">
+                <th style="background-color: #1e293b !important; color: #ffffff !important; padding: 4px 5px; border: 1px solid #475569; text-align: left; width: 13%; font-weight: bold;">Klasifikasi Periode</th>
+                <th style="background-color: #1e293b !important; color: #ffffff !important; padding: 4px 5px; border: 1px solid #475569; text-align: center; width: 14%; font-weight: bold;">Probabilitas Terlampaui (P)</th>
+                <th style="background-color: #1e293b !important; color: #ffffff !important; padding: 4px 5px; border: 1px solid #475569; text-align: right; width: 14%; font-weight: bold;">Rentang Debit</th>
+                <th style="background-color: #1e293b !important; color: #ffffff !important; padding: 4px 5px; border: 1px solid #475569; text-align: right; width: 12%; font-weight: bold;">Rerata Debit</th>
+                <th style="background-color: #1e293b !important; color: #ffffff !important; padding: 4px 5px; border: 1px solid #475569; text-align: center; width: 10%; font-weight: bold;">Jumlah Periode</th>
+                <th style="background-color: #1e293b !important; color: #ffffff !important; padding: 4px 5px; border: 1px solid #475569; text-align: left; width: 18%; font-weight: bold;">Daftar Periode</th>
+                <th style="background-color: #1e293b !important; color: #ffffff !important; padding: 4px 5px; border: 1px solid #475569; text-align: left; width: 19%; font-weight: bold;">Penjelasan Teknis</th>
               </tr>
             </thead>
             <tbody>
