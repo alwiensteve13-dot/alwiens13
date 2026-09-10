@@ -81,7 +81,25 @@ export default function AdminDashboardPage() {
 
       const regionsData: Region[] = regionsRes.data || [];
       const waterData: WaterData[] = waterDataRes.data || [];
-      setAllWaterData(waterData);
+
+      // Merge custom water data created locally so it persists on Vercel
+      let customWaterData: WaterData[] = [];
+      try {
+        if (typeof window !== "undefined") {
+          const storedWd = localStorage.getItem("custom_water_data");
+          if (storedWd) customWaterData = JSON.parse(storedWd);
+        }
+      } catch (e) {}
+
+      const wdMap = new Map<string, WaterData>();
+      [...waterData, ...customWaterData].forEach(d => {
+        if (d && d.regionId && d.period) {
+          const key = `${d.regionId}_${new Date(d.period).toISOString()}`;
+          wdMap.set(key, d);
+        }
+      });
+      const mergedWaterData = Array.from(wdMap.values());
+      setAllWaterData(mergedWaterData);
 
       // Merge custom regions created locally so they persist on Vercel
       let customRegions: Region[] = [];
@@ -101,7 +119,7 @@ export default function AdminDashboardPage() {
       const mergedList = Array.from(allMap.values());
 
       const combined = mergedList.map(region => {
-        const latest = waterData.find(d => d.regionId === region.id);
+        const latest = mergedWaterData.find(d => d.regionId === region.id);
         return { ...region, latestData: latest };
       });
       
@@ -324,12 +342,19 @@ export default function AdminDashboardPage() {
     e.preventDefault();
     if (!selectedRegion) return;
 
-    const debit = parseFloat(formData.debit_air) || 0;
-    const kebutuhan = parseFloat(formData.kebutuhan_air) || 0;
-    const pemeliharaan = parseFloat(formData.pemeliharaan_sungai) || 0;
-    const neraca = formData.neraca_air !== "" 
-      ? parseFloat(formData.neraca_air) 
-      : (debit - (kebutuhan + pemeliharaan));
+    const cleanDebitStr = String(formData.debit_air).trim().replace(/,/g, ".");
+    const cleanKebStr = String(formData.kebutuhan_air).trim().replace(/,/g, ".");
+    const cleanPemStr = String(formData.pemeliharaan_sungai).trim().replace(/,/g, ".");
+    const cleanNAStr = String(formData.neraca_air).trim().replace(/,/g, ".");
+
+    const debit = parseFloat(cleanDebitStr) || 0;
+    const kebutuhan = parseFloat(cleanKebStr) || 0;
+    const pemeliharaan = cleanPemStr !== ""
+      ? parseFloat(cleanPemStr)
+      : Number((0.095 * debit).toFixed(2));
+    const neraca = cleanNAStr !== "" 
+      ? parseFloat(cleanNAStr) 
+      : Number((debit - (kebutuhan + pemeliharaan)).toFixed(2));
 
     const status = debit >= (kebutuhan + pemeliharaan) ? "Surplus" : "Defisit";
 
@@ -352,16 +377,28 @@ export default function AdminDashboardPage() {
         }),
       });
 
-      if (res.ok) {
+      const resData = await res.json().catch(() => ({}));
+
+      if (res.ok && resData.success) {
+        // Save to localStorage for Vercel persistence
+        try {
+          if (typeof window !== "undefined" && resData.data) {
+            const storedWd = localStorage.getItem("custom_water_data");
+            const existing = storedWd ? JSON.parse(storedWd) : [];
+            const filtered = existing.filter((d: any) => !(d.regionId === selectedRegion.id && d.period === periodDate));
+            localStorage.setItem("custom_water_data", JSON.stringify([...filtered, resData.data]));
+          }
+        } catch (e) {}
+
         setIsModalOpen(false);
         fetchData(); // Refresh data
         alert("Data berhasil disimpan!");
       } else {
-        const errorData = await res.json();
-        alert("Gagal menyimpan data: " + errorData.error);
+        alert("Gagal menyimpan data: " + (resData.error || "Terjadi kesalahan pada server."));
       }
-    } catch (error) {
-      alert("Terjadi kesalahan sistem saat menyimpan data.");
+    } catch (error: any) {
+      console.error(error);
+      alert("Terjadi kesalahan sistem saat menyimpan data: " + (error?.message || "Koneksi terputus"));
     }
   };
 
@@ -433,30 +470,58 @@ export default function AdminDashboardPage() {
 
   const handleBulkSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!chartSelectedRegion) return;
+    if (!chartSelectedRegion) {
+      alert("Silakan pilih wilayah DAS terlebih dahulu.");
+      return;
+    }
     
     setIsSavingBulk(true);
     try {
+      // Clean entries: replace comma with dot
+      const cleanEntries = bulkFormData.map(entry => ({
+        debit: String(entry.debit || "").trim().replace(/,/g, "."),
+        need: String(entry.need || "").trim().replace(/,/g, "."),
+        pemeliharaan: String(entry.pemeliharaan || "").trim().replace(/,/g, "."),
+        na: String(entry.na || "").trim().replace(/,/g, "."),
+      }));
+
       const res = await fetch("/api/water-data/bulk", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           regionId: chartSelectedRegion,
           year: chartYear,
-          entries: bulkFormData
+          entries: cleanEntries
         }),
       });
 
-      if (res.ok) {
+      const resData = await res.json().catch(() => ({}));
+
+      if (res.ok && resData.success) {
+        // Persist to localStorage for permanent Vercel persistence
+        try {
+          if (typeof window !== "undefined" && Array.isArray(resData.data?.records)) {
+            const stored = localStorage.getItem("custom_water_data");
+            let existing = stored ? JSON.parse(stored) : [];
+            // Remove existing records for this region and year
+            existing = existing.filter((d: any) => {
+              const isSameRegion = d.regionId === chartSelectedRegion;
+              const isSameYear = new Date(d.period).getUTCFullYear().toString() === chartYear || new Date(d.period).getFullYear().toString() === chartYear;
+              return !(isSameRegion && isSameYear);
+            });
+            localStorage.setItem("custom_water_data", JSON.stringify([...existing, ...resData.data.records]));
+          }
+        } catch (e) {}
+
         setIsBulkEditModalOpen(false);
         fetchData();
-        alert("Data tahunan berhasil disimpan!");
+        alert("Data tahunan (24 periode) berhasil disimpan!");
       } else {
-        const errorData = await res.json();
-        alert("Gagal menyimpan data tahunan: " + errorData.error);
+        alert("Gagal menyimpan data tahunan: " + (resData.error || "Terjadi kesalahan pada server."));
       }
-    } catch (error) {
-      alert("Terjadi kesalahan sistem saat menyimpan data tahunan.");
+    } catch (error: any) {
+      console.error("Error bulk submit:", error);
+      alert("Terjadi kesalahan sistem saat menyimpan data tahunan: " + (error?.message || "Koneksi terputus"));
     } finally {
       setIsSavingBulk(false);
     }
@@ -543,7 +608,7 @@ export default function AdminDashboardPage() {
     const updated = [...bulkFormData];
     const current = { ...updated[index], [field]: value };
     if (field === "debit") {
-      const num = parseFloat(value);
+      const num = parseFloat(String(value).trim().replace(/,/g, "."));
       if (!isNaN(num)) {
         current.pemeliharaan = (num * 0.095).toFixed(2);
       }
@@ -1586,8 +1651,8 @@ export default function AdminDashboardPage() {
                         <div>
                           <label className="block text-xs font-medium text-slate-400 mb-1">Ketersediaan (m³/s)</label>
                           <input
-                            type="number"
-                            step="0.01"
+                            type="text"
+                            inputMode="decimal"
                             value={bulkFormData[index].debit}
                             onChange={(e) => handleBulkChange(index, "debit", e.target.value)}
                             placeholder="0"
@@ -1597,8 +1662,8 @@ export default function AdminDashboardPage() {
                         <div>
                           <label className="block text-xs font-medium text-slate-400 mb-1">Kebutuhan (m³/s)</label>
                           <input
-                            type="number"
-                            step="0.01"
+                            type="text"
+                            inputMode="decimal"
                             value={bulkFormData[index].need}
                             onChange={(e) => handleBulkChange(index, "need", e.target.value)}
                             placeholder="0"
@@ -1608,8 +1673,8 @@ export default function AdminDashboardPage() {
                         <div>
                           <label className="block text-xs font-medium text-slate-400 mb-1">Pemeliharaan (m³/s)</label>
                           <input
-                            type="number"
-                            step="0.01"
+                            type="text"
+                            inputMode="decimal"
                             value={bulkFormData[index].pemeliharaan}
                             onChange={(e) => handleBulkChange(index, "pemeliharaan", e.target.value)}
                             placeholder="0"
@@ -1619,8 +1684,8 @@ export default function AdminDashboardPage() {
                         <div>
                           <label className="block text-xs font-medium text-emerald-400 mb-1">Neraca Air / NA (m³/s)</label>
                           <input
-                            type="number"
-                            step="0.01"
+                            type="text"
+                            inputMode="decimal"
                             value={bulkFormData[index].na}
                             onChange={(e) => handleBulkChange(index, "na", e.target.value)}
                             placeholder="Otomatis"

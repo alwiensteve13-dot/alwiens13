@@ -133,9 +133,27 @@ export default function Home() {
       .then(res => res.json())
       .then(data => {
          const wd: Record<string, any> = {};
-         const fetchedWater = (data && Array.isArray(data.data) && data.data.length > 0)
+         let fetchedWater = (data && Array.isArray(data.data) && data.data.length > 0)
            ? data.data
            : initialWaterData;
+
+         // Merge custom water data from localStorage so it persists on Vercel
+         try {
+           if (typeof window !== "undefined") {
+             const storedWd = localStorage.getItem("custom_water_data");
+             if (storedWd) {
+               const custom = JSON.parse(storedWd);
+               const map = new Map<string, any>();
+               [...fetchedWater, ...custom].forEach((w: any) => {
+                 if (w && w.regionId && w.period) {
+                   const key = `${w.regionId}_${new Date(w.period).toISOString()}`;
+                   map.set(key, w);
+                 }
+               });
+               fetchedWater = Array.from(map.values());
+             }
+           }
+         } catch (e) {}
 
          setAllWaterData(fetchedWater);
          fetchedWater.forEach((w: any) => {
@@ -147,7 +165,24 @@ export default function Home() {
       })
       .catch(err => {
          console.warn("Failed to fetch /api/water-data, falling back to initialWaterData:", err);
-         setAllWaterData(initialWaterData);
+         let fallbackWater = initialWaterData;
+         try {
+           if (typeof window !== "undefined") {
+             const storedWd = localStorage.getItem("custom_water_data");
+             if (storedWd) {
+               const custom = JSON.parse(storedWd);
+               const map = new Map<string, any>();
+               [...fallbackWater, ...custom].forEach((w: any) => {
+                 if (w && w.regionId && w.period) {
+                   const key = `${w.regionId}_${new Date(w.period).toISOString()}`;
+                   map.set(key, w);
+                 }
+               });
+               fallbackWater = Array.from(map.values());
+             }
+           }
+         } catch (e) {}
+         setAllWaterData(fallbackWater);
       });
 
     // Fetch water users
