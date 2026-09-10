@@ -30,6 +30,8 @@ interface WaterData {
 
 interface RegionWithData extends Region {
   latestData?: WaterData;
+  totalUserNeed?: number;
+  userCount?: number;
 }
 
 /* ------------------------------------------------------------------ */
@@ -69,18 +71,39 @@ export default function AdminDashboardPage() {
   // Water Users state
   const [isWaterUsersModalOpen, setIsWaterUsersModalOpen] = useState(false);
   const [waterUsers, setWaterUsers] = useState<any[]>([]);
+  const [allWaterUsers, setAllWaterUsers] = useState<any[]>([]);
   const [newWaterUser, setNewWaterUser] = useState({ name: "", latitude: "", longitude: "", kebutuhan: "" });
   const [isAddingWaterUser, setIsAddingWaterUser] = useState(false);
 
   const fetchData = async () => {
     try {
-      const [regionsRes, waterDataRes] = await Promise.all([
+      const [regionsRes, waterDataRes, waterUsersRes] = await Promise.all([
         fetch("/api/regions").then(r => r.json()),
-        fetch("/api/water-data").then(r => r.json())
+        fetch("/api/water-data").then(r => r.json()),
+        fetch("/api/water-users").then(r => r.json()).catch(() => ({ data: [] }))
       ]);
 
       const regionsData: Region[] = regionsRes.data || [];
       const waterData: WaterData[] = waterDataRes.data || [];
+      const waterUsersData: any[] = (waterUsersRes && Array.isArray(waterUsersRes.data)) ? waterUsersRes.data : [];
+
+      // Merge custom water users created locally so they persist on Vercel
+      let customWaterUsers: any[] = [];
+      try {
+        if (typeof window !== "undefined") {
+          const storedWu = localStorage.getItem("custom_water_users");
+          if (storedWu) customWaterUsers = JSON.parse(storedWu);
+        }
+      } catch (e) {}
+
+      const wuMap = new Map<string, any>();
+      [...customWaterUsers, ...waterUsersData].forEach((u: any) => {
+        if (u && u.id && !wuMap.has(u.id)) {
+          wuMap.set(u.id, u);
+        }
+      });
+      const mergedWaterUsers = Array.from(wuMap.values());
+      setAllWaterUsers(mergedWaterUsers);
 
       // Merge custom water data created locally so it persists on Vercel
       let customWaterData: WaterData[] = [];
@@ -95,7 +118,10 @@ export default function AdminDashboardPage() {
       [...waterData, ...customWaterData].forEach(d => {
         if (d && d.regionId && d.period) {
           const key = `${d.regionId}_${new Date(d.period).toISOString()}`;
-          wdMap.set(key, d);
+          const existing = wdMap.get(key);
+          if (!existing || ((d.kebutuhan_air || 0) > 0 && (existing.kebutuhan_air || 0) === 0)) {
+            wdMap.set(key, d);
+          }
         }
       });
       const mergedWaterData = Array.from(wdMap.values());
@@ -119,8 +145,24 @@ export default function AdminDashboardPage() {
       const mergedList = Array.from(allMap.values());
 
       const combined = mergedList.map(region => {
+        const dasUsers = mergedWaterUsers.filter((u: any) => u.regionId === region.id);
+        const totalUserNeed = dasUsers.reduce((sum: number, u: any) => sum + (parseFloat(u.kebutuhan) || 0), 0);
         const latest = mergedWaterData.find(d => d.regionId === region.id);
-        return { ...region, latestData: latest };
+        const adjustedLatest = latest ? {
+          ...latest,
+          kebutuhan_air: (latest.kebutuhan_air || 0) > 0 ? latest.kebutuhan_air : totalUserNeed
+        } : (totalUserNeed > 0 ? {
+          id: `virtual-${region.id}`,
+          regionId: region.id,
+          period: new Date().toISOString(),
+          debit_air: 0,
+          kebutuhan_air: totalUserNeed,
+          neraca_air: -totalUserNeed,
+          status: "Defisit",
+          pemeliharaan_sungai: 0
+        } : undefined);
+
+        return { ...region, latestData: adjustedLatest, userCount: dasUsers.length, totalUserNeed };
       });
       
       setRegions(combined);
@@ -140,11 +182,14 @@ export default function AdminDashboardPage() {
 
   const openInputModal = (region: Region) => {
     setSelectedRegion(region);
+    const dasUsers = allWaterUsers.filter((u: any) => u.regionId === region.id);
+    const totalUserNeed = dasUsers.reduce((sum: number, u: any) => sum + (parseFloat(u.kebutuhan) || 0), 0);
+
     setFormData({
       periodMonth: new Date().toISOString().substring(0, 7),
       periodCycle: "1",
       debit_air: "",
-      kebutuhan_air: "",
+      kebutuhan_air: totalUserNeed > 0 ? totalUserNeed.toString() : "",
       pemeliharaan_sungai: "",
       neraca_air: "",
     });
@@ -248,6 +293,10 @@ export default function AdminDashboardPage() {
           const filtered = prev.filter(u => u.id !== addedUser.id);
           return [addedUser, ...filtered];
         });
+        setAllWaterUsers(prev => {
+          const filtered = prev.filter(u => u.id !== addedUser.id);
+          return [addedUser, ...filtered];
+        });
         alert(`Pengguna air "${addedUser.name}" berhasil ditambahkan!`);
       } else {
         alert("Gagal menambahkan pengguna air: " + (resData.error || "Terjadi kesalahan pada server."));
@@ -277,6 +326,7 @@ export default function AdminDashboardPage() {
 
     // Update state immediately
     setWaterUsers(prev => prev.filter(w => w.id !== id));
+    setAllWaterUsers(prev => prev.filter(w => w.id !== id));
 
     try {
       const res = await fetch(`/api/water-users/${id}`, { method: "DELETE" });
@@ -527,6 +577,16 @@ export default function AdminDashboardPage() {
     }
   };
 
+  // Helper to format m3/s numbers so small values (e.g. 0.007 m3/s) don't get rounded to 0.00
+  const formatM3s = (val: number): string => {
+    if (val === 0 || isNaN(val)) return "0.00";
+    const absVal = Math.abs(val);
+    if (absVal > 0 && absVal < 0.01) {
+      return Number(val.toFixed(4)).toString();
+    }
+    return val.toFixed(2);
+  };
+
   // Generate Chart Data (24 bins)
   const chartData = useMemo(() => {
     if (!chartSelectedRegion || !chartYear) return [];
@@ -534,10 +594,14 @@ export default function AdminDashboardPage() {
     const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"];
     const bins: any[] = [];
     
-    // Initialize 24 bins
+    // Registered water users for this region
+    const dasWaterUsers = allWaterUsers.filter(u => u.regionId === chartSelectedRegion);
+    const totalUserNeed = dasWaterUsers.reduce((sum, u) => sum + (parseFloat(u.kebutuhan) || 0), 0);
+
+    // Initialize 24 bins with default need from water users if any
     for (let m = 0; m < 12; m++) {
-      bins.push({ name: `${months[m]} 1`, monthIdx: m, cycle: 1, debit: 0, need: 0, pemeliharaan: 0, na: 0, hasData: false });
-      bins.push({ name: `${months[m]} 2`, monthIdx: m, cycle: 2, debit: 0, need: 0, pemeliharaan: 0, na: 0, hasData: false });
+      bins.push({ name: `${months[m]} 1`, monthIdx: m, cycle: 1, debit: 0, need: totalUserNeed, pemeliharaan: 0, na: -totalUserNeed, hasData: false, _counted: false });
+      bins.push({ name: `${months[m]} 2`, monthIdx: m, cycle: 2, debit: 0, need: totalUserNeed, pemeliharaan: 0, na: -totalUserNeed, hasData: false, _counted: false });
     }
     
     // Filter data for the region and year
@@ -558,9 +622,12 @@ export default function AdminDashboardPage() {
       
       const binIdx = (monthIdx * 2) + (cycle - 1);
       if (bins[binIdx]) {
-        if (!bins[binIdx].hasData) {
-          const debitVal = d.debit_air || 0;
-          const needVal = d.kebutuhan_air || 0;
+        const debitVal = d.debit_air || 0;
+        let needVal = (d.kebutuhan_air !== undefined && d.kebutuhan_air !== null && d.kebutuhan_air > 0)
+          ? d.kebutuhan_air
+          : (bins[binIdx].need > 0 ? bins[binIdx].need : totalUserNeed);
+
+        if (!bins[binIdx].hasData || needVal > bins[binIdx].need || debitVal > bins[binIdx].debit) {
           const pemeliharaanVal = (d.pemeliharaan_sungai !== undefined && d.pemeliharaan_sungai !== null)
             ? d.pemeliharaan_sungai
             : Number((0.095 * debitVal).toFixed(2));
@@ -573,8 +640,11 @@ export default function AdminDashboardPage() {
           bins[binIdx].na = Number(naVal.toFixed(2));
           bins[binIdx].hasData = true;
 
-          sumDebit += debitVal;
-          countData += 1;
+          if (!bins[binIdx]._counted) {
+            sumDebit += debitVal;
+            countData += 1;
+            bins[binIdx]._counted = true;
+          }
         }
       }
     });
@@ -590,13 +660,13 @@ export default function AdminDashboardPage() {
     });
     
     return bins;
-  }, [chartSelectedRegion, chartYear, allWaterData]);
+  }, [chartSelectedRegion, chartYear, allWaterData, allWaterUsers]);
 
   const openBulkEditModal = () => {
     // Populate form with existing chartData
     const newForm = chartData.map(bin => ({
       debit: bin.hasData ? bin.debit.toString() : "",
-      need: bin.hasData ? bin.need.toString() : "",
+      need: (bin.hasData && bin.need > 0) ? bin.need.toString() : (bin.need > 0 ? bin.need.toString() : ""),
       pemeliharaan: bin.hasData ? bin.pemeliharaan.toString() : "",
       na: bin.hasData ? bin.na.toString() : ""
     }));
@@ -795,26 +865,71 @@ export default function AdminDashboardPage() {
     `;
   };
 
-  const handlePrintYearlyData = () => {
-    const selectedRegionObj = regions.find(r => r.id === chartSelectedRegion);
+  const handlePrintYearlyData = (targetRegionId?: string | unknown) => {
+    const activeRegionId = (typeof targetRegionId === "string" && targetRegionId) ? targetRegionId : chartSelectedRegion;
+    const selectedRegionObj = regions.find(r => r.id === activeRegionId);
     const regionName = selectedRegionObj?.name || "DAS";
     const regionDesc = selectedRegionObj?.description || "Maluku";
+
+    // Water users for this active region
+    const dasWaterUsers = allWaterUsers.filter((u: any) => u.regionId === activeRegionId);
+    const totalUserNeed = dasWaterUsers.reduce((sum: number, u: any) => sum + (parseFloat(u.kebutuhan) || 0), 0);
+
+    // Determine bins to use
+    let sourceBins = chartData;
+    if (activeRegionId !== chartSelectedRegion) {
+      const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"];
+      const customBins: any[] = [];
+      for (let m = 0; m < 12; m++) {
+        customBins.push({ name: `${months[m]} 1`, monthIdx: m, cycle: 1, debit: 0, need: totalUserNeed, pemeliharaan: 0, na: -totalUserNeed, hasData: false, _counted: false });
+        customBins.push({ name: `${months[m]} 2`, monthIdx: m, cycle: 2, debit: 0, need: totalUserNeed, pemeliharaan: 0, na: -totalUserNeed, hasData: false, _counted: false });
+      }
+      const regData = allWaterData.filter(d => d.regionId === activeRegionId && new Date(d.period).getUTCFullYear().toString() === chartYear);
+      regData.forEach(d => {
+        const date = new Date(d.period);
+        const monthIdx = date.getUTCMonth();
+        const cycle = date.getUTCDate() < 15 ? 1 : 2;
+        const binIdx = (monthIdx * 2) + (cycle - 1);
+        if (customBins[binIdx]) {
+          const debitVal = d.debit_air || 0;
+          let needVal = (d.kebutuhan_air !== undefined && d.kebutuhan_air !== null && d.kebutuhan_air > 0)
+            ? d.kebutuhan_air
+            : (customBins[binIdx].need > 0 ? customBins[binIdx].need : totalUserNeed);
+
+          if (!customBins[binIdx].hasData || needVal > customBins[binIdx].need || debitVal > customBins[binIdx].debit) {
+            const pemeliharaanVal = (d.pemeliharaan_sungai !== undefined && d.pemeliharaan_sungai !== null)
+              ? d.pemeliharaan_sungai
+              : Number((0.095 * debitVal).toFixed(2));
+            const naVal = debitVal - (needVal + pemeliharaanVal);
+
+            customBins[binIdx].debit = debitVal;
+            customBins[binIdx].need = needVal;
+            customBins[binIdx].pemeliharaan = pemeliharaanVal;
+            customBins[binIdx].na = Number(naVal.toFixed(2));
+            customBins[binIdx].hasData = true;
+          }
+        }
+      });
+      sourceBins = customBins;
+    }
     
     let totalDebit = 0, totalNeed = 0, totalPemeliharaan = 0, totalNA = 0;
-    const wetPeriodsList: string[] = [];
-    const dryPeriodsList: string[] = [];
 
-    const effectiveBins = chartData.map((bin, idx) => {
-      const debitNum = (bulkFormData[idx]?.debit !== undefined && bulkFormData[idx]?.debit !== "")
+    const effectiveBins = sourceBins.map((bin, idx) => {
+      const hasBulk = activeRegionId === chartSelectedRegion;
+      const debitNum = (hasBulk && bulkFormData[idx]?.debit !== undefined && bulkFormData[idx]?.debit !== "")
         ? parseFloat(bulkFormData[idx].debit)
         : (bin.debit || 0);
-      const needNum = (bulkFormData[idx]?.need !== undefined && bulkFormData[idx]?.need !== "")
+      let needNum = (hasBulk && bulkFormData[idx]?.need !== undefined && bulkFormData[idx]?.need !== "")
         ? parseFloat(bulkFormData[idx].need)
         : (bin.need || 0);
-      const pemeliharaanNum = (bulkFormData[idx]?.pemeliharaan !== undefined && bulkFormData[idx]?.pemeliharaan !== "")
+      if (needNum === 0 && totalUserNeed > 0) {
+        needNum = totalUserNeed;
+      }
+      const pemeliharaanNum = (hasBulk && bulkFormData[idx]?.pemeliharaan !== undefined && bulkFormData[idx]?.pemeliharaan !== "")
         ? parseFloat(bulkFormData[idx].pemeliharaan)
         : (bin.pemeliharaan || 0);
-      const naNum = (bulkFormData[idx]?.na !== undefined && bulkFormData[idx]?.na !== "")
+      const naNum = (hasBulk && bulkFormData[idx]?.na !== undefined && bulkFormData[idx]?.na !== "")
         ? parseFloat(bulkFormData[idx].na)
         : (bin.na !== undefined ? bin.na : (debitNum - (needNum + pemeliharaanNum)));
 
@@ -841,34 +956,60 @@ export default function AdminDashboardPage() {
     let rowsHtml = '';
     effectiveBins.forEach((bin, idx) => {
       const status = bin.debit >= (bin.need + bin.pemeliharaan) ? "Surplus" : "Defisit";
-      const isWet = avgDebit > 0 && bin.debit >= avgDebit;
-
-      if (avgDebit > 0) {
-        if (isWet) wetPeriodsList.push(bin.name);
-        else dryPeriodsList.push(bin.name);
-      }
-      
       const statusBg = status === "Surplus" ? "#d1fae5" : "#fee2e2";
       const statusColor = status === "Surplus" ? "#065f46" : "#991b1b";
-      const seasonLabel = isWet 
-        ? '<span style="color: #0369a1; font-weight: bold; background-color: #e0f2fe; padding: 2px 6px; border-radius: 4px; font-size: 8.5px;">Basah</span>' 
-        : '<span style="color: #b45309; font-weight: bold; background-color: #fef3c7; padding: 2px 6px; border-radius: 4px; font-size: 8.5px;">Kering</span>';
       
       rowsHtml += `
         <tr>
           <td style="text-align: center; padding: 3.5px 5px; border: 1px solid #cbd5e1;">${idx + 1}</td>
           <td style="padding: 3.5px 5px; border: 1px solid #cbd5e1; font-weight: bold;">${bin.name}</td>
-          <td style="text-align: right; padding: 3.5px 5px; border: 1px solid #cbd5e1;">${bin.debit.toFixed(2)}</td>
-          <td style="text-align: right; padding: 3.5px 5px; border: 1px solid #cbd5e1;">${bin.need.toFixed(2)}</td>
-          <td style="text-align: right; padding: 3.5px 5px; border: 1px solid #cbd5e1;">${bin.pemeliharaan.toFixed(2)}</td>
-          <td style="text-align: right; padding: 3.5px 5px; border: 1px solid #cbd5e1; font-weight: bold; color: ${bin.na >= 0 ? '#047857' : '#dc2626'};">${bin.na.toFixed(2)}</td>
+          <td style="text-align: right; padding: 3.5px 5px; border: 1px solid #cbd5e1;">${formatM3s(bin.debit)}</td>
+          <td style="text-align: right; padding: 3.5px 5px; border: 1px solid #cbd5e1;">${formatM3s(bin.need)}</td>
+          <td style="text-align: right; padding: 3.5px 5px; border: 1px solid #cbd5e1;">${formatM3s(bin.pemeliharaan)}</td>
+          <td style="text-align: right; padding: 3.5px 5px; border: 1px solid #cbd5e1; font-weight: bold; color: ${bin.na >= 0 ? '#047857' : '#dc2626'};">${formatM3s(bin.na)}</td>
           <td style="text-align: center; padding: 3.5px 5px; border: 1px solid #cbd5e1; background-color: ${statusBg}; color: ${statusColor}; font-weight: bold;">${status}</td>
-          <td style="text-align: center; padding: 3.5px 5px; border: 1px solid #cbd5e1;">${seasonLabel}</td>
         </tr>
       `;
     });
 
     const chartSvgHtml = buildAdminPrintSvgChart(effectiveBins, avgDebit);
+
+    let waterUsersHtml = '';
+    if (dasWaterUsers.length > 0) {
+      waterUsersHtml = `
+        <div style="margin-top: 8px; page-break-inside: avoid;">
+          <div style="font-weight: bold; font-size: 9.5px; color: #0f172a; margin-bottom: 3px; text-transform: uppercase;">
+            Daftar Titik Pengguna Air Terdaftar (${dasWaterUsers.length} Titik | Total Kebutuhan: ${formatM3s(totalUserNeed)} m³/s)
+          </div>
+          <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr>
+                <th style="width: 25px; text-align: center;">No</th>
+                <th style="text-align: left;">Nama Pengguna Air</th>
+                <th style="text-align: center;">Koordinat (Lat, Long)</th>
+                <th style="text-align: right; width: 120px;">Kebutuhan (m³/s)</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${dasWaterUsers.map((u: any, idx: number) => `
+                <tr>
+                  <td style="text-align: center; padding: 3px 5px; border: 1px solid #cbd5e1;">${idx + 1}</td>
+                  <td style="padding: 3px 5px; border: 1px solid #cbd5e1; font-weight: 600;">${u.name}</td>
+                  <td style="text-align: center; padding: 3px 5px; border: 1px solid #cbd5e1; color: #475569;">${u.latitude}, ${u.longitude}</td>
+                  <td style="text-align: right; padding: 3px 5px; border: 1px solid #cbd5e1; font-weight: bold; color: #0284c7;">${formatM3s(parseFloat(u.kebutuhan) || 0)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="3" style="text-align: center; padding: 3px 5px; border: 1px solid #cbd5e1; font-weight: bold;">TOTAL KEBUTUHAN PENGGUNA AIR</td>
+                <td style="text-align: right; padding: 3px 5px; border: 1px solid #cbd5e1; font-weight: bold; color: #0284c7;">${formatM3s(totalUserNeed)}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      `;
+    }
 
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
@@ -891,7 +1032,6 @@ export default function AdminDashboardPage() {
           th { background-color: #1e293b !important; color: #ffffff !important; padding: 3.5px 5px; border: 1px solid #0f172a; font-size: 8.5px; text-transform: uppercase; }
           td { font-size: 8.5px; border: 1px solid #cbd5e1; }
           tfoot tr td { font-weight: bold; background-color: #f8fafc; border: 1px solid #cbd5e1; }
-          .season-box { margin-top: 6px; padding: 6px 10px; background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 8.5px; line-height: 1.45; }
           @media print {
             @page { size: A4 portrait; margin: 7mm; }
           }
@@ -913,7 +1053,6 @@ export default function AdminDashboardPage() {
               <th style="text-align: right;">Pemeliharaan (m³/s)</th>
               <th style="text-align: right;">Neraca Air (m³/s)</th>
               <th style="text-align: center;">Status Neraca</th>
-              <th style="text-align: center;">Klasifikasi Musim</th>
             </tr>
           </thead>
           <tbody>
@@ -922,21 +1061,16 @@ export default function AdminDashboardPage() {
           <tfoot>
             <tr>
               <td colspan="2" style="text-align: center; padding: 4px 6px; border: 1px solid #cbd5e1;">RATA-RATA TAHUNAN</td>
-              <td style="text-align: right; padding: 4px 6px; border: 1px solid #cbd5e1;">${avgDebit.toFixed(2)}</td>
-              <td style="text-align: right; padding: 4px 6px; border: 1px solid #cbd5e1;">${avgNeed.toFixed(2)}</td>
-              <td style="text-align: right; padding: 4px 6px; border: 1px solid #cbd5e1;">${avgPemeliharaan.toFixed(2)}</td>
-              <td style="text-align: right; padding: 4px 6px; border: 1px solid #cbd5e1; color: ${avgNA >= 0 ? '#047857' : '#dc2626'};">${avgNA.toFixed(2)}</td>
+              <td style="text-align: right; padding: 4px 6px; border: 1px solid #cbd5e1;">${formatM3s(avgDebit)}</td>
+              <td style="text-align: right; padding: 4px 6px; border: 1px solid #cbd5e1;">${formatM3s(avgNeed)}</td>
+              <td style="text-align: right; padding: 4px 6px; border: 1px solid #cbd5e1;">${formatM3s(avgPemeliharaan)}</td>
+              <td style="text-align: right; padding: 4px 6px; border: 1px solid #cbd5e1; color: ${avgNA >= 0 ? '#047857' : '#dc2626'};">${formatM3s(avgNA)}</td>
               <td style="text-align: center; padding: 4px 6px; border: 1px solid #cbd5e1;">${overallStatus}</td>
-              <td style="text-align: center; padding: 4px 6px; border: 1px solid #cbd5e1; font-size: 8.5px; color: #64748b;">(Batas: ${avgDebit.toFixed(2)} m³/s)</td>
             </tr>
           </tfoot>
         </table>
 
-        <div class="season-box">
-          <div style="font-weight: bold; margin-bottom: 3px; color: #1e293b;">Analisis Hidrologi Periode Basah & Kering (Batas Rata-rata Tahunan = ${avgDebit.toFixed(2)} m³/s):</div>
-          <div>• <strong style="color: #0369a1;">Periode Basah (Debit ≥ Rerata):</strong> ${wetPeriodsList.length > 0 ? wetPeriodsList.join(", ") : "Tidak ada"}</div>
-          <div>• <strong style="color: #b45309;">Periode Kering (Debit &lt; Rerata):</strong> ${dryPeriodsList.length > 0 ? dryPeriodsList.join(", ") : "Tidak ada"}</div>
-        </div>
+        ${waterUsersHtml}
 
         <script>
           window.onload = function() {
@@ -1064,8 +1198,12 @@ export default function AdminDashboardPage() {
                     <td className="whitespace-nowrap px-5 py-3 font-medium text-white">
                       {e.name}
                     </td>
-                    <td className="whitespace-nowrap px-5 py-3">{e.latestData?.debit_air ? `${e.latestData.debit_air} m³/s` : '-'}</td>
-                    <td className="whitespace-nowrap px-5 py-3">{e.latestData?.kebutuhan_air ? `${e.latestData.kebutuhan_air} m³/s` : '-'}</td>
+                    <td className="whitespace-nowrap px-5 py-3">{e.latestData?.debit_air ? `${formatM3s(e.latestData.debit_air)} m³/s` : '-'}</td>
+                    <td className="whitespace-nowrap px-5 py-3">
+                      {e.latestData?.kebutuhan_air 
+                        ? `${formatM3s(e.latestData.kebutuhan_air)} m³/s` 
+                        : (e.totalUserNeed ? `${formatM3s(e.totalUserNeed)} m³/s` : '-')}
+                    </td>
                     <td className="whitespace-nowrap px-5 py-3">
                       {e.latestData?.period ? (
                         new Date(e.latestData.period).getUTCDate() < 15 
@@ -1089,7 +1227,8 @@ export default function AdminDashboardPage() {
                     <td className="whitespace-nowrap px-5 py-3 text-right flex justify-end gap-2">
                       <button
                         onClick={() => openInputModal(e)}
-                        className="inline-flex items-center gap-1 rounded bg-cyan-600 px-2.5 py-1.5 text-xs font-medium text-white transition hover:bg-cyan-500"
+                        className="inline-flex items-center gap-1 rounded bg-cyan-600 px-2.5 py-1.5 text-xs font-medium text-white transition hover:bg-cyan-500 cursor-pointer"
+                        title="Input Data Periode"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
                         Input Data
@@ -1097,10 +1236,22 @@ export default function AdminDashboardPage() {
                       
                       <button
                         onClick={() => openWaterUsersModal(e)}
-                        className="inline-flex items-center gap-1 rounded bg-blue-600 px-2.5 py-1.5 text-xs font-medium text-white transition hover:bg-blue-500"
+                        className="inline-flex items-center gap-1 rounded bg-blue-600 px-2.5 py-1.5 text-xs font-medium text-white transition hover:bg-blue-500 cursor-pointer"
+                        title="Kelola Titik Pengguna Air"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                        Pengguna Air
+                        Pengguna Air {e.userCount ? `(${e.userCount})` : ''}
+                      </button>
+
+                      <button
+                        onClick={() => handlePrintYearlyData(e.id)}
+                        className="inline-flex items-center gap-1 rounded bg-emerald-600 px-2.5 py-1.5 text-xs font-medium text-white transition hover:bg-emerald-500 cursor-pointer"
+                        title="Cetak PDF Laporan 24 Periode"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                        </svg>
+                        Cetak PDF
                       </button>
 
                       <label className="cursor-pointer inline-flex items-center gap-1 rounded bg-slate-800 px-2.5 py-1.5 text-xs font-medium text-white transition hover:bg-slate-700">

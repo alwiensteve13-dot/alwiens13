@@ -217,9 +217,19 @@ export default function Home() {
                setWaterUsers(JSON.parse(stored));
              }
            }
-         } catch (e) {}
+          } catch (e) {}
       });
   }, []);
+
+  // Helper to format m3/s numbers so small values (e.g. 0.007 m3/s) don't get rounded to 0.00
+  const formatM3s = (val: number): string => {
+    if (val === 0 || isNaN(val)) return "0.00";
+    const absVal = Math.abs(val);
+    if (absVal > 0 && absVal < 0.01) {
+      return Number(val.toFixed(4)).toString();
+    }
+    return val.toFixed(2);
+  };
 
   const dynamicDasData = useMemo(() => {
     return regions.map((r, index) => {
@@ -244,26 +254,33 @@ export default function Home() {
       };
       
       const regionData = allWaterData.filter(d => d.regionId === r.id && new Date(d.period).getUTCFullYear().toString() === chartYear);
+      const dasUsers = waterUsers.filter((u: any) => u.regionId === r.id);
+      const totalUserNeed = dasUsers.reduce((sum: number, u: any) => sum + (parseFloat(u.kebutuhan) || 0), 0);
       
-      if (regionData.length > 0) {
+      if (regionData.length > 0 || totalUserNeed > 0) {
         const totalDebit = regionData.reduce((acc, curr) => acc + (curr.debit_air || 0), 0);
-        const totalNeed = regionData.reduce((acc, curr) => acc + (curr.kebutuhan_air || 0), 0);
+        let totalNeed = regionData.reduce((acc, curr) => acc + (curr.kebutuhan_air || 0), 0);
+        const count = regionData.length || 1;
+        let avgNeed = totalNeed / count;
+        if (avgNeed === 0 && totalUserNeed > 0) {
+          avgNeed = totalUserNeed;
+        }
         const totalPemeliharaan = regionData.reduce((acc, curr) => acc + (curr.pemeliharaan_sungai || 0), 0);
-        const avgDebit = totalDebit / regionData.length;
-        const avgNeed = totalNeed / regionData.length;
+        const avgDebit = regionData.length > 0 ? (totalDebit / regionData.length) : 0;
+        const avgPemeliharaan = regionData.length > 0 ? (totalPemeliharaan / regionData.length) : 0;
         
-        const status = totalDebit >= (totalNeed + totalPemeliharaan) ? "Surplus" : "Defisit";
+        const status = avgDebit >= (avgNeed + avgPemeliharaan) ? "Surplus" : "Defisit";
         
         dasData = {
           ...dasData,
-          debit: `${avgDebit.toFixed(2)} m³/s`,
-          need: `${avgNeed.toFixed(2)} m³/s`,
-          status,
+          debit: avgDebit > 0 ? `${formatM3s(avgDebit)} m³/s` : '-',
+          need: avgNeed > 0 ? `${formatM3s(avgNeed)} m³/s` : '-',
+          status: (avgDebit > 0 || avgNeed > 0) ? status : "Belum ada data",
         };
       }
       return dasData;
     });
-  }, [regions, allWaterData, geojsons, chartYear]);
+  }, [regions, allWaterData, geojsons, chartYear, waterUsers]);
 
   // Duplicate data for infinite marquee scroll
   const marqueeData = useMemo(() => [...dynamicDasData, ...dynamicDasData, ...dynamicDasData], [dynamicDasData]);
@@ -428,9 +445,12 @@ export default function Home() {
     const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"];
     const bins: any[] = [];
     
+    const dasWaterUsers = waterUsers.filter(u => u.regionId === selectedDasId);
+    const totalUserNeed = dasWaterUsers.reduce((sum, u) => sum + (parseFloat(u.kebutuhan) || 0), 0);
+
     for (let m = 0; m < 12; m++) {
-      bins.push({ name: `${months[m]} 1`, monthIdx: m, cycle: 1, debit: 0, need: 0, pemeliharaan: 0, na: 0, hasData: false });
-      bins.push({ name: `${months[m]} 2`, monthIdx: m, cycle: 2, debit: 0, need: 0, pemeliharaan: 0, na: 0, hasData: false });
+      bins.push({ name: `${months[m]} 1`, monthIdx: m, cycle: 1, debit: 0, need: totalUserNeed, pemeliharaan: 0, na: -totalUserNeed, hasData: false, _counted: false });
+      bins.push({ name: `${months[m]} 2`, monthIdx: m, cycle: 2, debit: 0, need: totalUserNeed, pemeliharaan: 0, na: -totalUserNeed, hasData: false, _counted: false });
     }
     
     const regionData = allWaterData.filter(d => {
@@ -449,21 +469,29 @@ export default function Home() {
       
       if (bins[binIdx]) {
         const debitVal = d.debit_air || 0;
-        const needVal = d.kebutuhan_air || 0;
-        const pemeliharaanVal = (d.pemeliharaan_sungai !== undefined && d.pemeliharaan_sungai !== null)
-          ? d.pemeliharaan_sungai
-          : Number((0.095 * debitVal).toFixed(2));
+        let needVal = (d.kebutuhan_air !== undefined && d.kebutuhan_air !== null && d.kebutuhan_air > 0)
+          ? d.kebutuhan_air
+          : (bins[binIdx].need > 0 ? bins[binIdx].need : totalUserNeed);
 
-        const naVal = debitVal - (needVal + pemeliharaanVal);
+        if (!bins[binIdx].hasData || needVal > bins[binIdx].need || debitVal > bins[binIdx].debit) {
+          const pemeliharaanVal = (d.pemeliharaan_sungai !== undefined && d.pemeliharaan_sungai !== null)
+            ? d.pemeliharaan_sungai
+            : Number((0.095 * debitVal).toFixed(2));
 
-        bins[binIdx].debit = debitVal;
-        bins[binIdx].need = needVal;
-        bins[binIdx].pemeliharaan = pemeliharaanVal;
-        bins[binIdx].na = Number(naVal.toFixed(2));
-        bins[binIdx].hasData = true;
+          const naVal = debitVal - (needVal + pemeliharaanVal);
 
-        sumDebit += debitVal;
-        countData += 1;
+          bins[binIdx].debit = debitVal;
+          bins[binIdx].need = needVal;
+          bins[binIdx].pemeliharaan = pemeliharaanVal;
+          bins[binIdx].na = Number(naVal.toFixed(2));
+          bins[binIdx].hasData = true;
+
+          if (!bins[binIdx]._counted) {
+            sumDebit += debitVal;
+            countData += 1;
+            bins[binIdx]._counted = true;
+          }
+        }
       }
     });
 
@@ -478,7 +506,7 @@ export default function Home() {
     });
     
     return bins;
-  }, [selectedDasId, chartYear, allWaterData]);
+  }, [selectedDasId, chartYear, allWaterData, waterUsers]);
 
   // Update search query when selectedDasId changes (e.g. clicked on map)
   useEffect(() => {
@@ -640,16 +668,25 @@ export default function Home() {
     const regionName = selectedDas.name;
     const regionDesc = selectedDas.region || "Maluku";
 
+    const dasWaterUsers = waterUsers.filter((u: any) => u.regionId === selectedDas.id);
+    const totalUserNeed = dasWaterUsers.reduce((sum: number, u: any) => sum + (parseFloat(u.kebutuhan) || 0), 0);
+
     let totalDebit = 0, totalNeed = 0, totalPemeliharaan = 0, totalNA = 0;
-    const wetPeriodsList: string[] = [];
-    const dryPeriodsList: string[] = [];
 
     // Precalculate totals & average
     chartData.forEach((bin: any) => {
-      totalDebit += (bin.debit || 0);
-      totalNeed += (bin.need || 0);
-      totalPemeliharaan += (bin.pemeliharaan || 0);
-      totalNA += (bin.na !== undefined ? bin.na : ((bin.debit || 0) - ((bin.need || 0) + (bin.pemeliharaan || 0))));
+      const debitNum = bin.debit || 0;
+      let needNum = bin.need || 0;
+      if (needNum === 0 && totalUserNeed > 0) {
+        needNum = totalUserNeed;
+      }
+      const pemeliharaanNum = bin.pemeliharaan || 0;
+      const naNum = bin.na !== undefined ? bin.na : (debitNum - (needNum + pemeliharaanNum));
+
+      totalDebit += debitNum;
+      totalNeed += needNum;
+      totalPemeliharaan += pemeliharaanNum;
+      totalNA += naNum;
     });
     
     const avgDebit = totalDebit / 24;
@@ -661,38 +698,68 @@ export default function Home() {
     let rowsHtml = '';
     chartData.forEach((bin: any, idx: number) => {
       const debitNum = bin.debit || 0;
-      const needNum = bin.need || 0;
+      let needNum = bin.need || 0;
+      if (needNum === 0 && totalUserNeed > 0) {
+        needNum = totalUserNeed;
+      }
       const pemeliharaanNum = bin.pemeliharaan || 0;
       const naNum = bin.na !== undefined ? bin.na : (debitNum - (needNum + pemeliharaanNum));
       const status = debitNum >= (needNum + pemeliharaanNum) ? "Surplus" : "Defisit";
-      const isWet = avgDebit > 0 && debitNum >= avgDebit;
-
-      if (avgDebit > 0) {
-        if (isWet) wetPeriodsList.push(bin.name);
-        else dryPeriodsList.push(bin.name);
-      }
       
       const statusBg = status === "Surplus" ? "#d1fae5" : "#fee2e2";
       const statusColor = status === "Surplus" ? "#065f46" : "#991b1b";
-      const seasonLabel = isWet 
-        ? '<span style="color: #0369a1; font-weight: bold; background-color: #e0f2fe; padding: 2px 6px; border-radius: 4px; font-size: 8.5px;">Basah</span>' 
-        : '<span style="color: #b45309; font-weight: bold; background-color: #fef3c7; padding: 2px 6px; border-radius: 4px; font-size: 8.5px;">Kering</span>';
       
       rowsHtml += `
         <tr>
           <td style="text-align: center; padding: 3.5px 5px; border: 1px solid #cbd5e1;">${idx + 1}</td>
           <td style="padding: 3.5px 5px; border: 1px solid #cbd5e1; font-weight: bold;">${bin.name}</td>
-          <td style="text-align: right; padding: 3.5px 5px; border: 1px solid #cbd5e1;">${debitNum.toFixed(2)}</td>
-          <td style="text-align: right; padding: 3.5px 5px; border: 1px solid #cbd5e1;">${needNum.toFixed(2)}</td>
-          <td style="text-align: right; padding: 3.5px 5px; border: 1px solid #cbd5e1;">${pemeliharaanNum.toFixed(2)}</td>
-          <td style="text-align: right; padding: 3.5px 5px; border: 1px solid #cbd5e1; font-weight: bold; color: ${naNum >= 0 ? '#047857' : '#dc2626'};">${naNum.toFixed(2)}</td>
+          <td style="text-align: right; padding: 3.5px 5px; border: 1px solid #cbd5e1;">${formatM3s(debitNum)}</td>
+          <td style="text-align: right; padding: 3.5px 5px; border: 1px solid #cbd5e1;">${formatM3s(needNum)}</td>
+          <td style="text-align: right; padding: 3.5px 5px; border: 1px solid #cbd5e1;">${formatM3s(pemeliharaanNum)}</td>
+          <td style="text-align: right; padding: 3.5px 5px; border: 1px solid #cbd5e1; font-weight: bold; color: ${naNum >= 0 ? '#047857' : '#dc2626'};">${formatM3s(naNum)}</td>
           <td style="text-align: center; padding: 3.5px 5px; border: 1px solid #cbd5e1; background-color: ${statusBg}; color: ${statusColor}; font-weight: bold;">${status}</td>
-          <td style="text-align: center; padding: 3.5px 5px; border: 1px solid #cbd5e1;">${seasonLabel}</td>
         </tr>
       `;
     });
 
     const chartSvgHtml = buildPrintSvgChart(chartData, avgDebit);
+
+    let waterUsersHtml = '';
+    if (dasWaterUsers.length > 0) {
+      waterUsersHtml = `
+        <div style="margin-top: 8px; page-break-inside: avoid;">
+          <div style="font-weight: bold; font-size: 9.5px; color: #0f172a; margin-bottom: 3px; text-transform: uppercase;">
+            Daftar Titik Pengguna Air Terdaftar (${dasWaterUsers.length} Titik | Total Kebutuhan: ${formatM3s(totalUserNeed)} m³/s)
+          </div>
+          <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr>
+                <th style="width: 25px; text-align: center;">No</th>
+                <th style="text-align: left;">Nama Pengguna Air</th>
+                <th style="text-align: center;">Koordinat (Lat, Long)</th>
+                <th style="text-align: right; width: 120px;">Kebutuhan (m³/s)</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${dasWaterUsers.map((u: any, idx: number) => `
+                <tr>
+                  <td style="text-align: center; padding: 3px 5px; border: 1px solid #cbd5e1;">${idx + 1}</td>
+                  <td style="padding: 3px 5px; border: 1px solid #cbd5e1; font-weight: 600;">${u.name}</td>
+                  <td style="text-align: center; padding: 3px 5px; border: 1px solid #cbd5e1; color: #475569;">${u.latitude}, ${u.longitude}</td>
+                  <td style="text-align: right; padding: 3px 5px; border: 1px solid #cbd5e1; font-weight: bold; color: #0284c7;">${formatM3s(parseFloat(u.kebutuhan) || 0)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="3" style="text-align: center; padding: 3px 5px; border: 1px solid #cbd5e1; font-weight: bold;">TOTAL KEBUTUHAN PENGGUNA AIR</td>
+                <td style="text-align: right; padding: 3px 5px; border: 1px solid #cbd5e1; font-weight: bold; color: #0284c7;">${formatM3s(totalUserNeed)}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      `;
+    }
 
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
@@ -715,7 +782,6 @@ export default function Home() {
           th { background-color: #1e293b !important; color: #ffffff !important; padding: 3.5px 5px; border: 1px solid #0f172a; font-size: 8.5px; text-transform: uppercase; }
           td { font-size: 8.5px; border: 1px solid #cbd5e1; }
           tfoot tr td { font-weight: bold; background-color: #f8fafc; border: 1px solid #cbd5e1; }
-          .season-box { margin-top: 6px; padding: 6px 10px; background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 8.5px; line-height: 1.45; }
           @media print {
             @page { size: A4 portrait; margin: 7mm; }
           }
@@ -737,7 +803,6 @@ export default function Home() {
               <th style="text-align: right;">Pemeliharaan (m³/s)</th>
               <th style="text-align: right;">Neraca Air (m³/s)</th>
               <th style="text-align: center;">Status Neraca</th>
-              <th style="text-align: center;">Klasifikasi Musim</th>
             </tr>
           </thead>
           <tbody>
@@ -746,21 +811,16 @@ export default function Home() {
           <tfoot>
             <tr>
               <td colspan="2" style="text-align: center; padding: 4px 6px; border: 1px solid #cbd5e1;">RATA-RATA TAHUNAN</td>
-              <td style="text-align: right; padding: 4px 6px; border: 1px solid #cbd5e1;">${avgDebit.toFixed(2)}</td>
-              <td style="text-align: right; padding: 4px 6px; border: 1px solid #cbd5e1;">${avgNeed.toFixed(2)}</td>
-              <td style="text-align: right; padding: 4px 6px; border: 1px solid #cbd5e1;">${avgPemeliharaan.toFixed(2)}</td>
-              <td style="text-align: right; padding: 4px 6px; border: 1px solid #cbd5e1; color: ${avgNA >= 0 ? '#047857' : '#dc2626'};">${avgNA.toFixed(2)}</td>
+              <td style="text-align: right; padding: 4px 6px; border: 1px solid #cbd5e1;">${formatM3s(avgDebit)}</td>
+              <td style="text-align: right; padding: 4px 6px; border: 1px solid #cbd5e1;">${formatM3s(avgNeed)}</td>
+              <td style="text-align: right; padding: 4px 6px; border: 1px solid #cbd5e1;">${formatM3s(avgPemeliharaan)}</td>
+              <td style="text-align: right; padding: 4px 6px; border: 1px solid #cbd5e1; color: ${avgNA >= 0 ? '#047857' : '#dc2626'};">${formatM3s(avgNA)}</td>
               <td style="text-align: center; padding: 4px 6px; border: 1px solid #cbd5e1;">${overallStatus}</td>
-              <td style="text-align: center; padding: 4px 6px; border: 1px solid #cbd5e1; font-size: 8.5px; color: #64748b;">(Batas: ${avgDebit.toFixed(2)} m³/s)</td>
             </tr>
           </tfoot>
         </table>
 
-        <div class="season-box">
-          <div style="font-weight: bold; margin-bottom: 3px; color: #1e293b;">Analisis Hidrologi Periode Basah & Kering (Batas Rata-rata Tahunan = ${avgDebit.toFixed(2)} m³/s):</div>
-          <div>• <strong style="color: #0369a1;">Periode Basah (Debit ≥ Rerata):</strong> ${wetPeriodsList.length > 0 ? wetPeriodsList.join(", ") : "Tidak ada periode basah teridentifikasi"}</div>
-          <div>• <strong style="color: #b45309;">Periode Kering (Debit &lt; Rerata):</strong> ${dryPeriodsList.length > 0 ? dryPeriodsList.join(", ") : "Tidak ada periode kering teridentifikasi"}</div>
-        </div>
+        ${waterUsersHtml}
 
         <script>
           window.onload = function() {
@@ -1378,8 +1438,8 @@ export default function Home() {
                           Lihat Dokumen PDF
                         </a>
                         <button 
-                          onClick={() => window.print()}
-                          className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm font-semibold text-slate-700 dark:text-slate-300 transition hover:bg-slate-50 dark:hover:bg-slate-700 shadow-sm"
+                          onClick={() => handlePrintPublicChart('public-chart-container')}
+                          className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm font-semibold text-slate-700 dark:text-slate-300 transition hover:bg-slate-50 dark:hover:bg-slate-700 shadow-sm cursor-pointer"
                         >
                           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />

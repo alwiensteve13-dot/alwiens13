@@ -51,12 +51,15 @@ export async function GET(request: Request) {
     let mockData = getMockWaterData();
     if (regionId) mockData = mockData.filter((d: any) => d.regionId === regionId);
 
-    // Merge database data with mock data (deduplicate by regionId + period)
+    // Merge database data with mock data (deduplicate by regionId + period, prioritize non-zero kebutuhan)
     const dataMap = new Map<string, any>();
     [...mockData, ...(data || [])].forEach((d: any) => {
       if (d && d.regionId && d.period) {
         const key = `${d.regionId}_${new Date(d.period).toISOString()}`;
-        dataMap.set(key, d);
+        const existing = dataMap.get(key);
+        if (!existing || ((d.kebutuhan_air || 0) > 0 && (existing.kebutuhan_air || 0) === 0)) {
+          dataMap.set(key, d);
+        }
       }
     });
 
