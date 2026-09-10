@@ -37,18 +37,22 @@ export async function DELETE(
       });
       return apiSuccess({ success: true });
     } catch (dbError) {
-      console.warn("Database connection failed on DELETE, falling back to mock file.", dbError);
+      console.warn("Database connection or mock ID on DELETE, falling back to mock file.", dbError);
       
-      const filePath = path.join(process.cwd(), "public", "mock-water-users.json");
-      if (fs.existsSync(filePath)) {
-        const data = getMockWaterUsers();
-        const filtered = data.filter((r: any) => r.id !== id);
-        fs.writeFileSync(filePath, JSON.stringify(filtered, null, 2));
+      try {
+        const filePath = path.join(process.cwd(), "public", "mock-water-users.json");
+        if (fs.existsSync(filePath)) {
+          const data = getMockWaterUsers();
+          const filtered = data.filter((r: any) => r.id !== id);
+          fs.writeFileSync(filePath, JSON.stringify(filtered, null, 2));
+        }
+      } catch (fileErr) {
+        console.warn("Failed to write mock-water-users.json on DELETE (Vercel read-only filesystem):", fileErr);
       }
       return apiSuccess({ success: true });
     }
   } catch (error: any) {
     console.error("Failed to delete water user:", error);
-    return apiError("Gagal menghapus pengguna air.", 500);
+    return apiError("Gagal menghapus pengguna air: " + (error?.message || "Terjadi kesalahan"), 500);
   }
 }

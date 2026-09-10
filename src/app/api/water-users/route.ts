@@ -14,18 +14,31 @@ try {
 
 // Helper to manage mock data file
 const getMockWaterUsers = () => {
-  const filePath = path.join(process.cwd(), "public", "mock-water-users.json");
-  if (fs.existsSync(filePath)) {
-    return JSON.parse(fs.readFileSync(filePath, "utf-8"));
+  try {
+    const filePath = path.join(process.cwd(), "public", "mock-water-users.json");
+    if (fs.existsSync(filePath)) {
+      return JSON.parse(fs.readFileSync(filePath, "utf-8"));
+    }
+  } catch (e) {
+    console.warn("Failed to read mock-water-users.json:", e);
   }
   return [];
 };
 
 const saveMockWaterUser = (user: any) => {
-  const filePath = path.join(process.cwd(), "public", "mock-water-users.json");
-  const data = getMockWaterUsers();
-  data.push(user);
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+  try {
+    const filePath = path.join(process.cwd(), "public", "mock-water-users.json");
+    const data = getMockWaterUsers();
+    const existingIndex = data.findIndex((u: any) => u.id === user.id);
+    if (existingIndex >= 0) {
+      data[existingIndex] = user;
+    } else {
+      data.push(user);
+    }
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+  } catch (e) {
+    console.warn("Failed to write to mock-water-users.json (Vercel read-only filesystem):", e);
+  }
 };
 
 export async function GET(request: Request) {
@@ -40,7 +53,19 @@ export async function GET(request: Request) {
       where: whereClause,
       orderBy: { createdAt: 'desc' }
     });
-    return apiSuccess(users);
+    
+    // If database returned data, return it. If empty or mock region, merge with mock file
+    const mockData = getMockWaterUsers();
+    const filteredMock = regionId ? mockData.filter((u: any) => u.regionId === regionId) : mockData;
+    
+    const userMap = new Map<string, any>();
+    [...filteredMock, ...users].forEach((u: any) => {
+      if (u && u.id && !userMap.has(u.id)) {
+        userMap.set(u.id, u);
+      }
+    });
+
+    return apiSuccess(Array.from(userMap.values()));
   } catch (error) {
     console.warn("Database connection failed, using file mock data.");
     const data = getMockWaterUsers();
@@ -60,38 +85,69 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch (e) {
-    return apiError("Format request tidak valid");
+    return apiError("Format request JSON tidak valid");
   }
 
   const { name, latitude, longitude, regionId, kebutuhan } = body;
 
-  if (!name || latitude === undefined || longitude === undefined || kebutuhan === undefined || !regionId) {
-    return apiError("Data pengguna air tidak lengkap (nama, latitude, longitude, kebutuhan, regionId wajib)");
+  if (!name || typeof name !== "string" || !name.trim()) {
+    return apiError("Nama pengguna air wajib diisi");
   }
+
+  if (!regionId) {
+    return apiError("Wilayah DAS (regionId) wajib dipilih");
+  }
+
+  const parseNumber = (val: any): number | null => {
+    if (val === undefined || val === null || val === "") return null;
+    const cleaned = String(val).trim().replace(/,/g, ".");
+    const num = parseFloat(cleaned);
+    return isNaN(num) ? null : num;
+  };
+
+  const parsedLat = parseNumber(latitude);
+  const parsedLng = parseNumber(longitude);
+  const parsedKeb = parseNumber(kebutuhan);
+
+  if (parsedLat === null || parsedLng === null || parsedKeb === null) {
+    return apiError("Data koordinat (latitude, longitude) atau kebutuhan air tidak valid. Pastikan berupa angka (contoh: -3.65 atau -3,65).");
+  }
+
+  const cleanName = name.trim();
+  const cleanRegionId = String(regionId).trim();
 
   try {
     if (!prisma) throw new Error("Prisma not initialized");
+
+    // Check if region actually exists in database to avoid foreign key constraint crash
+    const regionExists = await prisma.region.findUnique({
+      where: { id: cleanRegionId }
+    });
+
+    if (!regionExists) {
+      throw new Error(`Region ${cleanRegionId} not found in database, using mock storage`);
+    }
     
     const newUser = await prisma.waterUser.create({
       data: {
-        name,
-        latitude: parseFloat(latitude),
-        longitude: parseFloat(longitude),
-        kebutuhan: parseFloat(kebutuhan),
-        regionId,
+        name: cleanName,
+        latitude: parsedLat,
+        longitude: parsedLng,
+        kebutuhan: parsedKeb,
+        regionId: cleanRegionId,
       }
     });
     return apiSuccess(newUser);
   } catch (error: any) {
-    console.warn("Database connection failed on POST, falling back to mock file.");
+    console.warn("Database create failed or mock region used on POST, falling back to mock storage:", error?.message || error);
     
     const newUser = {
       id: "mock-wu-" + Date.now().toString(),
-      name,
-      latitude: parseFloat(latitude),
-      longitude: parseFloat(longitude),
-      kebutuhan: parseFloat(kebutuhan),
-      regionId,
+      name: cleanName,
+      latitude: parsedLat,
+      longitude: parsedLng,
+      kebutuhan: parsedKeb,
+      regionId: cleanRegionId,
       createdAt: new Date().toISOString(),
     };
     
@@ -101,8 +157,14 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE() {
-  const filePath = path.join(process.cwd(), "public", "mock-water-users.json");
-  fs.writeFileSync(filePath, "[]", "utf-8");
+  try {
+    const filePath = path.join(process.cwd(), "public", "mock-water-users.json");
+    if (fs.existsSync(filePath)) {
+      fs.writeFileSync(filePath, "[]", "utf-8");
+    }
+  } catch (e) {
+    console.warn("Failed to clear mock-water-users.json (Vercel read-only filesystem):", e);
+  }
 
   try {
     if (prisma) {

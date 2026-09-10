@@ -70,6 +70,7 @@ export default function AdminDashboardPage() {
   const [isWaterUsersModalOpen, setIsWaterUsersModalOpen] = useState(false);
   const [waterUsers, setWaterUsers] = useState<any[]>([]);
   const [newWaterUser, setNewWaterUser] = useState({ name: "", latitude: "", longitude: "", kebutuhan: "" });
+  const [isAddingWaterUser, setIsAddingWaterUser] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -136,10 +137,35 @@ export default function AdminDashboardPage() {
     setSelectedRegion(region);
     setIsWaterUsersModalOpen(true);
     setNewWaterUser({ name: "", latitude: "", longitude: "", kebutuhan: "" });
+
+    // Load custom water users from localStorage
+    let localUsers: any[] = [];
+    try {
+      if (typeof window !== "undefined") {
+        const stored = localStorage.getItem("custom_water_users");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          localUsers = Array.isArray(parsed) ? parsed.filter((u: any) => u.regionId === region.id) : [];
+        }
+      }
+    } catch (e) {}
+
+    // Initialize with local users immediately so UI is instantaneous
+    setWaterUsers(localUsers);
+
     try {
       const res = await fetch(`/api/water-users?regionId=${region.id}`);
       const data = await res.json();
-      setWaterUsers(data.data || []);
+      const apiUsers = data.data || [];
+
+      // Deduplicate merging local and API data
+      const map = new Map<string, any>();
+      [...localUsers, ...apiUsers].forEach((u: any) => {
+        if (u && u.id && !map.has(u.id)) {
+          map.set(u.id, u);
+        }
+      });
+      setWaterUsers(Array.from(map.values()));
     } catch (error) {
       console.error("Failed to fetch water users", error);
     }
@@ -148,41 +174,100 @@ export default function AdminDashboardPage() {
   const handleAddWaterUser = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedRegion) return;
+
+    const cleanName = newWaterUser.name.trim();
+    if (!cleanName) {
+      alert("Nama pengguna air wajib diisi.");
+      return;
+    }
+
+    const cleanLatStr = String(newWaterUser.latitude).trim().replace(/,/g, ".");
+    const cleanLngStr = String(newWaterUser.longitude).trim().replace(/,/g, ".");
+    const cleanKebStr = String(newWaterUser.kebutuhan).trim().replace(/,/g, ".");
+
+    const parsedLat = parseFloat(cleanLatStr);
+    const parsedLng = parseFloat(cleanLngStr);
+    const parsedKeb = parseFloat(cleanKebStr);
+
+    if (isNaN(parsedLat) || isNaN(parsedLng) || isNaN(parsedKeb)) {
+      alert("Koordinat (Latitude/Longitude) dan Kebutuhan Air harus berupa angka yang valid. Contoh: -3.65 atau -3,65");
+      return;
+    }
+
+    setIsAddingWaterUser(true);
     try {
+      const payload = {
+        name: cleanName,
+        latitude: parsedLat,
+        longitude: parsedLng,
+        kebutuhan: parsedKeb,
+        regionId: selectedRegion.id
+      };
+
       const res = await fetch("/api/water-users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...newWaterUser,
-          regionId: selectedRegion.id
-        }),
+        body: JSON.stringify(payload),
       });
-      if (res.ok) {
+
+      const resData = await res.json().catch(() => ({}));
+
+      if (res.ok && resData.success && resData.data) {
+        const addedUser = resData.data;
+
+        // Persist to localStorage for permanent Vercel persistence
+        try {
+          if (typeof window !== "undefined") {
+            const stored = localStorage.getItem("custom_water_users");
+            const existing = stored ? JSON.parse(stored) : [];
+            const filtered = existing.filter((u: any) => u.id !== addedUser.id);
+            localStorage.setItem("custom_water_users", JSON.stringify([addedUser, ...filtered]));
+          }
+        } catch (e) {}
+
         setNewWaterUser({ name: "", latitude: "", longitude: "", kebutuhan: "" });
-        const resList = await fetch(`/api/water-users?regionId=${selectedRegion.id}`);
-        const dataList = await resList.json();
-        setWaterUsers(dataList.data || []);
+        setWaterUsers(prev => {
+          const filtered = prev.filter(u => u.id !== addedUser.id);
+          return [addedUser, ...filtered];
+        });
+        alert(`Pengguna air "${addedUser.name}" berhasil ditambahkan!`);
       } else {
-        const errorData = await res.json();
-        alert("Gagal menambahkan pengguna air: " + errorData.error);
+        alert("Gagal menambahkan pengguna air: " + (resData.error || "Terjadi kesalahan pada server."));
       }
-    } catch (error) {
-      alert("Terjadi kesalahan sistem.");
+    } catch (error: any) {
+      console.error("Error adding water user:", error);
+      alert("Terjadi kesalahan sistem saat menyimpan data pengguna air: " + (error?.message || "Koneksi terputus"));
+    } finally {
+      setIsAddingWaterUser(false);
     }
   };
 
   const handleDeleteWaterUser = async (id: string) => {
     if (!confirm("Apakah Anda yakin ingin menghapus data pengguna air ini?")) return;
+
+    // Remove from localStorage
+    try {
+      if (typeof window !== "undefined") {
+        const stored = localStorage.getItem("custom_water_users");
+        if (stored) {
+          const existing = JSON.parse(stored);
+          const filtered = existing.filter((u: any) => u.id !== id);
+          localStorage.setItem("custom_water_users", JSON.stringify(filtered));
+        }
+      }
+    } catch (e) {}
+
+    // Update state immediately
+    setWaterUsers(prev => prev.filter(w => w.id !== id));
+
     try {
       const res = await fetch(`/api/water-users/${id}`, { method: "DELETE" });
-      if (res.ok) {
-        setWaterUsers(waterUsers.filter(w => w.id !== id));
-      } else {
-        const errorData = await res.json();
-        alert("Gagal menghapus pengguna air: " + errorData.error);
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        console.warn("Delete API warning:", errorData.error);
       }
     } catch (error) {
-      alert("Terjadi kesalahan sistem.");
+      console.warn("Failed to delete water user on server, removed locally.");
     }
   };
 
@@ -1631,45 +1716,59 @@ export default function AdminDashboardPage() {
                   <div>
                     <label className="block text-xs font-medium text-slate-400 mb-1">Latitude</label>
                     <input
-                      type="number"
-                      step="any"
+                      type="text"
+                      inputMode="decimal"
                       required
                       value={newWaterUser.latitude}
                       onChange={(e) => setNewWaterUser({ ...newWaterUser, latitude: e.target.value })}
-                      placeholder="-3.65"
+                      placeholder="-3.65 atau -3,65"
                       className="w-full rounded-md bg-slate-800 border border-slate-600 px-3 py-2 text-sm text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                     />
+                    <span className="text-[11px] text-slate-500 mt-0.5 block">Format dapat menggunakan titik (.) atau koma (,)</span>
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-slate-400 mb-1">Longitude</label>
                     <input
-                      type="number"
-                      step="any"
+                      type="text"
+                      inputMode="decimal"
                       required
                       value={newWaterUser.longitude}
                       onChange={(e) => setNewWaterUser({ ...newWaterUser, longitude: e.target.value })}
-                      placeholder="128.18"
+                      placeholder="128.18 atau 128,18"
                       className="w-full rounded-md bg-slate-800 border border-slate-600 px-3 py-2 text-sm text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                     />
+                    <span className="text-[11px] text-slate-500 mt-0.5 block">Format dapat menggunakan titik (.) atau koma (,)</span>
                   </div>
-                  <div>
+                  <div className="md:col-span-2">
                     <label className="block text-xs font-medium text-slate-400 mb-1">Kebutuhan Air (m³/s)</label>
                     <input
-                      type="number"
-                      step="any"
+                      type="text"
+                      inputMode="decimal"
                       required
                       value={newWaterUser.kebutuhan}
                       onChange={(e) => setNewWaterUser({ ...newWaterUser, kebutuhan: e.target.value })}
-                      placeholder="Contoh: 15.5"
+                      placeholder="Contoh: 15.5 atau 0,05"
                       className="w-full rounded-md bg-slate-800 border border-slate-600 px-3 py-2 text-sm text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                     />
+                    <span className="text-[11px] text-slate-500 mt-0.5 block">Format desimal dapat menggunakan titik (.) atau koma (,)</span>
                   </div>
                   <div className="md:col-span-2 flex justify-end mt-2">
                     <button
                       type="submit"
-                      className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-500 transition shadow-lg shadow-blue-900/50"
+                      disabled={isAddingWaterUser}
+                      className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-500 transition shadow-lg shadow-blue-900/50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
-                      Tambah Titik
+                      {isAddingWaterUser ? (
+                        <>
+                          <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                          </svg>
+                          <span>Menyimpan...</span>
+                        </>
+                      ) : (
+                        <span>Tambah Titik</span>
+                      )}
                     </button>
                   </div>
                 </form>

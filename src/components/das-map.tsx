@@ -187,8 +187,8 @@ function MapFlyToTarget({ target }: { target: [number, number] | null }) {
 }
 
 function sanitizeCoord(lat: any, lng: any): [number, number] | null {
-  let parsedLat = typeof lat === 'number' ? lat : parseFloat(String(lat).trim());
-  let parsedLng = typeof lng === 'number' ? lng : parseFloat(String(lng).trim());
+  let parsedLat = typeof lat === 'number' ? lat : parseFloat(String(lat).trim().replace(/,/g, '.'));
+  let parsedLng = typeof lng === 'number' ? lng : parseFloat(String(lng).trim().replace(/,/g, '.'));
 
   if (isNaN(parsedLat) || isNaN(parsedLng)) return null;
 

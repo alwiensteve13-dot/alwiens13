@@ -154,11 +154,36 @@ export default function Home() {
     fetch('/api/water-users')
       .then(res => res.json())
       .then(data => {
-         if (data.data) {
-           setWaterUsers(data.data);
-         }
+         let fetchedUsers: any[] = (data && Array.isArray(data.data)) ? data.data : [];
+
+         // Merge custom water users created locally so they persist on Vercel
+         try {
+           if (typeof window !== "undefined") {
+             const stored = localStorage.getItem("custom_water_users");
+             if (stored) {
+               const custom = JSON.parse(stored);
+               const map = new Map<string, any>();
+               [...custom, ...fetchedUsers].forEach((u: any) => {
+                 if (u && u.id && !map.has(u.id)) map.set(u.id, u);
+               });
+               fetchedUsers = Array.from(map.values());
+             }
+           }
+         } catch (e) {}
+
+         setWaterUsers(fetchedUsers);
       })
-      .catch(console.error);
+      .catch(err => {
+         console.warn("Failed to fetch /api/water-users, falling back to localStorage:", err);
+         try {
+           if (typeof window !== "undefined") {
+             const stored = localStorage.getItem("custom_water_users");
+             if (stored) {
+               setWaterUsers(JSON.parse(stored));
+             }
+           }
+         } catch (e) {}
+      });
   }, []);
 
   const dynamicDasData = useMemo(() => {
