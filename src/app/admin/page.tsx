@@ -3,6 +3,7 @@
 import { useAuth } from "@/lib/auth-context";
 import { useEffect, useState, useMemo } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid, ReferenceLine } from 'recharts';
+import { parseGeospatialFile } from "@/lib/geo-parser";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -342,27 +343,66 @@ export default function AdminDashboardPage() {
   const handleUploadShapefile = async (event: any, file: File | undefined, regionId: string, type: string) => {
     if (!file) return;
     try {
-      let geojson = null;
-      if (file.name.endsWith(".zip")) {
-        const shpModule = await import("shpjs");
-        const shp = shpModule.default || shpModule;
-        geojson = await shp(await file.arrayBuffer());
-      } else if (file.name.endsWith(".shp")) {
-        const shpModule = await import("shpjs");
-        const shp = shpModule.default || shpModule;
-        const arrayBuffer = await file.arrayBuffer();
-        const geometries = shp.parseShp(arrayBuffer);
-        geojson = {
-          type: "FeatureCollection",
-          features: geometries.map((geom: any) => ({
-             type: "Feature",
-             geometry: geom,
-             properties: {}
-          }))
-        };
-      } else {
-        const text = await file.text();
-        geojson = JSON.parse(text);
+      const { geojson, leafletCoordinates, areaKm2 } = await parseGeospatialFile(file);
+
+      // Persist to localStorage for permanent Vercel & local persistence
+      try {
+        if (typeof window !== "undefined") {
+          if (type === "das") {
+            // 1. Save to custom_das_geojsons
+            const storedGeo = localStorage.getItem("custom_das_geojsons");
+            const geoMap = storedGeo ? JSON.parse(storedGeo) : {};
+            geoMap[regionId] = geojson;
+            localStorage.setItem("custom_das_geojsons", JSON.stringify(geoMap));
+
+            // 2. Update custom_das_regions with coordinates and geojson
+            const storedRegs = localStorage.getItem("custom_das_regions");
+            let regList = storedRegs ? JSON.parse(storedRegs) : [];
+            const idx = regList.findIndex((r: any) => r.id === regionId);
+            if (idx >= 0) {
+              regList[idx] = {
+                ...regList[idx],
+                coordinates: leafletCoordinates,
+                geojson,
+                area: areaKm2 > 0 ? `${areaKm2} km²` : regList[idx].area,
+              };
+            } else {
+              const foundInState = regions.find((r) => r.id === regionId);
+              if (foundInState) {
+                regList.push({
+                  ...foundInState,
+                  coordinates: leafletCoordinates,
+                  geojson,
+                  area: areaKm2 > 0 ? `${areaKm2} km²` : (foundInState as any).area || "-",
+                });
+              }
+            }
+            localStorage.setItem("custom_das_regions", JSON.stringify(regList));
+
+            // 3. Update local state
+            setRegions((prev) =>
+              prev.map((r) =>
+                r.id === regionId
+                  ? ({
+                      ...r,
+                      coordinates: leafletCoordinates,
+                      geojson,
+                      area: areaKm2 > 0 ? `${areaKm2} km²` : (r as any).area || "-",
+                    } as any)
+                  : r
+              )
+            );
+          } else {
+            // landcover, soiltype, river
+            const key = `custom_${type}_geojsons`;
+            const storedOther = localStorage.getItem(key);
+            const otherMap = storedOther ? JSON.parse(storedOther) : {};
+            otherMap[regionId] = geojson;
+            localStorage.setItem(key, JSON.stringify(otherMap));
+          }
+        }
+      } catch (storageErr) {
+        console.warn("Storage warning:", storageErr);
       }
 
       const formData = new FormData();
@@ -370,22 +410,22 @@ export default function AdminDashboardPage() {
       formData.append("type", type);
       formData.append("file", file);
       formData.append("geojson", JSON.stringify(geojson));
-      
+
       const res = await fetch("/api/upload-geojson", {
         method: "POST",
-        body: formData
+        body: formData,
       });
-      const data = await res.json();
-      if (data.success) {
-        alert(`File ${type} berhasil diunggah!`);
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.success) {
+        alert(`File ${type} (${file.name}) berhasil diunggah dan poligon telah diperbarui!`);
       } else {
-        alert("Gagal unggah: " + (data.error || "Gagal memproses berkas"));
+        alert(`File ${type} (${file.name}) berhasil diproses dan disimpan secara lokal.`);
       }
     } catch (err: any) {
       console.error(err);
-      alert("Terjadi kesalahan saat memproses file: " + err.message);
+      alert("Terjadi kesalahan saat memproses file: " + (err?.message || "Format tidak didukung"));
     }
-    event.target.value = '';
+    event.target.value = "";
   };
 
   const handleInputSubmit = async (e: React.FormEvent) => {
@@ -1291,7 +1331,7 @@ export default function AdminDashboardPage() {
                         Poligon DAS
                         <input
                           type="file"
-                          accept=".zip,.json,.geojson,.shp"
+                          accept=".kmz,.kml,.zip,.json,.geojson,.shp"
                           className="hidden"
                           onChange={(ev) => handleUploadShapefile(ev, ev.target.files?.[0], e.id, "das")}
                         />
@@ -1301,7 +1341,7 @@ export default function AdminDashboardPage() {
                         Tutupan Lahan
                         <input
                           type="file"
-                          accept=".zip,.json,.geojson,.shp"
+                          accept=".kmz,.kml,.zip,.json,.geojson,.shp"
                           className="hidden"
                           onChange={(ev) => handleUploadShapefile(ev, ev.target.files?.[0], e.id, "landcover")}
                         />
@@ -1311,7 +1351,7 @@ export default function AdminDashboardPage() {
                         Jenis Tanah
                         <input
                           type="file"
-                          accept=".zip,.json,.geojson,.shp"
+                          accept=".kmz,.kml,.zip,.json,.geojson,.shp"
                           className="hidden"
                           onChange={(ev) => handleUploadShapefile(ev, ev.target.files?.[0], e.id, "soiltype")}
                         />
@@ -1321,7 +1361,7 @@ export default function AdminDashboardPage() {
                         Sungai
                         <input
                           type="file"
-                          accept=".zip,.json,.geojson,.shp"
+                          accept=".kmz,.kml,.zip,.json,.geojson,.shp"
                           className="hidden"
                           onChange={(ev) => handleUploadShapefile(ev, ev.target.files?.[0], e.id, "river")}
                         />

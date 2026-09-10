@@ -90,38 +90,108 @@ export default function Home() {
            ? data.data
            : initialRegionsData;
 
-         // Merge custom DAS regions created in Admin
-         try {
-           if (typeof window !== "undefined") {
-             const stored = localStorage.getItem("custom_das_regions");
-             if (stored) {
-               const custom = JSON.parse(stored);
-               const map = new Map<string, any>();
-               [...custom, ...fetchedRegions].forEach((r: any) => {
-                 if (r && r.id && !map.has(r.id)) map.set(r.id, r);
-               });
-               fetchedRegions = Array.from(map.values());
-             }
-           }
-         } catch (e) {}
+          // Merge custom DAS regions created in Admin
+          try {
+            if (typeof window !== "undefined") {
+              const stored = localStorage.getItem("custom_das_regions");
+              if (stored) {
+                const custom = JSON.parse(stored);
+                const map = new Map<string, any>();
+                fetchedRegions.forEach((r: any) => {
+                  if (r && r.id) map.set(r.id, r);
+                });
 
-         setRegions(fetchedRegions);
-         fetchedRegions.forEach((r: any) => {
-           if (r.pdfUrl) urls[r.id] = r.pdfUrl;
-         });
-         setPdfUrls(urls);
+                custom.forEach((c: any) => {
+                  if (!c || !c.id) return;
+                  if (map.has(c.id)) {
+                    const existing = map.get(c.id);
+                    map.set(c.id, {
+                      ...existing,
+                      ...c,
+                      coordinates: (c.coordinates && c.coordinates.length > 0) ? c.coordinates : (existing.coordinates || []),
+                      pdfUrl: c.pdfUrl || existing.pdfUrl,
+                    });
+                    return;
+                  }
 
-         // Batch fetch custom GeoJSON polygons in parallel and update state once
-         const loadedGeojsons: Record<string, any> = {};
-         await Promise.all(
-           fetchedRegions.map((r: any) =>
-             fetch(`/geojson/${r.id}.json?t=${new Date().getTime()}`)
-               .then(res => res.ok ? res.json() : null)
-               .then(geojson => { if (geojson) loadedGeojsons[r.id] = geojson; })
-               .catch(() => {})
-           )
-         );
-         setGeojsons(loadedGeojsons);
+                  const cNameNorm = (c.name || "").toLowerCase().replace(/^(das\s+|wae\s+)/g, "").trim();
+                  let matchedExistingKey: string | null = null;
+                  for (const [key, val] of map.entries()) {
+                    const valNameNorm = (val.name || "").toLowerCase().replace(/^(das\s+|wae\s+)/g, "").trim();
+                    if (cNameNorm && valNameNorm && cNameNorm === valNameNorm) {
+                      matchedExistingKey = key;
+                      break;
+                    }
+                  }
+
+                  if (matchedExistingKey) {
+                    const existing = map.get(matchedExistingKey);
+                    map.set(matchedExistingKey, {
+                      ...existing,
+                      ...c,
+                      id: matchedExistingKey,
+                      coordinates: (c.coordinates && c.coordinates.length > 0) ? c.coordinates : (existing.coordinates || []),
+                      pdfUrl: existing.pdfUrl || c.pdfUrl,
+                    });
+                  } else {
+                    map.set(c.id, c);
+                  }
+                });
+
+                fetchedRegions = Array.from(map.values());
+              }
+            }
+          } catch (e) {}
+
+          setRegions(fetchedRegions);
+          fetchedRegions.forEach((r: any) => {
+            if (r.pdfUrl) urls[r.id] = r.pdfUrl;
+          });
+          setPdfUrls(urls);
+
+          // Batch fetch custom GeoJSON polygons in parallel and update state once
+          const loadedGeojsons: Record<string, any> = {};
+
+          // 1. Read from localStorage custom_das_geojsons (crucial for Vercel persistence)
+          try {
+            if (typeof window !== "undefined") {
+              const localGeo = localStorage.getItem("custom_das_geojsons");
+              if (localGeo) {
+                const parsed = JSON.parse(localGeo);
+                if (typeof parsed === "object" && parsed !== null) {
+                  Object.assign(loadedGeojsons, parsed);
+                }
+              }
+            }
+          } catch (e) {}
+
+          // 2. Fetch remote / static GeoJSONs for regions that don't have geojson loaded yet
+          await Promise.all(
+            fetchedRegions.map(async (r: any) => {
+              if (loadedGeojsons[r.id]) return;
+
+              const urlsToTry = [`/geojson/${r.id}.json?t=${new Date().getTime()}`];
+              if (r.name && r.name.toLowerCase().includes("waya")) {
+                urlsToTry.push(`/geojson/mock-1787820000000.json?t=${new Date().getTime()}`);
+                urlsToTry.push(`/geojson/mock-das-waya.json?t=${new Date().getTime()}`);
+              }
+              urlsToTry.push(`/api/file-proxy/geojson/${r.id}.json`);
+
+              for (const url of urlsToTry) {
+                try {
+                  const res = await fetch(url);
+                  if (res.ok) {
+                    const geojson = await res.json();
+                    if (geojson && (geojson.type || geojson.features || geojson.geometry)) {
+                      loadedGeojsons[r.id] = geojson;
+                      break;
+                    }
+                  }
+                } catch (err) {}
+              }
+            })
+          );
+          setGeojsons(loadedGeojsons);
       })
       .catch(err => {
          console.warn("Failed to fetch /api/regions, falling back to initialRegionsData:", err);
@@ -243,7 +313,7 @@ export default function Home() {
         need: "-",
         status: "Belum ada data",
         color: r.color || REGION_COLORS[index % REGION_COLORS.length],
-        geojson: geojsons[r.id],
+        geojson: geojsons[r.id] || (r.name?.toLowerCase().includes("waya") ? (geojsons["mock-1787820000000"] || geojsons["mock-das-waya"]) : undefined),
         landCoverUrl: r.landCoverUrl,
         soilTypeUrl: r.soilTypeUrl,
         riverUrl: r.riverUrl,
@@ -253,7 +323,8 @@ export default function Home() {
         demnasList: r.demnasList
       };
       
-      const regionData = allWaterData.filter(d => d.regionId === r.id && new Date(d.period).getUTCFullYear().toString() === chartYear);
+      const isWaya = r.name?.toLowerCase().includes("waya");
+      const regionData = allWaterData.filter(d => (d.regionId === r.id || (isWaya && d.regionId === "mock-1787820000000")) && new Date(d.period).getUTCFullYear().toString() === chartYear);
       const dasUsers = waterUsers.filter((u: any) => u.regionId === r.id);
       const totalUserNeed = dasUsers.reduce((sum: number, u: any) => sum + (parseFloat(u.kebutuhan) || 0), 0);
       

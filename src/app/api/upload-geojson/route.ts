@@ -69,13 +69,31 @@ export async function POST(request: NextRequest) {
     }
 
     // Update mock-regions.json if needed
-    if (type === "landcover" || type === "soiltype" || type === "river") {
+    if (type === "das" || type === "landcover" || type === "soiltype" || type === "river") {
       try {
         const mockPath = path.join(process.cwd(), "public", "mock-regions.json");
         if (fs.existsSync(mockPath)) {
           const mockData = JSON.parse(fs.readFileSync(mockPath, "utf-8"));
           const regionIdx = mockData.findIndex((r: any) => r.id === regionId);
           if (regionIdx >= 0) {
+            if (type === "das") {
+              let coords: [number, number][] = [];
+              try {
+                let rawRing: number[][] = [];
+                if (geojson.type === "FeatureCollection" && geojson.features?.length > 0) {
+                  const geom = geojson.features[0]?.geometry;
+                  rawRing = geom?.coordinates?.[0] || [];
+                } else if (geojson.type === "Feature") {
+                  rawRing = geojson.geometry?.coordinates?.[0] || [];
+                } else if (geojson.type === "Polygon") {
+                  rawRing = geojson.coordinates?.[0] || [];
+                }
+                coords = rawRing.map((pt: any) => [Number(Number(pt[1]).toFixed(6)), Number(Number(pt[0]).toFixed(6))]);
+              } catch (err) {}
+              if (coords.length > 0) {
+                mockData[regionIdx].coordinates = coords;
+              }
+            }
             if (type === "landcover") mockData[regionIdx].landCoverUrl = fileUrl;
             if (type === "soiltype") mockData[regionIdx].soilTypeUrl = fileUrl;
             if (type === "river") mockData[regionIdx].riverUrl = fileUrl;
