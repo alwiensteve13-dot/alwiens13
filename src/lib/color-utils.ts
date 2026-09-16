@@ -164,3 +164,141 @@ export const getColorFromProperty = (feature: any, type?: string | number) => {
   const seed = (type === 'landCover' || type === 1) ? 42 : 1337;
   return stringToColor(label, seed);
 };
+
+// Curated collection of 60+ distinct, high-contrast, cartographic colors for DAS polygons
+export const DISTINCT_POLYGON_PALETTE: string[] = [
+  "#0284c7", // Sky Blue
+  "#16a34a", // Green
+  "#9333ea", // Purple
+  "#ea580c", // Orange
+  "#0d9488", // Teal
+  "#e11d48", // Rose Red
+  "#ca8a04", // Amber Gold
+  "#4f46e5", // Indigo
+  "#059669", // Emerald
+  "#c026d3", // Fuchsia
+  "#d97706", // Dark Amber
+  "#2563eb", // Royal Blue
+  "#db2777", // Pink
+  "#65a30d", // Lime Green
+  "#7c3aed", // Violet
+  "#b45309", // Brown Orange
+  "#0891b2", // Cyan
+  "#be123c", // Crimson
+  "#15803d", // Forest Green
+  "#6366f1", // Periwinkle
+  "#d946ef", // Magenta
+  "#0ea5e9", // Light Sky
+  "#10b981", // Mint
+  "#f59e0b", // Yellow Orange
+  "#8b5cf6", // Light Violet
+  "#ec4899", // Deep Pink
+  "#14b8a6", // Bright Teal
+  "#f43f5e", // Light Rose
+  "#84cc16", // Bright Lime
+  "#a855f7", // Bright Purple
+  "#3b82f6", // Dodger Blue
+  "#ef4444", // Red
+  "#38bdf8", // Baby Blue
+  "#4ade80", // Light Green
+  "#f97316", // Vivid Orange
+  "#a21caf", // Deep Fuchsia
+  "#047857", // Pine Green
+  "#6d28d9", // Grape
+  "#b91c1c", // Dark Red
+  "#0369a1", // Ocean Blue
+  "#0f766e", // Deep Teal
+  "#4338ca", // Night Indigo
+  "#a16207", // Ochre
+  "#701a75", // Plum
+  "#1e40af", // Navy Blue
+  "#166534", // Dark Pine
+  "#991b1b", // Maroon
+  "#115e59", // Dark Cyan
+  "#86198f", // Dark Magenta
+  "#3730a3", // Dark Violet
+  "#92400e", // Cinnamon
+  "#1e3a8a", // Midnight Blue
+  "#14532d", // Deep Forest
+  "#831843", // Wine Red
+  "#134e4a", // Deep Spruce
+  "#581c87", // Deep Grape
+  "#312e81", // Deep Indigo
+  "#78350f", // Saddle Brown
+];
+
+function hslToHex(h: number, s: number, l: number): string {
+  l /= 100;
+  const a = (s * Math.min(l, 1 - l)) / 100;
+  const f = (n: number) => {
+    const k = (n + h / 30) % 12;
+    const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+    return Math.round(255 * color).toString(16).padStart(2, "0");
+  };
+  return `#${f(0)}${f(8)}${f(4)}`;
+}
+
+/**
+ * Returns a unique color not currently present in existingColors.
+ * If all palette colors are in use, generates a distinct color via golden-ratio hue stepping.
+ */
+export function getUniquePolygonColor(existingColors: (string | undefined | null)[] = [], seed?: string): string {
+  const normalizedUsed = new Set(
+    existingColors
+      .filter((c): c is string => typeof c === "string" && c.trim() !== "" && c.toLowerCase() !== "#64748b")
+      .map((c) => c.toLowerCase())
+  );
+
+  // If a seed is provided (e.g. region name), try to hash into the palette first
+  if (seed) {
+    let hash = 0;
+    for (let i = 0; i < seed.length; i++) {
+      hash = seed.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const startIndex = Math.abs(hash) % DISTINCT_POLYGON_PALETTE.length;
+    for (let i = 0; i < DISTINCT_POLYGON_PALETTE.length; i++) {
+      const candidate = DISTINCT_POLYGON_PALETTE[(startIndex + i) % DISTINCT_POLYGON_PALETTE.length].toLowerCase();
+      if (!normalizedUsed.has(candidate)) {
+        return candidate;
+      }
+    }
+  } else {
+    for (const c of DISTINCT_POLYGON_PALETTE) {
+      if (!normalizedUsed.has(c.toLowerCase())) {
+        return c.toLowerCase();
+      }
+    }
+  }
+
+  // Fallback: Golden angle stepping ensures infinite non-repeating distinct colors
+  let step = normalizedUsed.size;
+  while (true) {
+    const hue = (step * 137.508) % 360;
+    const generated = hslToHex(hue, 75, 48).toLowerCase();
+    if (!normalizedUsed.has(generated)) {
+      return generated;
+    }
+    step++;
+  }
+}
+
+/**
+ * Ensures all items in a list have unique, distinct, non-colliding colors.
+ */
+export function ensureUniqueRegionColors<T extends { color?: string; name?: string; id?: string }>(items: T[]): T[] {
+  const usedColors = new Set<string>();
+  return items.map((item, index) => {
+    let color = (item.color || "").toLowerCase().trim();
+    const isGenericOrDuplicate = !color || color === "#64748b" || color === "#ffffff" || color === "#000000" || usedColors.has(color);
+
+    if (isGenericOrDuplicate) {
+      color = getUniquePolygonColor(Array.from(usedColors), item.name || item.id || `das-${index}`);
+    }
+    usedColors.add(color);
+    return {
+      ...item,
+      color,
+    };
+  });
+}
+

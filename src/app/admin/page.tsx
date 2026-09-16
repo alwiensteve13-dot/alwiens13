@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useEffect, useState, useMemo } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid, ReferenceLine } from 'recharts';
 import { parseGeospatialFile } from "@/lib/geo-parser";
+import { getUniquePolygonColor, DISTINCT_POLYGON_PALETTE } from "@/lib/color-utils";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -12,6 +13,7 @@ interface Region {
   id: string;
   name: string;
   description: string;
+  color?: string;
   pdfUrl?: string;
   demnasUrl?: string;
   demnasName?: string;
@@ -57,7 +59,14 @@ export default function AdminDashboardPage() {
   
   // Add Region Modal state
   const [isAddRegionModalOpen, setIsAddRegionModalOpen] = useState(false);
-  const [newRegionData, setNewRegionData] = useState({ name: "", description: "" });
+  const [newRegionData, setNewRegionData] = useState({ name: "", description: "", color: "#0284c7" });
+
+  const openAddRegionModal = () => {
+    const existingColors = regions.map((r: any) => r.color);
+    const nextColor = getUniquePolygonColor(existingColors);
+    setNewRegionData({ name: "", description: "", color: nextColor });
+    setIsAddRegionModalOpen(true);
+  };
 
   // Chart state
   const [chartSelectedRegion, setChartSelectedRegion] = useState<string>("");
@@ -359,18 +368,28 @@ export default function AdminDashboardPage() {
             const storedRegs = localStorage.getItem("custom_das_regions");
             let regList = storedRegs ? JSON.parse(storedRegs) : [];
             const idx = regList.findIndex((r: any) => r.id === regionId);
+            const foundInState = regions.find((r) => r.id === regionId);
+
+            // Ensure unique non-colliding color (never default grey)
+            const existingColors = regions.filter((r) => r.id !== regionId).map((r: any) => r.color);
+            let regionColor = (idx >= 0 ? regList[idx].color : foundInState?.color);
+            if (!regionColor || regionColor === "#64748b") {
+              regionColor = getUniquePolygonColor(existingColors, foundInState?.name || regionId);
+            }
+
             if (idx >= 0) {
               regList[idx] = {
                 ...regList[idx],
+                color: regionColor,
                 coordinates: leafletCoordinates,
                 geojson,
                 area: areaKm2 > 0 ? `${areaKm2} km²` : regList[idx].area,
               };
             } else {
-              const foundInState = regions.find((r) => r.id === regionId);
               if (foundInState) {
                 regList.push({
                   ...foundInState,
+                  color: regionColor,
                   coordinates: leafletCoordinates,
                   geojson,
                   area: areaKm2 > 0 ? `${areaKm2} km²` : (foundInState as any).area || "-",
@@ -385,6 +404,7 @@ export default function AdminDashboardPage() {
                 r.id === regionId
                   ? ({
                       ...r,
+                      color: regionColor,
                       coordinates: leafletCoordinates,
                       geojson,
                       area: areaKm2 > 0 ? `${areaKm2} km²` : (r as any).area || "-",
@@ -495,18 +515,29 @@ export default function AdminDashboardPage() {
   const handleAddRegionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const existingColors = regions.map((r: any) => r.color);
+      const chosenColor =
+        newRegionData.color && newRegionData.color !== "#64748b" && !existingColors.includes(newRegionData.color)
+          ? newRegionData.color
+          : getUniquePolygonColor(existingColors, newRegionData.name);
+
+      const payload = {
+        ...newRegionData,
+        color: chosenColor,
+      };
+
       const res = await fetch("/api/regions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newRegionData),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json().catch(() => ({}));
 
       if (res.ok && data.data) {
-        const newReg = data.data;
+        const newReg = { ...data.data, color: chosenColor };
         setIsAddRegionModalOpen(false);
-        setNewRegionData({ name: "", description: "" });
+        setNewRegionData({ name: "", description: "", color: "" });
         
         // Save to localStorage for Vercel persistence
         try {
@@ -1200,7 +1231,7 @@ export default function AdminDashboardPage() {
           </h2>
           <div className="flex gap-3">
             <button 
-              onClick={() => setIsAddRegionModalOpen(true)}
+              onClick={openAddRegionModal}
               className="inline-flex items-center gap-1 rounded bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-indigo-500"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
@@ -1769,6 +1800,41 @@ export default function AdminDashboardPage() {
                   onChange={(e) => setNewRegionData({ ...newRegionData, description: e.target.value })}
                   className="w-full rounded-lg bg-slate-800 border border-slate-700 px-3 py-2 text-white placeholder-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
                 />
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-sm font-medium text-slate-300">Warna Poligon DAS</label>
+                  <div className="flex items-center gap-1.5 text-xs text-slate-400 font-mono">
+                    <span className="w-3.5 h-3.5 rounded-full border border-white/40 shadow-xs" style={{ backgroundColor: newRegionData.color }} />
+                    <span>{newRegionData.color}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={newRegionData.color || "#0284c7"}
+                    onChange={(e) => setNewRegionData({ ...newRegionData, color: e.target.value })}
+                    className="w-10 h-10 rounded-lg cursor-pointer bg-slate-800 border border-slate-700 p-0.5 shrink-0"
+                    title="Pilih warna kustom"
+                  />
+                  <div className="flex flex-wrap gap-1.5 flex-1 items-center">
+                    {DISTINCT_POLYGON_PALETTE.slice(0, 10).map((c) => (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => setNewRegionData({ ...newRegionData, color: c })}
+                        className={`w-6 h-6 rounded-full border transition-transform hover:scale-115 cursor-pointer ${
+                          newRegionData.color?.toLowerCase() === c.toLowerCase()
+                            ? "border-white ring-2 ring-cyan-400 scale-110"
+                            : "border-slate-600 hover:border-white"
+                        }`}
+                        style={{ backgroundColor: c }}
+                        title={c}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <p className="text-[11px] text-slate-400 mt-1.5">Warna poligon otomatis dipilih unik agar tidak sama dengan DAS lain, atau pilih sendiri sesuai keinginan.</p>
               </div>
               <div className="flex justify-end gap-3 pt-4 mt-2 border-t border-slate-800">
                 <button

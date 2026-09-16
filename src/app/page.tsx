@@ -11,29 +11,17 @@ import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
 import area from "@turf/area";
 import { point, polygon } from "@turf/helpers";
 
-const REGION_COLORS = [
-  "#3b82f6", // Blue
-  "#8b5cf6", // Purple
-  "#ec4899", // Pink
-  "#f97316", // Orange
-  "#eab308", // Yellow
-  "#14b8a6", // Teal
-  "#10b981", // Green
-  "#6366f1", // Indigo
-  "#f43f5e", // Rose
-  "#84cc16", // Lime
-  "#0ea5e9", // Sky
-  "#a855f7", // Fuchsia
-];
+import { getColorFromProperty, getLabelFromProperty, ensureUniqueRegionColors, DISTINCT_POLYGON_PALETTE } from "@/lib/color-utils";
+
+const REGION_COLORS = DISTINCT_POLYGON_PALETTE;
 
 const DasMap = dynamic(() => import("@/components/das-map"), { ssr: false, loading: () => <div className="h-full w-full bg-slate-100 animate-pulse rounded-2xl flex items-center justify-center text-slate-400 font-medium">Memuat Peta Interaktif...</div> });
-import { getColorFromProperty, getLabelFromProperty } from "@/lib/color-utils";
 
 import initialRegionsData from "../../public/mock-regions.json";
 import initialWaterData from "../../public/mock-water.json";
 
 export default function Home() {
-  const [regions, setRegions] = useState<any[]>(initialRegionsData);
+  const [regions, setRegions] = useState<any[]>(() => ensureUniqueRegionColors(initialRegionsData));
   const [selectedDasId, setSelectedDasId] = useState<string | null>(null);
   const [pdfUrls, setPdfUrls] = useState<Record<string, string>>({});
   const [waterDataMap, setWaterDataMap] = useState<Record<string, any>>({});
@@ -143,6 +131,7 @@ export default function Home() {
             }
           } catch (e) {}
 
+          fetchedRegions = ensureUniqueRegionColors(fetchedRegions);
           setRegions(fetchedRegions);
           fetchedRegions.forEach((r: any) => {
             if (r.pdfUrl) urls[r.id] = r.pdfUrl;
@@ -195,7 +184,7 @@ export default function Home() {
       })
       .catch(err => {
          console.warn("Failed to fetch /api/regions, falling back to initialRegionsData:", err);
-         setRegions(initialRegionsData);
+          setRegions(ensureUniqueRegionColors(initialRegionsData));
       });
       
     // Fetch latest water data

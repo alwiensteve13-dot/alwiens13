@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { apiSuccess, apiError } from "@/lib/api-response";
 import fs from "fs";
 import path from "path";
+import { getUniquePolygonColor } from "@/lib/color-utils";
 
 export const dynamic = 'force-dynamic';
 
@@ -113,11 +114,19 @@ export async function POST(request: Request) {
     return apiError("Format request tidak valid");
   }
 
-  const { name, description } = body;
+  const { name, description, color: reqColor } = body;
 
   if (!name) {
     return apiError("Nama DAS wajib diisi");
   }
+
+  // Determine a unique, non-colliding polygon color
+  const existingRegions = getMockRegions();
+  const existingColors = existingRegions.map((r: any) => r.color);
+  const assignedColor =
+    reqColor && reqColor !== "#64748b" && !existingColors.includes(reqColor)
+      ? reqColor
+      : getUniquePolygonColor(existingColors, name);
 
   try {
     if (!prisma) throw new Error("Prisma not initialized");
@@ -129,7 +138,7 @@ export async function POST(request: Request) {
         description: description || "",
       }
     });
-    return apiSuccess(newRegion);
+    return apiSuccess({ ...newRegion, color: assignedColor });
   } catch (error: any) {
     console.warn("Database connection failed on POST, falling back to mock file logic.");
     
@@ -139,7 +148,7 @@ export async function POST(request: Request) {
       region: description || "Wilayah Baru",
       area: "-",
       coordinates: [],
-      color: "#64748b",
+      color: assignedColor,
       status: "Belum ada data"
     };
     
