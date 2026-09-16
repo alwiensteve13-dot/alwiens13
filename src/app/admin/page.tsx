@@ -14,7 +14,13 @@ interface Region {
   name: string;
   description: string;
   color?: string;
+  coordinates?: number[][];
+  area?: string;
+  geojson?: any;
   pdfUrl?: string;
+  landCoverUrl?: string;
+  soilTypeUrl?: string;
+  riverUrl?: string;
   demnasUrl?: string;
   demnasName?: string;
   demnasSize?: string;
@@ -147,9 +153,44 @@ export default function AdminDashboardPage() {
       } catch (e) {}
 
       const allMap = new Map<string, Region>();
-      [...customRegions, ...regionsData].forEach(r => {
-        if (r && r.id && !allMap.has(r.id)) {
-          allMap.set(r.id, r);
+      regionsData.forEach((r) => {
+        if (r && r.id) allMap.set(r.id, r);
+      });
+
+      customRegions.forEach((c: any) => {
+        if (!c || !c.id) return;
+        if (allMap.has(c.id)) {
+          const existing = allMap.get(c.id)!;
+          allMap.set(c.id, {
+            ...existing,
+            ...c,
+            coordinates: (c.coordinates && c.coordinates.length > 0) ? c.coordinates : (existing.coordinates || []),
+            pdfUrl: c.pdfUrl || existing.pdfUrl,
+          });
+          return;
+        }
+
+        const cNameNorm = (c.name || "").toLowerCase().replace(/^(das\s+|wae\s+|way\s+)/g, "").trim();
+        let matchedExistingKey: string | null = null;
+        for (const [key, val] of allMap.entries()) {
+          const valNameNorm = (val.name || "").toLowerCase().replace(/^(das\s+|wae\s+|way\s+)/g, "").trim();
+          if (cNameNorm && valNameNorm && cNameNorm === valNameNorm) {
+            matchedExistingKey = key;
+            break;
+          }
+        }
+
+        if (matchedExistingKey) {
+          const existing = allMap.get(matchedExistingKey)!;
+          allMap.set(matchedExistingKey, {
+            ...existing,
+            ...c,
+            id: matchedExistingKey,
+            coordinates: (c.coordinates && c.coordinates.length > 0) ? c.coordinates : (existing.coordinates || []),
+            pdfUrl: existing.pdfUrl || c.pdfUrl,
+          });
+        } else {
+          allMap.set(c.id, c);
         }
       });
       const mergedList = Array.from(allMap.values());

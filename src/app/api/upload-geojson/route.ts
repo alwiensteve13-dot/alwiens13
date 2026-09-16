@@ -79,16 +79,29 @@ export async function POST(request: NextRequest) {
             if (type === "das") {
               let coords: [number, number][] = [];
               try {
-                let rawRing: number[][] = [];
+                let rawRing: any[] = [];
                 if (geojson.type === "FeatureCollection" && geojson.features?.length > 0) {
                   const geom = geojson.features[0]?.geometry;
-                  rawRing = geom?.coordinates?.[0] || [];
+                  if (geom?.type === "Polygon") {
+                    rawRing = geom.coordinates?.[0] || [];
+                  } else if (geom?.type === "MultiPolygon") {
+                    rawRing = geom.coordinates?.[0]?.[0] || [];
+                  }
                 } else if (geojson.type === "Feature") {
-                  rawRing = geojson.geometry?.coordinates?.[0] || [];
+                  const geom = geojson.geometry;
+                  if (geom?.type === "Polygon") {
+                    rawRing = geom.coordinates?.[0] || [];
+                  } else if (geom?.type === "MultiPolygon") {
+                    rawRing = geom.coordinates?.[0]?.[0] || [];
+                  }
                 } else if (geojson.type === "Polygon") {
                   rawRing = geojson.coordinates?.[0] || [];
+                } else if (geojson.type === "MultiPolygon") {
+                  rawRing = geojson.coordinates?.[0]?.[0] || [];
                 }
-                coords = rawRing.map((pt: any) => [Number(Number(pt[1]).toFixed(6)), Number(Number(pt[0]).toFixed(6))]);
+                coords = rawRing
+                  .filter((pt: any) => Array.isArray(pt) && pt.length >= 2 && !isNaN(Number(pt[0])) && !isNaN(Number(pt[1])))
+                  .map((pt: any) => [Number(Number(pt[1]).toFixed(6)), Number(Number(pt[0]).toFixed(6))]);
               } catch (err) {}
               if (coords.length > 0) {
                 mockData[regionIdx].coordinates = coords;
