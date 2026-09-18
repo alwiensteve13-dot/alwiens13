@@ -13680,246 +13680,6 @@
     "id": "mock-water-mock-1789601400000-23"
   },
   {
-    "regionId": "mock-1789601500000",
-    "period": "2026-01-01T00:00:00.000Z",
-    "debit_air": 1.5,
-    "kebutuhan_air": 0.005,
-    "pemeliharaan_sungai": 0.15,
-    "neraca_air": 1.35,
-    "status": "Surplus",
-    "id": "mock-water-mock-1789601500000-0"
-  },
-  {
-    "regionId": "mock-1789601500000",
-    "period": "2026-01-16T00:00:00.000Z",
-    "debit_air": 1.8,
-    "kebutuhan_air": 0.006,
-    "pemeliharaan_sungai": 0.18,
-    "neraca_air": 1.61,
-    "status": "Surplus",
-    "id": "mock-water-mock-1789601500000-1"
-  },
-  {
-    "regionId": "mock-1789601500000",
-    "period": "2026-02-01T00:00:00.000Z",
-    "debit_air": 2.1,
-    "kebutuhan_air": 0.007,
-    "pemeliharaan_sungai": 0.21,
-    "neraca_air": 1.88,
-    "status": "Surplus",
-    "id": "mock-water-mock-1789601500000-2"
-  },
-  {
-    "regionId": "mock-1789601500000",
-    "period": "2026-02-16T00:00:00.000Z",
-    "debit_air": 2.4,
-    "kebutuhan_air": 0.005,
-    "pemeliharaan_sungai": 0.24,
-    "neraca_air": 2.16,
-    "status": "Surplus",
-    "id": "mock-water-mock-1789601500000-3"
-  },
-  {
-    "regionId": "mock-1789601500000",
-    "period": "2026-03-01T00:00:00.000Z",
-    "debit_air": 2.7,
-    "kebutuhan_air": 0.006,
-    "pemeliharaan_sungai": 0.27,
-    "neraca_air": 2.42,
-    "status": "Surplus",
-    "id": "mock-water-mock-1789601500000-4"
-  },
-  {
-    "regionId": "mock-1789601500000",
-    "period": "2026-03-16T00:00:00.000Z",
-    "debit_air": 1.5,
-    "kebutuhan_air": 0.007,
-    "pemeliharaan_sungai": 0.15,
-    "neraca_air": 1.34,
-    "status": "Surplus",
-    "id": "mock-water-mock-1789601500000-5"
-  },
-  {
-    "regionId": "mock-1789601500000",
-    "period": "2026-04-01T00:00:00.000Z",
-    "debit_air": 1.8,
-    "kebutuhan_air": 0.005,
-    "pemeliharaan_sungai": 0.18,
-    "neraca_air": 1.62,
-    "status": "Surplus",
-    "id": "mock-water-mock-1789601500000-6"
-  },
-  {
-    "regionId": "mock-1789601500000",
-    "period": "2026-04-16T00:00:00.000Z",
-    "debit_air": 2.1,
-    "kebutuhan_air": 0.006,
-    "pemeliharaan_sungai": 0.21,
-    "neraca_air": 1.88,
-    "status": "Surplus",
-    "id": "mock-water-mock-1789601500000-7"
-  },
-  {
-    "regionId": "mock-1789601500000",
-    "period": "2026-05-01T00:00:00.000Z",
-    "debit_air": 2.4,
-    "kebutuhan_air": 0.007,
-    "pemeliharaan_sungai": 0.24,
-    "neraca_air": 2.15,
-    "status": "Surplus",
-    "id": "mock-water-mock-1789601500000-8"
-  },
-  {
-    "regionId": "mock-1789601500000",
-    "period": "2026-05-16T00:00:00.000Z",
-    "debit_air": 2.7,
-    "kebutuhan_air": 0.005,
-    "pemeliharaan_sungai": 0.27,
-    "neraca_air": 2.43,
-    "status": "Surplus",
-    "id": "mock-water-mock-1789601500000-9"
-  },
-  {
-    "regionId": "mock-1789601500000",
-    "period": "2026-06-01T00:00:00.000Z",
-    "debit_air": 1.5,
-    "kebutuhan_air": 0.006,
-    "pemeliharaan_sungai": 0.15,
-    "neraca_air": 1.34,
-    "status": "Surplus",
-    "id": "mock-water-mock-1789601500000-10"
-  },
-  {
-    "regionId": "mock-1789601500000",
-    "period": "2026-06-16T00:00:00.000Z",
-    "debit_air": 1.8,
-    "kebutuhan_air": 0.007,
-    "pemeliharaan_sungai": 0.18,
-    "neraca_air": 1.61,
-    "status": "Surplus",
-    "id": "mock-water-mock-1789601500000-11"
-  },
-  {
-    "regionId": "mock-1789601500000",
-    "period": "2026-07-01T00:00:00.000Z",
-    "debit_air": 2.1,
-    "kebutuhan_air": 0.005,
-    "pemeliharaan_sungai": 0.21,
-    "neraca_air": 1.89,
-    "status": "Surplus",
-    "id": "mock-water-mock-1789601500000-12"
-  },
-  {
-    "regionId": "mock-1789601500000",
-    "period": "2026-07-16T00:00:00.000Z",
-    "debit_air": 2.4,
-    "kebutuhan_air": 0.006,
-    "pemeliharaan_sungai": 0.24,
-    "neraca_air": 2.15,
-    "status": "Surplus",
-    "id": "mock-water-mock-1789601500000-13"
-  },
-  {
-    "regionId": "mock-1789601500000",
-    "period": "2026-08-01T00:00:00.000Z",
-    "debit_air": 2.7,
-    "kebutuhan_air": 0.007,
-    "pemeliharaan_sungai": 0.27,
-    "neraca_air": 2.42,
-    "status": "Surplus",
-    "id": "mock-water-mock-1789601500000-14"
-  },
-  {
-    "regionId": "mock-1789601500000",
-    "period": "2026-08-16T00:00:00.000Z",
-    "debit_air": 1.5,
-    "kebutuhan_air": 0.005,
-    "pemeliharaan_sungai": 0.15,
-    "neraca_air": 1.35,
-    "status": "Surplus",
-    "id": "mock-water-mock-1789601500000-15"
-  },
-  {
-    "regionId": "mock-1789601500000",
-    "period": "2026-09-01T00:00:00.000Z",
-    "debit_air": 1.8,
-    "kebutuhan_air": 0.006,
-    "pemeliharaan_sungai": 0.18,
-    "neraca_air": 1.61,
-    "status": "Surplus",
-    "id": "mock-water-mock-1789601500000-16"
-  },
-  {
-    "regionId": "mock-1789601500000",
-    "period": "2026-09-16T00:00:00.000Z",
-    "debit_air": 2.1,
-    "kebutuhan_air": 0.007,
-    "pemeliharaan_sungai": 0.21,
-    "neraca_air": 1.88,
-    "status": "Surplus",
-    "id": "mock-water-mock-1789601500000-17"
-  },
-  {
-    "regionId": "mock-1789601500000",
-    "period": "2026-10-01T00:00:00.000Z",
-    "debit_air": 2.4,
-    "kebutuhan_air": 0.005,
-    "pemeliharaan_sungai": 0.24,
-    "neraca_air": 2.16,
-    "status": "Surplus",
-    "id": "mock-water-mock-1789601500000-18"
-  },
-  {
-    "regionId": "mock-1789601500000",
-    "period": "2026-10-16T00:00:00.000Z",
-    "debit_air": 2.7,
-    "kebutuhan_air": 0.006,
-    "pemeliharaan_sungai": 0.27,
-    "neraca_air": 2.42,
-    "status": "Surplus",
-    "id": "mock-water-mock-1789601500000-19"
-  },
-  {
-    "regionId": "mock-1789601500000",
-    "period": "2026-11-01T00:00:00.000Z",
-    "debit_air": 1.5,
-    "kebutuhan_air": 0.007,
-    "pemeliharaan_sungai": 0.15,
-    "neraca_air": 1.34,
-    "status": "Surplus",
-    "id": "mock-water-mock-1789601500000-20"
-  },
-  {
-    "regionId": "mock-1789601500000",
-    "period": "2026-11-16T00:00:00.000Z",
-    "debit_air": 1.8,
-    "kebutuhan_air": 0.005,
-    "pemeliharaan_sungai": 0.18,
-    "neraca_air": 1.62,
-    "status": "Surplus",
-    "id": "mock-water-mock-1789601500000-21"
-  },
-  {
-    "regionId": "mock-1789601500000",
-    "period": "2026-12-01T00:00:00.000Z",
-    "debit_air": 2.1,
-    "kebutuhan_air": 0.006,
-    "pemeliharaan_sungai": 0.21,
-    "neraca_air": 1.88,
-    "status": "Surplus",
-    "id": "mock-water-mock-1789601500000-22"
-  },
-  {
-    "regionId": "mock-1789601500000",
-    "period": "2026-12-16T00:00:00.000Z",
-    "debit_air": 2.4,
-    "kebutuhan_air": 0.007,
-    "pemeliharaan_sungai": 0.24,
-    "neraca_air": 2.15,
-    "status": "Surplus",
-    "id": "mock-water-mock-1789601500000-23"
-  },
-  {
     "regionId": "mock-1789601600000",
     "period": "2026-01-01T00:00:00.000Z",
     "debit_air": 1.5,
@@ -16318,5 +16078,245 @@
     "neraca_air": 0.081,
     "status": "Surplus",
     "id": "mock-water-bulk-8s9bre"
+  },
+  {
+    "regionId": "mock-1789601500000",
+    "period": "2026-01-01T00:00:00.000Z",
+    "debit_air": 0.038,
+    "kebutuhan_air": 0,
+    "pemeliharaan_sungai": 0.004,
+    "neraca_air": 0.034,
+    "status": "Surplus",
+    "id": "mock-water-bulk-kojnda"
+  },
+  {
+    "regionId": "mock-1789601500000",
+    "period": "2026-01-16T00:00:00.000Z",
+    "debit_air": 0.023,
+    "kebutuhan_air": 0,
+    "pemeliharaan_sungai": 0.002,
+    "neraca_air": 0.021,
+    "status": "Surplus",
+    "id": "mock-water-bulk-cgbpj"
+  },
+  {
+    "regionId": "mock-1789601500000",
+    "period": "2026-02-01T00:00:00.000Z",
+    "debit_air": 0.037,
+    "kebutuhan_air": 0,
+    "pemeliharaan_sungai": 0.004,
+    "neraca_air": 0.033,
+    "status": "Surplus",
+    "id": "mock-water-bulk-7zzd4k"
+  },
+  {
+    "regionId": "mock-1789601500000",
+    "period": "2026-02-16T00:00:00.000Z",
+    "debit_air": 0.01,
+    "kebutuhan_air": 0,
+    "pemeliharaan_sungai": 0.001,
+    "neraca_air": 0.009,
+    "status": "Surplus",
+    "id": "mock-water-bulk-vyvb8g"
+  },
+  {
+    "regionId": "mock-1789601500000",
+    "period": "2026-03-01T00:00:00.000Z",
+    "debit_air": 0.006,
+    "kebutuhan_air": 0,
+    "pemeliharaan_sungai": 0.001,
+    "neraca_air": 0.005,
+    "status": "Surplus",
+    "id": "mock-water-bulk-7ivo53"
+  },
+  {
+    "regionId": "mock-1789601500000",
+    "period": "2026-03-16T00:00:00.000Z",
+    "debit_air": 0.013,
+    "kebutuhan_air": 0,
+    "pemeliharaan_sungai": 0.001,
+    "neraca_air": 0.012,
+    "status": "Surplus",
+    "id": "mock-water-bulk-6fmrzk"
+  },
+  {
+    "regionId": "mock-1789601500000",
+    "period": "2026-04-01T00:00:00.000Z",
+    "debit_air": 0.023,
+    "kebutuhan_air": 0,
+    "pemeliharaan_sungai": 0.002,
+    "neraca_air": 0.021,
+    "status": "Surplus",
+    "id": "mock-water-bulk-pdne4r"
+  },
+  {
+    "regionId": "mock-1789601500000",
+    "period": "2026-04-16T00:00:00.000Z",
+    "debit_air": 0.028,
+    "kebutuhan_air": 0,
+    "pemeliharaan_sungai": 0.003,
+    "neraca_air": 0.025,
+    "status": "Surplus",
+    "id": "mock-water-bulk-6whbgr"
+  },
+  {
+    "regionId": "mock-1789601500000",
+    "period": "2026-05-01T00:00:00.000Z",
+    "debit_air": 0.02,
+    "kebutuhan_air": 0,
+    "pemeliharaan_sungai": 0.002,
+    "neraca_air": 0.018,
+    "status": "Surplus",
+    "id": "mock-water-bulk-q96ee8"
+  },
+  {
+    "regionId": "mock-1789601500000",
+    "period": "2026-05-16T00:00:00.000Z",
+    "debit_air": 0.039,
+    "kebutuhan_air": 0,
+    "pemeliharaan_sungai": 0.004,
+    "neraca_air": 0.035,
+    "status": "Surplus",
+    "id": "mock-water-bulk-d5zgcm"
+  },
+  {
+    "regionId": "mock-1789601500000",
+    "period": "2026-06-01T00:00:00.000Z",
+    "debit_air": 0.063,
+    "kebutuhan_air": 0,
+    "pemeliharaan_sungai": 0.006,
+    "neraca_air": 0.057,
+    "status": "Surplus",
+    "id": "mock-water-bulk-tghum"
+  },
+  {
+    "regionId": "mock-1789601500000",
+    "period": "2026-06-16T00:00:00.000Z",
+    "debit_air": 0.042,
+    "kebutuhan_air": 0,
+    "pemeliharaan_sungai": 0.004,
+    "neraca_air": 0.038,
+    "status": "Surplus",
+    "id": "mock-water-bulk-ba8u9g"
+  },
+  {
+    "regionId": "mock-1789601500000",
+    "period": "2026-07-01T00:00:00.000Z",
+    "debit_air": 0.048,
+    "kebutuhan_air": 0,
+    "pemeliharaan_sungai": 0.005,
+    "neraca_air": 0.043,
+    "status": "Surplus",
+    "id": "mock-water-bulk-6z38ro"
+  },
+  {
+    "regionId": "mock-1789601500000",
+    "period": "2026-07-16T00:00:00.000Z",
+    "debit_air": 0.033,
+    "kebutuhan_air": 0,
+    "pemeliharaan_sungai": 0.003,
+    "neraca_air": 0.03,
+    "status": "Surplus",
+    "id": "mock-water-bulk-bpfuog"
+  },
+  {
+    "regionId": "mock-1789601500000",
+    "period": "2026-08-01T00:00:00.000Z",
+    "debit_air": 0.014,
+    "kebutuhan_air": 0,
+    "pemeliharaan_sungai": 0.001,
+    "neraca_air": 0.013,
+    "status": "Surplus",
+    "id": "mock-water-bulk-tz0jt"
+  },
+  {
+    "regionId": "mock-1789601500000",
+    "period": "2026-08-16T00:00:00.000Z",
+    "debit_air": 0.039,
+    "kebutuhan_air": 0,
+    "pemeliharaan_sungai": 0.004,
+    "neraca_air": 0.035,
+    "status": "Surplus",
+    "id": "mock-water-bulk-s58ts"
+  },
+  {
+    "regionId": "mock-1789601500000",
+    "period": "2026-09-01T00:00:00.000Z",
+    "debit_air": 0.02,
+    "kebutuhan_air": 0,
+    "pemeliharaan_sungai": 0.002,
+    "neraca_air": 0.018,
+    "status": "Surplus",
+    "id": "mock-water-bulk-uhmvv"
+  },
+  {
+    "regionId": "mock-1789601500000",
+    "period": "2026-09-16T00:00:00.000Z",
+    "debit_air": 0.028,
+    "kebutuhan_air": 0,
+    "pemeliharaan_sungai": 0.003,
+    "neraca_air": 0.025,
+    "status": "Surplus",
+    "id": "mock-water-bulk-g1tqui"
+  },
+  {
+    "regionId": "mock-1789601500000",
+    "period": "2026-10-01T00:00:00.000Z",
+    "debit_air": 0.02,
+    "kebutuhan_air": 0,
+    "pemeliharaan_sungai": 0.002,
+    "neraca_air": 0.018,
+    "status": "Surplus",
+    "id": "mock-water-bulk-2b3i1"
+  },
+  {
+    "regionId": "mock-1789601500000",
+    "period": "2026-10-16T00:00:00.000Z",
+    "debit_air": 0.018,
+    "kebutuhan_air": 0,
+    "pemeliharaan_sungai": 0.002,
+    "neraca_air": 0.016,
+    "status": "Surplus",
+    "id": "mock-water-bulk-j07fsb"
+  },
+  {
+    "regionId": "mock-1789601500000",
+    "period": "2026-11-01T00:00:00.000Z",
+    "debit_air": 0.018,
+    "kebutuhan_air": 0,
+    "pemeliharaan_sungai": 0.002,
+    "neraca_air": 0.016,
+    "status": "Surplus",
+    "id": "mock-water-bulk-2hliho"
+  },
+  {
+    "regionId": "mock-1789601500000",
+    "period": "2026-11-16T00:00:00.000Z",
+    "debit_air": 0.017,
+    "kebutuhan_air": 0,
+    "pemeliharaan_sungai": 0.002,
+    "neraca_air": 0.015,
+    "status": "Surplus",
+    "id": "mock-water-bulk-ttmdvg"
+  },
+  {
+    "regionId": "mock-1789601500000",
+    "period": "2026-12-01T00:00:00.000Z",
+    "debit_air": 0.039,
+    "kebutuhan_air": 0,
+    "pemeliharaan_sungai": 0.004,
+    "neraca_air": 0.035,
+    "status": "Surplus",
+    "id": "mock-water-bulk-jfnq69"
+  },
+  {
+    "regionId": "mock-1789601500000",
+    "period": "2026-12-16T00:00:00.000Z",
+    "debit_air": 0.01,
+    "kebutuhan_air": 0,
+    "pemeliharaan_sungai": 0.001,
+    "neraca_air": 0.009,
+    "status": "Surplus",
+    "id": "mock-water-bulk-5cmry"
   }
 ]
