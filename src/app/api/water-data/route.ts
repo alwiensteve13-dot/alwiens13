@@ -49,13 +49,14 @@ export async function GET(request: Request) {
     });
     
     let mockData = getMockWaterData();
-    if (regionId) mockData = mockData.filter((d: any) => d.regionId === regionId);
+    if (regionId) mockData = mockData.filter((d: any) => (d.regionId === regionId || d.region_id === regionId));
 
     // Merge database data with mock data (deduplicate by regionId + period, prioritize non-zero kebutuhan)
     const dataMap = new Map<string, any>();
     [...mockData, ...(data || [])].forEach((d: any) => {
-      if (d && d.regionId && d.period) {
-        const key = `${d.regionId}_${new Date(d.period).toISOString()}`;
+      const regId = d?.regionId || d?.region_id;
+      if (d && regId && d.period) {
+        const key = `${regId}_${new Date(d.period).toISOString()}`;
         const existing = dataMap.get(key);
         if (!existing || ((d.kebutuhan_air || 0) > 0 && (existing.kebutuhan_air || 0) === 0)) {
           dataMap.set(key, d);
@@ -73,7 +74,7 @@ export async function GET(request: Request) {
     const regionId = url.searchParams.get("regionId");
     let data = getMockWaterData();
     if (regionId) {
-      data = data.filter((d: any) => d.regionId === regionId);
+      data = data.filter((d: any) => (d.regionId === regionId || d.region_id === regionId));
     }
     // Sort descending by period
     data.sort((a: any, b: any) => new Date(b.period).getTime() - new Date(a.period).getTime());
