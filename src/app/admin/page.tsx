@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/lib/auth-context";
 import { useEffect, useState, useMemo } from "react";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid, ReferenceLine } from 'recharts';
+import { BarChart, Bar, Cell, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid, ReferenceLine } from 'recharts';
 import { parseGeospatialFile } from "@/lib/geo-parser";
 import { getUniquePolygonColor, DISTINCT_POLYGON_PALETTE } from "@/lib/color-utils";
 
@@ -1606,7 +1606,11 @@ export default function AdminDashboardPage() {
                 <Legend verticalAlign="bottom" align="center" wrapperStyle={{paddingTop: '25px'}} formatter={(value) => <span className="text-slate-300 ml-1">{value === 'debit' ? 'Ketersediaan (Debit)' : value === 'need' ? 'Kebutuhan Air' : value === 'pemeliharaan' ? 'Pemeliharaan Sungai' : 'Neraca Air (NA)'}</span>} />
                 <Bar dataKey="debit" fill="#0ea5e9" radius={[4, 4, 0, 0]} barSize={11} name="debit" />
                 <Bar dataKey="need" fill="#ef4444" radius={[4, 4, 0, 0]} barSize={11} name="need" />
-                <Bar dataKey="na" fill="#10b981" radius={[4, 4, 0, 0]} barSize={11} name="na" />
+                <Bar dataKey="na" radius={[4, 4, 0, 0]} barSize={11} name="na">
+                  {chartData.map((entry: any, index: number) => (
+                    <Cell key={`admin-na-cell-${index}`} fill={entry.na >= 0 ? '#10b981' : '#ef4444'} />
+                  ))}
+                </Bar>
                 <Bar dataKey="pemeliharaan" fill="#f59e0b" radius={[4, 4, 0, 0]} barSize={11} name="pemeliharaan" />
               </BarChart>
             </ResponsiveContainer>

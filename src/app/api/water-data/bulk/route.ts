@@ -29,11 +29,11 @@ const saveMockWaterDataBulk = (newRecords: any[]) => {
     
     if (newRecords.length > 0) {
       const regionId = newRecords[0].regionId;
-      const year = new Date(newRecords[0].period).getFullYear();
+      const year = new Date(newRecords[0].period).getUTCFullYear();
       
       data = data.filter((d: any) => {
         const isSameRegion = d.regionId === regionId;
-        const isSameYear = new Date(d.period).getFullYear() === year;
+        const isSameYear = new Date(d.period).getUTCFullYear() === year;
         return !(isSameRegion && isSameYear);
       });
     }

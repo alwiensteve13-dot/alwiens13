@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { ResponsiveContainer, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Bar, ReferenceLine } from 'recharts';
+import { ResponsiveContainer, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Bar, ReferenceLine, Cell } from 'recharts';
 
 
 const NasaDownloader = dynamic(() => import('../components/nasa-downloader'), { ssr: false });
@@ -322,7 +322,7 @@ export default function Home() {
         let totalNeed = regionData.reduce((acc, curr) => acc + (curr.kebutuhan_air || 0), 0);
         const count = regionData.length || 1;
         let avgNeed = totalNeed / count;
-        if (avgNeed === 0 && totalUserNeed > 0) {
+        if (totalUserNeed > 0 && (avgNeed === 0 || totalUserNeed > avgNeed)) {
           avgNeed = totalUserNeed;
         }
         const totalPemeliharaan = regionData.reduce((acc, curr) => acc + (curr.pemeliharaan_sungai || 0), 0);
@@ -513,9 +513,10 @@ export default function Home() {
       bins.push({ name: `${months[m]} 2`, monthIdx: m, cycle: 2, debit: 0, need: totalUserNeed, pemeliharaan: 0, na: -totalUserNeed, hasData: false, _counted: false });
     }
     
+    const isWaya = selectedDas?.name?.toLowerCase().includes("waya");
     const regionData = allWaterData.filter(d => {
       const date = new Date(d.period);
-      return d.regionId === selectedDasId && date.getUTCFullYear().toString() === chartYear;
+      return (d.regionId === selectedDasId || (isWaya && d.regionId === "mock-1787820000000")) && date.getUTCFullYear().toString() === chartYear;
     });
     
     let sumDebit = 0;
@@ -529,9 +530,10 @@ export default function Home() {
       
       if (bins[binIdx]) {
         const debitVal = d.debit_air || 0;
-        let needVal = (d.kebutuhan_air !== undefined && d.kebutuhan_air !== null && d.kebutuhan_air > 0)
+        let baseNeed = (d.kebutuhan_air !== undefined && d.kebutuhan_air !== null && d.kebutuhan_air > 0)
           ? d.kebutuhan_air
-          : (bins[binIdx].need > 0 ? bins[binIdx].need : totalUserNeed);
+          : 0;
+        let needVal = totalUserNeed > 0 ? Math.max(baseNeed, totalUserNeed) : (baseNeed > 0 ? baseNeed : (bins[binIdx].need || 0));
 
         if (!bins[binIdx].hasData || needVal > bins[binIdx].need || debitVal > bins[binIdx].debit) {
           const pemeliharaanVal = (d.pemeliharaan_sungai !== undefined && d.pemeliharaan_sungai !== null)
@@ -1239,7 +1241,7 @@ export default function Home() {
                     
                     <div className="w-full h-[320px] mt-2" id="public-chart-container">
                       <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={chartData} margin={{ top: 10, right: 5, left: -20, bottom: 45 }} barGap={0.5}>
+                        <BarChart data={chartData} margin={{ top: 10, right: 10, left: -5, bottom: 45 }} barGap={0.5}>
                           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? "#334155" : "#e2e8f0"} />
                           <ReferenceLine y={0} stroke={isDark ? "#475569" : "#94a3b8"} strokeWidth={1.5} />
                           {chartSummary.avgDebit > 0 && (
@@ -1323,7 +1325,11 @@ export default function Home() {
                           <Legend verticalAlign="bottom" align="center" wrapperStyle={{paddingTop: '15px', fontSize: '10.5px', color: isDark ? '#94a3b8' : '#64748b'}} />
                           <Bar dataKey="debit" fill="#0ea5e9" radius={[2, 2, 0, 0]} name="Ketersediaan" />
                           <Bar dataKey="need" fill="#ef4444" radius={[2, 2, 0, 0]} name="Kebutuhan" />
-                          <Bar dataKey="na" fill="#10b981" radius={[2, 2, 0, 0]} name="Neraca Air (NA)" />
+                          <Bar dataKey="na" radius={[2, 2, 0, 0]} name="Neraca Air (NA)">
+                            {chartData.map((entry: any, index: number) => (
+                              <Cell key={`public-na-cell-${index}`} fill={entry.na >= 0 ? '#10b981' : '#ef4444'} />
+                            ))}
+                          </Bar>
                           <Bar dataKey="pemeliharaan" fill="#f59e0b" radius={[2, 2, 0, 0]} name="Pemeliharaan" />
                         </BarChart>
                       </ResponsiveContainer>
@@ -1375,7 +1381,14 @@ export default function Home() {
 
                       {/* Deficit / Surplus Note */}
                       <div className="pt-1">
-                        {chartSummary.defisit.length > 0 ? (
+                        {!chartSummary.hasData ? (
+                          <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                            <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <p>Belum ada data neraca air yang tercatat untuk tahun {chartYear}.</p>
+                          </div>
+                        ) : chartSummary.defisit.length > 0 ? (
                           <div className="flex items-start gap-2 text-red-600 dark:text-red-400">
                             <svg className="w-4 h-4 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -1679,7 +1692,11 @@ export default function Home() {
                     <Legend verticalAlign="bottom" align="center" wrapperStyle={{paddingTop: '25px', fontSize: '13px', fontWeight: 600, color: isDark ? '#94a3b8' : '#64748b'}} />
                     <Bar dataKey="debit" fill="#0ea5e9" radius={[4, 4, 0, 0]} barSize={12} name="Ketersediaan (Debit)" />
                     <Bar dataKey="need" fill="#ef4444" radius={[4, 4, 0, 0]} barSize={12} name="Kebutuhan Air" />
-                    <Bar dataKey="na" fill="#10b981" radius={[4, 4, 0, 0]} barSize={12} name="Neraca Air (NA)" />
+                    <Bar dataKey="na" radius={[4, 4, 0, 0]} barSize={12} name="Neraca Air (NA)">
+                      {chartData.map((entry: any, index: number) => (
+                        <Cell key={`modal-na-cell-${index}`} fill={entry.na >= 0 ? '#10b981' : '#ef4444'} />
+                      ))}
+                    </Bar>
                     <Bar dataKey="pemeliharaan" fill="#f59e0b" radius={[4, 4, 0, 0]} barSize={12} name="Pemeliharaan Sungai" />
                   </BarChart>
                 </ResponsiveContainer>
