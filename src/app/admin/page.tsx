@@ -83,6 +83,9 @@ export default function AdminDashboardPage() {
   const [isBulkEditModalOpen, setIsBulkEditModalOpen] = useState(false);
   const [bulkFormData, setBulkFormData] = useState(Array(24).fill({ debit: "", need: "", pemeliharaan: "", na: "" }));
   const [isSavingBulk, setIsSavingBulk] = useState(false);
+  const [isPasteExcelModalOpen, setIsPasteExcelModalOpen] = useState(false);
+  const [pasteExcelText, setPasteExcelText] = useState("");
+  const [pasteExcelError, setPasteExcelError] = useState("");
 
   // Water Users state
   const [isWaterUsersModalOpen, setIsWaterUsersModalOpen] = useState(false);
@@ -702,6 +705,9 @@ export default function AdminDashboardPage() {
     if (absVal > 0 && absVal < 0.01) {
       return Number(val.toFixed(4)).toString();
     }
+    if (Number(val.toFixed(2)) !== Number(val.toFixed(3))) {
+      return val.toFixed(3);
+    }
     return val.toFixed(2);
   };
 
@@ -823,6 +829,89 @@ export default function AdminDashboardPage() {
 
     updated[index] = current;
     setBulkFormData(updated);
+  };
+
+  const handleReadClipboard = async () => {
+    try {
+      if (typeof navigator !== "undefined" && navigator?.clipboard?.readText) {
+        const text = await navigator.clipboard.readText();
+        if (text) {
+          setPasteExcelText(text);
+          setPasteExcelError("");
+        }
+      } else {
+        setPasteExcelError("Akses clipboard otomatis tidak didukung oleh browser. Silakan klik kotak teks lalu tekan Ctrl + V.");
+      }
+    } catch (err) {
+      setPasteExcelError("Tidak dapat membaca clipboard otomatis. Silakan klik kotak teks lalu tekan Ctrl + V.");
+    }
+  };
+
+  const handleApplyPastedExcelData = () => {
+    if (!pasteExcelText.trim()) {
+      setPasteExcelError("Teks data masih kosong. Silakan tempel data dari Excel.");
+      return;
+    }
+
+    const lines = pasteExcelText
+      .split(/\r?\n/)
+      .map(l => l.trim())
+      .filter(l => l.length > 0);
+
+    if (lines.length === 0) {
+      setPasteExcelError("Tidak ada baris data yang ditemukan.");
+      return;
+    }
+
+    const updatedForm = [...bulkFormData];
+    let importedCount = 0;
+
+    lines.slice(0, 24).forEach((line, idx) => {
+      let cols: string[] = [];
+      if (line.includes("\t")) {
+        cols = line.split("\t").map(c => c.trim());
+      } else if (line.includes(";")) {
+        cols = line.split(";").map(c => c.trim());
+      } else {
+        cols = line.split(/\s+/).map(c => c.trim());
+      }
+
+      const rawDebit = cols[0] || "";
+      const rawNeed = cols[1] || "";
+      const rawPem = cols[2] || "";
+      const rawNa = cols[3] || "";
+
+      const cleanDebit = rawDebit.replace(/,/g, ".");
+      const dNum = parseFloat(cleanDebit);
+
+      if (!isNaN(dNum)) {
+        const cleanNeed = rawNeed !== "" ? rawNeed.replace(/,/g, ".") : (updatedForm[idx]?.need || "0");
+        const nNum = parseFloat(cleanNeed) || 0;
+        
+        const pVal = rawPem !== "" ? rawPem.replace(/,/g, ".") : Number((dNum * 0.095).toFixed(3)).toString();
+        const pNum = parseFloat(pVal) || 0;
+        
+        const naVal = rawNa !== "" ? rawNa.replace(/,/g, ".") : Number((dNum - (nNum + pNum)).toFixed(3)).toString();
+
+        updatedForm[idx] = {
+          debit: cleanDebit,
+          need: cleanNeed,
+          pemeliharaan: pVal,
+          na: naVal,
+        };
+        importedCount++;
+      }
+    });
+
+    if (importedCount === 0) {
+      setPasteExcelError("Format data angka tidak dikenali. Pastikan menyalin baris angka seperti: 0.179 atau 0,179.");
+      return;
+    }
+
+    setBulkFormData(updatedForm);
+    setIsPasteExcelModalOpen(false);
+    setPasteExcelText("");
+    setPasteExcelError("");
   };
 
   const handleExportCSV = () => {
@@ -1981,8 +2070,23 @@ export default function AdminDashboardPage() {
                 </p>
               </div>
 
-              {/* Action Buttons: Cetak PDF & Unduh CSV */}
-              <div className="flex items-center gap-2.5">
+              {/* Action Buttons: Tempel dari Excel, Unduh CSV, Cetak PDF */}
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPasteExcelError("");
+                    setIsPasteExcelModalOpen(!isPasteExcelModalOpen);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition shadow-xs cursor-pointer"
+                  title="Salin dan tempel 24 data ketersediaan langsung dari Excel"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                  </svg>
+                  <span>{isPasteExcelModalOpen ? "Tutup Tempel" : "📋 Tempel dari Excel"}</span>
+                </button>
+
                 <button
                   type="button"
                   onClick={handleExportCSV}
@@ -2008,6 +2112,59 @@ export default function AdminDashboardPage() {
                 </button>
               </div>
             </div>
+
+            {/* Quick Excel Paste Drawer */}
+            {isPasteExcelModalOpen && (
+              <div className="p-4 sm:p-5 bg-slate-950/80 border-b border-emerald-500/30 shrink-0 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-emerald-400 font-bold text-sm">📋 Tempel 24 Baris Data dari Excel</span>
+                    <span className="text-xs text-slate-400 hidden sm:inline">(Januari 1 s/d Desember 2)</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsPasteExcelModalOpen(false)}
+                    className="text-slate-400 hover:text-white text-xs font-semibold px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 cursor-pointer"
+                  >
+                    Batal
+                  </button>
+                </div>
+                <p className="text-xs text-slate-300">
+                  Salin 24 angka kolom ketersediaan/debit di Excel Anda, lalu tempel (Ctrl + V) di kotak ini. Nilai pemeliharaan (9.5%) dan neraca air akan otomatis terkalkulasi:
+                </p>
+                <div>
+                  <textarea
+                    rows={4}
+                    value={pasteExcelText}
+                    onChange={(e) => {
+                      setPasteExcelText(e.target.value);
+                      if (pasteExcelError) setPasteExcelError("");
+                    }}
+                    placeholder="Contoh salinan Excel:&#10;0.179&#10;0.096&#10;0.154&#10;... (hingga 24 baris)"
+                    className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-xs font-mono text-emerald-300 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 placeholder:text-slate-600"
+                  />
+                </div>
+                {pasteExcelError && (
+                  <p className="text-xs text-rose-400 font-medium">{pasteExcelError}</p>
+                )}
+                <div className="flex items-center justify-between gap-3">
+                  <button
+                    type="button"
+                    onClick={handleReadClipboard}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold cursor-pointer transition border border-slate-700"
+                  >
+                    <span>📋 Salin dari Clipboard</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleApplyPastedExcelData}
+                    className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-900/40 cursor-pointer transition"
+                  >
+                    <span>Terapkan ke 24 Periode</span>
+                  </button>
+                </div>
+              </div>
+            )}
             
             <div className="flex-1 overflow-y-auto p-6">
               <form id="bulk-form" onSubmit={handleBulkSubmit}>
