@@ -22,23 +22,22 @@ const getMockWaterData = () => {
   return [];
 };
 
-const saveMockWaterDataBulk = (newRecords: any[]) => {
+const saveMockWaterDataBulk = (regionId: string, year: number | string, newRecords: any[]) => {
   try {
     const filePath = path.join(process.cwd(), "public", "mock-water.json");
     let data = getMockWaterData();
+    const yrNum = Number(year);
+    
+    // Always filter out existing records for this regionId and year
+    data = data.filter((d: any) => {
+      const isSameRegion = String(d.regionId) === String(regionId);
+      const isSameYear = new Date(d.period).getUTCFullYear() === yrNum;
+      return !(isSameRegion && isSameYear);
+    });
     
     if (newRecords.length > 0) {
-      const regionId = newRecords[0].regionId;
-      const year = new Date(newRecords[0].period).getUTCFullYear();
-      
-      data = data.filter((d: any) => {
-        const isSameRegion = d.regionId === regionId;
-        const isSameYear = new Date(d.period).getUTCFullYear() === year;
-        return !(isSameRegion && isSameYear);
-      });
+      data.push(...newRecords);
     }
-    
-    data.push(...newRecords);
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
   } catch (e) {
     console.warn("Failed to write to mock-water.json (Vercel read-only filesystem):", e);
@@ -66,8 +65,20 @@ export async function POST(request: Request) {
     return isNaN(num) ? 0 : num;
   };
   
-  // Prepare 24 records
-  const recordsToInsert = entries.map((entry: any, index: number) => {
+  // Filter entries: only save periods that have actual data inputted by user
+  const recordsToInsert: any[] = [];
+  
+  entries.forEach((entry: any, index: number) => {
+    const rawDebit = entry.debit != null ? String(entry.debit).trim() : "";
+    const rawNeed = entry.need != null ? String(entry.need).trim() : "";
+    const rawPem = entry.pemeliharaan != null ? String(entry.pemeliharaan).trim() : "";
+    const rawNa = entry.na != null ? String(entry.na).trim() : "";
+
+    // If completely blank, leave it empty (do NOT insert dummy records)
+    if (rawDebit === "" && rawNeed === "" && rawPem === "" && rawNa === "") {
+      return;
+    }
+
     const month = Math.floor(index / 2) + 1;
     const cycle = (index % 2) + 1;
     
@@ -75,17 +86,17 @@ export async function POST(request: Request) {
     const monthStr = month.toString().padStart(2, "0");
     const dateStr = `${year}-${monthStr}-${day}T00:00:00.000Z`;
     
-    const debit = parseNum(entry.debit);
-    const need = parseNum(entry.need);
-    const pemeliharaan = entry.pemeliharaan != null && String(entry.pemeliharaan).trim() !== ""
-      ? parseNum(entry.pemeliharaan)
+    const debit = parseNum(rawDebit);
+    const need = parseNum(rawNeed);
+    const pemeliharaan = rawPem !== ""
+      ? parseNum(rawPem)
       : Number((0.095 * debit).toFixed(2));
-    const neraca = entry.na != null && String(entry.na).trim() !== "" 
-      ? parseNum(entry.na) 
+    const neraca = rawNa !== "" 
+      ? parseNum(rawNa) 
       : Number((debit - (need + pemeliharaan)).toFixed(2));
     const status = debit >= (need + pemeliharaan) ? "Surplus" : "Defisit";
     
-    return {
+    recordsToInsert.push({
       regionId: String(regionId),
       period: dateStr,
       debit_air: debit,
@@ -93,7 +104,7 @@ export async function POST(request: Request) {
       pemeliharaan_sungai: pemeliharaan,
       neraca_air: neraca,
       status,
-    };
+    });
   });
   
   try {
@@ -121,9 +132,11 @@ export async function POST(request: Request) {
       }
     });
 
-    await prisma.waterData.createMany({
-      data: recordsToInsert as any[]
-    });
+    if (recordsToInsert.length > 0) {
+      await prisma.waterData.createMany({
+        data: recordsToInsert as any[]
+      });
+    }
 
     const inserted = await prisma.waterData.findMany({
       where: {
@@ -136,7 +149,7 @@ export async function POST(request: Request) {
       orderBy: { period: 'asc' }
     });
     
-    return apiSuccess({ success: true, count: recordsToInsert.length, records: inserted }, 201);
+    return apiSuccess({ success: true, count: inserted.length, records: inserted }, 201);
   } catch (error: any) {
     console.warn("Database operation failed or mock region used for bulk water-data, using mock fallback:", error?.message || error);
     
@@ -145,7 +158,7 @@ export async function POST(request: Request) {
       id: "mock-water-bulk-" + Math.random().toString(36).substring(7)
     }));
     
-    saveMockWaterDataBulk(mockRecords);
+    saveMockWaterDataBulk(String(regionId), year, mockRecords);
     
     return apiSuccess({ success: true, count: mockRecords.length, mocked: true, records: mockRecords }, 201);
   }

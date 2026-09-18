@@ -130,17 +130,22 @@ export default function AdminDashboardPage() {
         }
       } catch (e) {}
 
-      const wdMap = new Map<string, WaterData>();
-      [...waterData, ...customWaterData].forEach(d => {
-        if (d && d.regionId && d.period) {
-          const key = `${d.regionId}_${new Date(d.period).toISOString()}`;
-          const existing = wdMap.get(key);
-          if (!existing || ((d.kebutuhan_air || 0) > 0 && (existing.kebutuhan_air || 0) === 0)) {
-            wdMap.set(key, d);
-          }
+      // Any (regionId, year) present in customWaterData completely replaces server waterData
+      const customRegionYears = new Set<string>();
+      customWaterData.forEach((c: any) => {
+        if (c && c.regionId && c.period) {
+          const yr = new Date(c.period).getUTCFullYear();
+          customRegionYears.add(`${c.regionId}_${yr}`);
         }
       });
-      const mergedWaterData = Array.from(wdMap.values());
+
+      const filteredWaterData = waterData.filter((d: any) => {
+        if (!d || !d.regionId || !d.period) return false;
+        const yr = new Date(d.period).getUTCFullYear();
+        return !customRegionYears.has(`${d.regionId}_${yr}`);
+      });
+
+      const mergedWaterData = [...filteredWaterData, ...customWaterData];
       setAllWaterData(mergedWaterData);
 
       // Merge custom regions created locally so they persist on Vercel
@@ -662,22 +667,23 @@ export default function AdminDashboardPage() {
       if (res.ok && resData.success) {
         // Persist to localStorage for permanent Vercel persistence
         try {
-          if (typeof window !== "undefined" && Array.isArray(resData.data?.records)) {
+          if (typeof window !== "undefined") {
+            const newRecords = Array.isArray(resData.data?.records) ? resData.data.records : [];
             const stored = localStorage.getItem("custom_water_data");
             let existing = stored ? JSON.parse(stored) : [];
             // Remove existing records for this region and year
             existing = existing.filter((d: any) => {
-              const isSameRegion = d.regionId === chartSelectedRegion;
+              const isSameRegion = String(d.regionId) === String(chartSelectedRegion);
               const isSameYear = new Date(d.period).getUTCFullYear().toString() === chartYear || new Date(d.period).getFullYear().toString() === chartYear;
               return !(isSameRegion && isSameYear);
             });
-            localStorage.setItem("custom_water_data", JSON.stringify([...existing, ...resData.data.records]));
+            localStorage.setItem("custom_water_data", JSON.stringify([...existing, ...newRecords]));
           }
         } catch (e) {}
 
         setIsBulkEditModalOpen(false);
         fetchData();
-        alert("Data tahunan (24 periode) berhasil disimpan!");
+        alert("Data tahunan berhasil disimpan!");
       } else {
         alert("Gagal menyimpan data tahunan: " + (resData.error || "Terjadi kesalahan pada server."));
       }
@@ -705,58 +711,51 @@ export default function AdminDashboardPage() {
     
     const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"];
     const bins: any[] = [];
-    
-    // Registered water users for this region
-    const dasWaterUsers = allWaterUsers.filter(u => u.regionId === chartSelectedRegion);
-    const totalUserNeed = dasWaterUsers.reduce((sum, u) => sum + (parseFloat(u.kebutuhan) || 0), 0);
 
-    // Initialize 24 bins with default need from water users if any
+    // Initialize 24 bins with clean empty state
     for (let m = 0; m < 12; m++) {
-      bins.push({ name: `${months[m]} 1`, monthIdx: m, cycle: 1, debit: 0, need: totalUserNeed, pemeliharaan: 0, na: -totalUserNeed, hasData: false, _counted: false });
-      bins.push({ name: `${months[m]} 2`, monthIdx: m, cycle: 2, debit: 0, need: totalUserNeed, pemeliharaan: 0, na: -totalUserNeed, hasData: false, _counted: false });
+      bins.push({ name: `${months[m]} 1`, monthIdx: m, cycle: 1, debit: 0, need: 0, pemeliharaan: 0, na: 0, hasData: false, _counted: false });
+      bins.push({ name: `${months[m]} 2`, monthIdx: m, cycle: 2, debit: 0, need: 0, pemeliharaan: 0, na: 0, hasData: false, _counted: false });
     }
     
     // Filter data for the region and year
     const regionData = allWaterData.filter(d => {
       const date = new Date(d.period);
-      return d.regionId === chartSelectedRegion && date.getUTCFullYear().toString() === chartYear;
+      return String(d.regionId) === String(chartSelectedRegion) && date.getUTCFullYear().toString() === chartYear;
     });
     
     let sumDebit = 0;
     let countData = 0;
 
-    // Assign data to bins
+    // Assign data to bins (strictly use what user inputted)
     regionData.forEach(d => {
       const date = new Date(d.period);
       const monthIdx = date.getUTCMonth();
       const day = date.getUTCDate();
-      const cycle = day < 15 ? 1 : 2; // day 1 is cycle 1, day 16 is cycle 2
+      const cycle = day < 15 ? 1 : 2;
       
       const binIdx = (monthIdx * 2) + (cycle - 1);
       if (bins[binIdx]) {
-        const debitVal = d.debit_air || 0;
-        let needVal = (d.kebutuhan_air !== undefined && d.kebutuhan_air !== null && d.kebutuhan_air > 0)
-          ? d.kebutuhan_air
-          : (bins[binIdx].need > 0 ? bins[binIdx].need : totalUserNeed);
+        const debitVal = typeof d.debit_air === "number" ? d.debit_air : (parseFloat(String(d.debit_air)) || 0);
+        const needVal = typeof d.kebutuhan_air === "number" ? d.kebutuhan_air : (parseFloat(String(d.kebutuhan_air)) || 0);
+        const pemeliharaanVal = (d.pemeliharaan_sungai !== undefined && d.pemeliharaan_sungai !== null)
+          ? (typeof d.pemeliharaan_sungai === "number" ? d.pemeliharaan_sungai : (parseFloat(String(d.pemeliharaan_sungai)) || 0))
+          : Number((0.095 * debitVal).toFixed(2));
 
-        if (!bins[binIdx].hasData || needVal > bins[binIdx].need || debitVal > bins[binIdx].debit) {
-          const pemeliharaanVal = (d.pemeliharaan_sungai !== undefined && d.pemeliharaan_sungai !== null)
-            ? d.pemeliharaan_sungai
-            : Number((0.095 * debitVal).toFixed(2));
+        const naVal = (d.neraca_air !== undefined && d.neraca_air !== null)
+          ? (typeof d.neraca_air === "number" ? d.neraca_air : (parseFloat(String(d.neraca_air)) || 0))
+          : Number((debitVal - (needVal + pemeliharaanVal)).toFixed(2));
 
-          const naVal = debitVal - (needVal + pemeliharaanVal);
+        bins[binIdx].debit = debitVal;
+        bins[binIdx].need = needVal;
+        bins[binIdx].pemeliharaan = pemeliharaanVal;
+        bins[binIdx].na = Number(naVal.toFixed(2));
+        bins[binIdx].hasData = true;
 
-          bins[binIdx].debit = debitVal;
-          bins[binIdx].need = needVal;
-          bins[binIdx].pemeliharaan = pemeliharaanVal;
-          bins[binIdx].na = Number(naVal.toFixed(2));
-          bins[binIdx].hasData = true;
-
-          if (!bins[binIdx]._counted) {
-            sumDebit += debitVal;
-            countData += 1;
-            bins[binIdx]._counted = true;
-          }
+        if (!bins[binIdx]._counted) {
+          sumDebit += debitVal;
+          countData += 1;
+          bins[binIdx]._counted = true;
         }
       }
     });
@@ -772,15 +771,15 @@ export default function AdminDashboardPage() {
     });
     
     return bins;
-  }, [chartSelectedRegion, chartYear, allWaterData, allWaterUsers]);
+  }, [chartSelectedRegion, chartYear, allWaterData]);
 
   const openBulkEditModal = () => {
-    // Populate form with existing chartData
+    // Populate form with existing chartData (leave empty if no data)
     const newForm = chartData.map(bin => ({
       debit: bin.hasData ? bin.debit.toString() : "",
-      need: (bin.hasData && bin.need > 0) ? bin.need.toString() : (bin.need > 0 ? bin.need.toString() : ""),
+      need: (bin.hasData && bin.need !== undefined) ? bin.need.toString() : "",
       pemeliharaan: bin.hasData ? bin.pemeliharaan.toString() : "",
-      na: bin.hasData ? bin.na.toString() : ""
+      na: (bin.hasData && bin.na !== undefined) ? bin.na.toString() : ""
     }));
     setBulkFormData(newForm);
     setIsBulkEditModalOpen(true);
@@ -789,12 +788,39 @@ export default function AdminDashboardPage() {
   const handleBulkChange = (index: number, field: "debit" | "need" | "pemeliharaan" | "na", value: string) => {
     const updated = [...bulkFormData];
     const current = { ...updated[index], [field]: value };
+
+    const dStr = field === "debit" ? value : current.debit;
+    const nStr = field === "need" ? value : current.need;
+
+    const dNum = parseFloat(String(dStr).trim().replace(/,/g, "."));
+    const nNum = parseFloat(String(nStr).trim().replace(/,/g, "."));
+
+    // Auto-calculate pemeliharaan when debit changes (unless explicitly modified)
     if (field === "debit") {
-      const num = parseFloat(String(value).trim().replace(/,/g, "."));
-      if (!isNaN(num)) {
-        current.pemeliharaan = (num * 0.095).toFixed(2);
+      if (!isNaN(dNum)) {
+        current.pemeliharaan = (dNum * 0.095).toFixed(2);
+      } else if (String(value).trim() === "") {
+        current.pemeliharaan = "";
       }
     }
+
+    // Auto-calculate na when debit/need/pemeliharaan changes (unless user typed custom na in this keystroke)
+    if (field !== "na") {
+      const pNum = parseFloat(String(current.pemeliharaan).trim().replace(/,/g, "."));
+      const validD = !isNaN(dNum);
+      const validN = !isNaN(nNum);
+      const validP = !isNaN(pNum);
+
+      if (validD || validN) {
+        const dVal = validD ? dNum : 0;
+        const nVal = validN ? nNum : 0;
+        const pVal = validP ? pNum : Number((0.095 * dVal).toFixed(2));
+        current.na = (dVal - (nVal + pVal)).toFixed(2);
+      } else if (String(dStr).trim() === "" && String(nStr).trim() === "") {
+        current.na = "";
+      }
+    }
+
     updated[index] = current;
     setBulkFormData(updated);
   };
@@ -915,6 +941,7 @@ export default function AdminDashboardPage() {
 
       bars += `
         ${bgAlt}
+        ${b.hasData ? `
         <!-- 1. Ketersediaan (Debit) -->
         <rect x="${debitX.toFixed(1)}" y="${debitY.toFixed(1)}" width="${barW.toFixed(1)}" height="${debitH.toFixed(1)}" fill="#0284c7" stroke="#0369a1" stroke-width="0.5" rx="1" />
         <!-- 2. Kebutuhan Air -->
@@ -923,6 +950,7 @@ export default function AdminDashboardPage() {
         <rect x="${pemX.toFixed(1)}" y="${pemY.toFixed(1)}" width="${barW.toFixed(1)}" height="${pemH.toFixed(1)}" fill="#f59e0b" stroke="#d97706" stroke-width="0.5" rx="1" />
         <!-- 4. Neraca Air -->
         <rect x="${naX.toFixed(1)}" y="${naY.toFixed(1)}" width="${barW.toFixed(1)}" height="${naH.toFixed(1)}" fill="${naFill}" stroke="${naStroke}" stroke-width="0.5" rx="1" />
+        ` : ''}
         <!-- Periode Label -->
         <text x="${centerX.toFixed(1)}" y="${(padT + plotH + 11).toFixed(1)}" text-anchor="end" font-size="7" font-weight="bold" fill="#1e293b" transform="rotate(-45 ${centerX.toFixed(1)} ${(padT + plotH + 11).toFixed(1)})">${b.name}</text>
       `;
@@ -1026,32 +1054,42 @@ export default function AdminDashboardPage() {
     }
     
     let totalDebit = 0, totalNeed = 0, totalPemeliharaan = 0, totalNA = 0;
+    let countedPeriods = 0;
 
     const effectiveBins = sourceBins.map((bin, idx) => {
       const hasBulk = activeRegionId === chartSelectedRegion;
-      const debitNum = (hasBulk && bulkFormData[idx]?.debit !== undefined && bulkFormData[idx]?.debit !== "")
-        ? parseFloat(bulkFormData[idx].debit)
-        : (bin.debit || 0);
-      let needNum = (hasBulk && bulkFormData[idx]?.need !== undefined && bulkFormData[idx]?.need !== "")
-        ? parseFloat(bulkFormData[idx].need)
-        : (bin.need || 0);
-      if (needNum === 0 && totalUserNeed > 0) {
-        needNum = totalUserNeed;
+      const bDebitStr = hasBulk && bulkFormData[idx]?.debit !== undefined ? String(bulkFormData[idx].debit).trim() : "";
+      const bNeedStr = hasBulk && bulkFormData[idx]?.need !== undefined ? String(bulkFormData[idx].need).trim() : "";
+      const bPemStr = hasBulk && bulkFormData[idx]?.pemeliharaan !== undefined ? String(bulkFormData[idx].pemeliharaan).trim() : "";
+      const bNaStr = hasBulk && bulkFormData[idx]?.na !== undefined ? String(bulkFormData[idx].na).trim() : "";
+
+      const hasPeriodData = bDebitStr !== "" || bNeedStr !== "" || bin.hasData;
+
+      if (!hasPeriodData) {
+        return {
+          ...bin,
+          hasData: false,
+          debit: 0,
+          need: 0,
+          pemeliharaan: 0,
+          na: 0,
+        };
       }
-      const pemeliharaanNum = (hasBulk && bulkFormData[idx]?.pemeliharaan !== undefined && bulkFormData[idx]?.pemeliharaan !== "")
-        ? parseFloat(bulkFormData[idx].pemeliharaan)
-        : (bin.pemeliharaan || 0);
-      const naNum = (hasBulk && bulkFormData[idx]?.na !== undefined && bulkFormData[idx]?.na !== "")
-        ? parseFloat(bulkFormData[idx].na)
-        : (bin.na !== undefined ? bin.na : (debitNum - (needNum + pemeliharaanNum)));
+
+      const debitNum = bDebitStr !== "" ? parseFloat(bDebitStr.replace(/,/g, '.')) : (bin.debit || 0);
+      const needNum = bNeedStr !== "" ? parseFloat(bNeedStr.replace(/,/g, '.')) : (bin.need || 0);
+      const pemeliharaanNum = bPemStr !== "" ? parseFloat(bPemStr.replace(/,/g, '.')) : (bin.pemeliharaan !== undefined ? bin.pemeliharaan : Number((debitNum * 0.095).toFixed(2)));
+      const naNum = bNaStr !== "" ? parseFloat(bNaStr.replace(/,/g, '.')) : (bin.na !== undefined ? bin.na : Number((debitNum - (needNum + pemeliharaanNum)).toFixed(2)));
 
       totalDebit += debitNum;
       totalNeed += needNum;
       totalPemeliharaan += pemeliharaanNum;
       totalNA += naNum;
+      countedPeriods++;
 
       return {
         ...bin,
+        hasData: true,
         debit: debitNum,
         need: needNum,
         pemeliharaan: pemeliharaanNum,
@@ -1059,14 +1097,29 @@ export default function AdminDashboardPage() {
       };
     });
 
-    const avgDebit = totalDebit / 24;
-    const avgNeed = totalNeed / 24;
-    const avgPemeliharaan = totalPemeliharaan / 24;
-    const avgNA = totalNA / 24;
-    const overallStatus = avgDebit >= (avgNeed + avgPemeliharaan) ? "Surplus" : "Defisit";
+    const avgDebit = countedPeriods > 0 ? totalDebit / countedPeriods : 0;
+    const avgNeed = countedPeriods > 0 ? totalNeed / countedPeriods : 0;
+    const avgPemeliharaan = countedPeriods > 0 ? totalPemeliharaan / countedPeriods : 0;
+    const avgNA = countedPeriods > 0 ? totalNA / countedPeriods : 0;
+    const overallStatus = countedPeriods === 0 ? "Belum ada data" : (avgDebit >= (avgNeed + avgPemeliharaan) ? "Surplus" : "Defisit");
     
     let rowsHtml = '';
     effectiveBins.forEach((bin, idx) => {
+      if (!bin.hasData) {
+        rowsHtml += `
+          <tr>
+            <td style="text-align: center; padding: 3.5px 5px; border: 1px solid #cbd5e1;">${idx + 1}</td>
+            <td style="padding: 3.5px 5px; border: 1px solid #cbd5e1; font-weight: bold;">${bin.name}</td>
+            <td style="text-align: center; padding: 3.5px 5px; border: 1px solid #cbd5e1; color: #94a3b8;">-</td>
+            <td style="text-align: center; padding: 3.5px 5px; border: 1px solid #cbd5e1; color: #94a3b8;">-</td>
+            <td style="text-align: center; padding: 3.5px 5px; border: 1px solid #cbd5e1; color: #94a3b8;">-</td>
+            <td style="text-align: center; padding: 3.5px 5px; border: 1px solid #cbd5e1; color: #94a3b8;">-</td>
+            <td style="text-align: center; padding: 3.5px 5px; border: 1px solid #cbd5e1; color: #64748b; font-style: italic;">Belum ada data</td>
+          </tr>
+        `;
+        return;
+      }
+
       const status = bin.debit >= (bin.need + bin.pemeliharaan) ? "Surplus" : "Defisit";
       const statusBg = status === "Surplus" ? "#d1fae5" : "#fee2e2";
       const statusColor = status === "Surplus" ? "#065f46" : "#991b1b";
@@ -1557,6 +1610,14 @@ export default function AdminDashboardPage() {
                     if (active && payload && payload.length) {
                       const data = payload[0]?.payload;
                       if (!data) return null;
+                      if (!data.hasData) {
+                        return (
+                          <div className="p-3 rounded-2xl shadow-2xl border border-slate-700 bg-slate-900/95 backdrop-blur-md text-xs space-y-1 min-w-[190px]">
+                            <span className="font-bold text-slate-100 text-sm block mb-0.5">{label}</span>
+                            <p className="text-slate-400">Belum ada data untuk periode ini.</p>
+                          </div>
+                        );
+                      }
                       const avgDebit = chartSummary.avgDebit || 0;
                       const isWet = avgDebit > 0 && data.debit >= avgDebit;
                       return (
@@ -1617,7 +1678,12 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Chart Summary Notes & Wet/Dry Season Analysis */}
-          {(chartSummary.hasData || chartSummary.defisit.length > 0 || chartSummary.surplus.length > 0) && (
+          {!chartSummary.hasData ? (
+            <div className="mt-6 p-4 rounded-xl bg-slate-800/40 border border-slate-700/60 text-xs text-slate-400 flex items-center gap-3">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-500 shrink-0"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              <p>Belum ada data neraca air yang diunggah untuk wilayah ini pada tahun {chartYear}. Silakan gunakan tombol <strong>"Input Data Setahun"</strong> di atas untuk menambahkan data.</p>
+            </div>
+          ) : (
             <div className="mt-6 flex flex-col gap-3">
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-bold text-slate-200">

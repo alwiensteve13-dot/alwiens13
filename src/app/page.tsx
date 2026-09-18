@@ -202,46 +202,60 @@ export default function Home() {
              const storedWd = localStorage.getItem("custom_water_data");
              if (storedWd) {
                const custom = JSON.parse(storedWd);
-               const map = new Map<string, any>();
-               [...fetchedWater, ...custom].forEach((w: any) => {
-                 if (w && w.regionId && w.period) {
-                   const key = `${w.regionId}_${new Date(w.period).toISOString()}`;
-                   map.set(key, w);
+               const customRegionYears = new Set<string>();
+               custom.forEach((c: any) => {
+                 if (c && c.regionId && c.period) {
+                   const yr = new Date(c.period).getUTCFullYear();
+                   customRegionYears.add(`${c.regionId}_${yr}`);
                  }
                });
-               fetchedWater = Array.from(map.values());
-             }
-           }
-         } catch (e) {}
 
-         setAllWaterData(fetchedWater);
-         fetchedWater.forEach((w: any) => {
-           if (!wd[w.regionId]) {
-              wd[w.regionId] = w;
-           }
-         });
-         setWaterDataMap(wd);
-      })
+                const filtered = fetchedWater.filter((w: any) => {
+                  if (!w || !w.regionId || !w.period) return false;
+                  const yr = new Date(w.period).getUTCFullYear();
+                  return !customRegionYears.has(`${w.regionId}_${yr}`);
+                });
+
+                fetchedWater = [...filtered, ...custom];
+              }
+            }
+          } catch (e) {}
+
+          setAllWaterData(fetchedWater);
+          fetchedWater.forEach((w: any) => {
+            if (!wd[w.regionId]) {
+               wd[w.regionId] = w;
+            }
+          });
+          setWaterDataMap(wd);
+       })
       .catch(err => {
-         console.warn("Failed to fetch /api/water-data, falling back to initialWaterData:", err);
-         let fallbackWater = initialWaterData;
-         try {
-           if (typeof window !== "undefined") {
-             const storedWd = localStorage.getItem("custom_water_data");
-             if (storedWd) {
-               const custom = JSON.parse(storedWd);
-               const map = new Map<string, any>();
-               [...fallbackWater, ...custom].forEach((w: any) => {
-                 if (w && w.regionId && w.period) {
-                   const key = `${w.regionId}_${new Date(w.period).toISOString()}`;
-                   map.set(key, w);
-                 }
-               });
-               fallbackWater = Array.from(map.values());
-             }
-           }
-         } catch (e) {}
-         setAllWaterData(fallbackWater);
+          console.warn("Failed to fetch /api/water-data, falling back to initialWaterData:", err);
+          let fallbackWater = initialWaterData;
+          try {
+            if (typeof window !== "undefined") {
+              const storedWd = localStorage.getItem("custom_water_data");
+              if (storedWd) {
+                const custom = JSON.parse(storedWd);
+                const customRegionYears = new Set<string>();
+                custom.forEach((c: any) => {
+                  if (c && c.regionId && c.period) {
+                    const yr = new Date(c.period).getUTCFullYear();
+                    customRegionYears.add(`${c.regionId}_${yr}`);
+                  }
+                });
+
+                const filtered = fallbackWater.filter((w: any) => {
+                  if (!w || !w.regionId || !w.period) return false;
+                  const yr = new Date(w.period).getUTCFullYear();
+                  return !customRegionYears.has(`${w.regionId}_${yr}`);
+                });
+
+                fallbackWater = [...filtered, ...custom];
+              }
+            }
+          } catch (e) {}
+          setAllWaterData(fallbackWater);
       });
 
     // Fetch water users
@@ -509,8 +523,8 @@ export default function Home() {
     const totalUserNeed = dasWaterUsers.reduce((sum, u) => sum + (parseFloat(u.kebutuhan) || 0), 0);
 
     for (let m = 0; m < 12; m++) {
-      bins.push({ name: `${months[m]} 1`, monthIdx: m, cycle: 1, debit: 0, need: totalUserNeed, pemeliharaan: 0, na: -totalUserNeed, hasData: false, _counted: false });
-      bins.push({ name: `${months[m]} 2`, monthIdx: m, cycle: 2, debit: 0, need: totalUserNeed, pemeliharaan: 0, na: -totalUserNeed, hasData: false, _counted: false });
+      bins.push({ name: `${months[m]} 1`, monthIdx: m, cycle: 1, debit: 0, need: 0, pemeliharaan: 0, na: 0, hasData: false, _counted: false });
+      bins.push({ name: `${months[m]} 2`, monthIdx: m, cycle: 2, debit: 0, need: 0, pemeliharaan: 0, na: 0, hasData: false, _counted: false });
     }
     
     const isWaya = selectedDas?.name?.toLowerCase().includes("waya");
@@ -529,30 +543,26 @@ export default function Home() {
       const binIdx = (monthIdx * 2) + (cycle - 1);
       
       if (bins[binIdx]) {
-        const debitVal = d.debit_air || 0;
-        let baseNeed = (d.kebutuhan_air !== undefined && d.kebutuhan_air !== null && d.kebutuhan_air > 0)
-          ? d.kebutuhan_air
-          : 0;
-        let needVal = totalUserNeed > 0 ? Math.max(baseNeed, totalUserNeed) : (baseNeed > 0 ? baseNeed : (bins[binIdx].need || 0));
+        const debitVal = typeof d.debit_air === "number" ? d.debit_air : (parseFloat(String(d.debit_air)) || 0);
+        const needVal = typeof d.kebutuhan_air === "number" ? d.kebutuhan_air : (parseFloat(String(d.kebutuhan_air)) || 0);
+        const pemeliharaanVal = (d.pemeliharaan_sungai !== undefined && d.pemeliharaan_sungai !== null)
+          ? (typeof d.pemeliharaan_sungai === "number" ? d.pemeliharaan_sungai : (parseFloat(String(d.pemeliharaan_sungai)) || 0))
+          : Number((0.095 * debitVal).toFixed(2));
 
-        if (!bins[binIdx].hasData || needVal > bins[binIdx].need || debitVal > bins[binIdx].debit) {
-          const pemeliharaanVal = (d.pemeliharaan_sungai !== undefined && d.pemeliharaan_sungai !== null)
-            ? d.pemeliharaan_sungai
-            : Number((0.095 * debitVal).toFixed(2));
+        const naVal = (d.neraca_air !== undefined && d.neraca_air !== null)
+          ? (typeof d.neraca_air === "number" ? d.neraca_air : (parseFloat(String(d.neraca_air)) || 0))
+          : Number((debitVal - (needVal + pemeliharaanVal)).toFixed(2));
 
-          const naVal = debitVal - (needVal + pemeliharaanVal);
+        bins[binIdx].debit = debitVal;
+        bins[binIdx].need = needVal;
+        bins[binIdx].pemeliharaan = pemeliharaanVal;
+        bins[binIdx].na = Number(naVal.toFixed(2));
+        bins[binIdx].hasData = true;
 
-          bins[binIdx].debit = debitVal;
-          bins[binIdx].need = needVal;
-          bins[binIdx].pemeliharaan = pemeliharaanVal;
-          bins[binIdx].na = Number(naVal.toFixed(2));
-          bins[binIdx].hasData = true;
-
-          if (!bins[binIdx]._counted) {
-            sumDebit += debitVal;
-            countData += 1;
-            bins[binIdx]._counted = true;
-          }
+        if (!bins[binIdx]._counted) {
+          sumDebit += debitVal;
+          countData += 1;
+          bins[binIdx]._counted = true;
         }
       }
     });
@@ -1274,6 +1284,14 @@ export default function Home() {
                               if (active && payload && payload.length) {
                                 const data = payload[0]?.payload;
                                 if (!data) return null;
+                                if (!data.hasData) {
+                                  return (
+                                    <div className="p-3 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md text-xs space-y-1 min-w-[180px]">
+                                      <span className="font-bold text-slate-800 dark:text-slate-100 block mb-0.5">{label}</span>
+                                      <p className="text-slate-500 dark:text-slate-400">Belum ada data untuk periode ini.</p>
+                                    </div>
+                                  );
+                                }
                                 const avgDebit = chartSummary.avgDebit || 0;
                                 const isWet = avgDebit > 0 && data.debit >= avgDebit;
                                 return (
@@ -1641,6 +1659,14 @@ export default function Home() {
                         if (active && payload && payload.length) {
                           const data = payload[0]?.payload;
                           if (!data) return null;
+                          if (!data.hasData) {
+                            return (
+                              <div className="p-3.5 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md text-xs space-y-1 min-w-[190px]">
+                                <span className="font-bold text-slate-800 dark:text-slate-100 text-sm block mb-0.5">{label}</span>
+                                <p className="text-slate-500 dark:text-slate-400">Belum ada data untuk periode ini.</p>
+                              </div>
+                            );
+                          }
                           const avgDebit = chartSummary.avgDebit || 0;
                           const isWet = avgDebit > 0 && data.debit >= avgDebit;
                           return (
