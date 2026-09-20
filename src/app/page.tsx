@@ -604,31 +604,57 @@ export default function Home() {
 
     if (!bins || bins.length === 0) return '';
 
-    let maxVal = Math.max(
-      ...bins.map((b: any) => Math.max(b.debit || 0, b.need || 0, b.pemeliharaan || 0, Math.max(b.na || 0, 0))),
-      avgDebitVal,
-      1
+    // Cek apakah ada data valid (hasData = true)
+    const hasAnyData = bins.some((b: any) => b.hasData);
+    if (!hasAnyData) {
+      return `<div style="background:#fff;border:1px solid #cbd5e1;border-radius:6px;padding:20px;text-align:center;color:#94a3b8;font-size:11px;">Tidak ada data grafik tersedia untuk periode ini.</div>`;
+    }
+
+    // Gunakan skala dinamis berdasarkan nilai data aktual (tanpa hardcode minimum 1)
+    const rawMaxVal = Math.max(
+      ...bins.map((b: any) => Math.max(
+        isFinite(b.debit) ? b.debit : 0,
+        isFinite(b.need) ? b.need : 0,
+        isFinite(b.pemeliharaan) ? b.pemeliharaan : 0,
+        isFinite(b.na) && b.na > 0 ? b.na : 0
+      )),
+      isFinite(avgDebitVal) && avgDebitVal > 0 ? avgDebitVal : 0
     );
+    let maxVal = rawMaxVal > 0 ? rawMaxVal * 1.15 : 0.01;
     let minVal = Math.min(
-      ...bins.map((b: any) => Math.min(b.na || 0, 0)),
+      ...bins.map((b: any) => (isFinite(b.na) && b.na < 0 ? b.na : 0)),
       0
     );
-
-    maxVal = maxVal * 1.15;
     if (minVal < 0) minVal = minVal * 1.15;
-    const yRange = maxVal - minVal;
 
-    const getY = (val: number) => padT + plotH - ((val - minVal) / yRange) * plotH;
+    // Guard: pastikan yRange tidak nol (hindari pembagian dengan 0 / NaN)
+    let yRange = maxVal - minVal;
+    if (!isFinite(yRange) || yRange < 1e-10) {
+      yRange = maxVal > 0 ? maxVal : 0.01;
+      minVal = 0;
+      maxVal = yRange;
+    }
+
+    const getY = (val: number): number => {
+      const safeVal = isFinite(val) ? val : 0;
+      const y = padT + plotH - ((safeVal - minVal) / yRange) * plotH;
+      return isFinite(y) ? y : padT + plotH;
+    };
     const zeroY = getY(0);
 
+
+
     // Y-axis grid & labels (5 levels)
+    // Presisi label Y-axis adaptif: lebih banyak desimal untuk nilai kecil
+    const yLabelDecimals = maxVal < 0.1 ? 4 : maxVal < 1 ? 3 : maxVal < 10 ? 2 : 1;
     let yGrid = '';
     for (let i = 0; i <= 4; i++) {
       const val = minVal + (yRange * i) / 4;
       const y = getY(val);
+      if (!isFinite(y)) continue;
       yGrid += `
         <line x1="${padL}" y1="${y.toFixed(1)}" x2="${(padL + plotW).toFixed(1)}" y2="${y.toFixed(1)}" stroke="#e2e8f0" stroke-width="0.8" stroke-dasharray="2,2" />
-        <text x="${padL - 6}" y="${(y + 3).toFixed(1)}" text-anchor="end" font-size="7.5" fill="#475569" font-family="monospace">${val.toFixed(1)}</text>
+        <text x="${padL - 6}" y="${(y + 3).toFixed(1)}" text-anchor="end" font-size="7.5" fill="#475569" font-family="monospace">${val.toFixed(yLabelDecimals)}</text>
       `;
     }
 
@@ -687,12 +713,16 @@ export default function Home() {
     });
 
     let refLine = '';
-    if (avgDebitVal > 0) {
+    if (avgDebitVal > 0 && isFinite(avgDebitVal)) {
       const yAvg = getY(avgDebitVal);
+      // Clamp yAvg agar label tidak keluar dari batas plot SVG
+      const yAvgClamped = Math.max(padT + 12, Math.min(padT + plotH, yAvg));
+      // Presisi label Q Rerata adaptif
+      const qLabel = avgDebitVal < 0.01 ? avgDebitVal.toFixed(4) : avgDebitVal < 0.1 ? avgDebitVal.toFixed(3) : avgDebitVal.toFixed(2);
       refLine = `
-        <line x1="${padL}" y1="${yAvg.toFixed(1)}" x2="${(padL + plotW).toFixed(1)}" y2="${yAvg.toFixed(1)}" stroke="#0284c7" stroke-width="1.5" stroke-dasharray="4,4" />
-        <rect x="${(padL + plotW - 132).toFixed(1)}" y="${(yAvg - 11).toFixed(1)}" width="128" height="10" fill="#0284c7" rx="2" />
-        <text x="${(padL + plotW - 68).toFixed(1)}" y="${(yAvg - 3.5).toFixed(1)}" text-anchor="middle" font-size="7" font-weight="bold" fill="#ffffff">Q Rerata = ${avgDebitVal.toFixed(2)} m³/s</text>
+        <line x1="${padL}" y1="${yAvgClamped.toFixed(1)}" x2="${(padL + plotW).toFixed(1)}" y2="${yAvgClamped.toFixed(1)}" stroke="#0284c7" stroke-width="1.5" stroke-dasharray="4,4" />
+        <rect x="${(padL + plotW - 132).toFixed(1)}" y="${(yAvgClamped - 11).toFixed(1)}" width="128" height="10" fill="#0284c7" rx="2" />
+        <text x="${(padL + plotW - 68).toFixed(1)}" y="${(yAvgClamped - 3.5).toFixed(1)}" text-anchor="middle" font-size="7" font-weight="bold" fill="#ffffff">Q Rerata = ${qLabel} m³/s</text>
       `;
     }
 
