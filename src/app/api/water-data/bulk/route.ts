@@ -30,7 +30,7 @@ const saveMockWaterDataBulk = (regionId: string, year: number | string, newRecor
     
     // Always filter out existing records for this regionId and year
     data = data.filter((d: any) => {
-      const isSameRegion = String(d.regionId) === String(regionId);
+      const isSameRegion = String(d.regionId) === String(regionId) || String(d.region_id) === String(regionId);
       const isSameYear = new Date(d.period).getUTCFullYear() === yrNum;
       return !(isSameRegion && isSameYear);
     });
@@ -43,6 +43,15 @@ const saveMockWaterDataBulk = (regionId: string, year: number | string, newRecor
     console.warn("Failed to write to mock-water.json (Vercel read-only filesystem):", e);
   }
 };
+
+const periodNames = [
+  'Januari 1', 'Januari 2', 'Februari 1', 'Februari 2',
+  'Maret 1', 'Maret 2', 'April 1', 'April 2',
+  'Mei 1', 'Mei 2', 'Juni 1', 'Juni 2',
+  'Juli 1', 'Juli 2', 'Agustus 1', 'Agustus 2',
+  'September 1', 'September 2', 'Oktober 1', 'Oktober 2',
+  'November 1', 'November 2', 'Desember 1', 'Desember 2'
+];
 
 export async function POST(request: Request) {
   let body;
@@ -90,18 +99,30 @@ export async function POST(request: Request) {
     const need = parseNum(rawNeed);
     const pemeliharaan = rawPem !== ""
       ? parseNum(rawPem)
-      : Number((0.095 * debit).toFixed(2));
+      : Number((0.095 * debit).toFixed(3));
     const neraca = rawNa !== "" 
       ? parseNum(rawNa) 
-      : Number((debit - (need + pemeliharaan)).toFixed(2));
+      : Number((debit - (need + pemeliharaan)).toFixed(3));
     const status = debit >= (need + pemeliharaan) ? "Surplus" : "Defisit";
     
+    const periodNum = index + 1;
+    const periodName = periodNames[index] || `Periode ${periodNum}`;
+
     recordsToInsert.push({
       regionId: String(regionId),
+      region_id: String(regionId),
       period: dateStr,
+      period_num: periodNum,
+      period_name: periodName,
+      year: Number(year),
       debit_air: debit,
+      debit: debit,
+      ketersediaan: debit,
       kebutuhan_air: need,
+      kebutuhan: need,
+      need: need,
       pemeliharaan_sungai: pemeliharaan,
+      pemeliharaan: pemeliharaan,
       neraca_air: neraca,
       status,
     });
@@ -133,8 +154,17 @@ export async function POST(request: Request) {
     });
 
     if (recordsToInsert.length > 0) {
+      const prismaRecords = recordsToInsert.map(r => ({
+        regionId: r.regionId,
+        period: new Date(r.period),
+        debit_air: r.debit_air,
+        kebutuhan_air: r.kebutuhan_air,
+        pemeliharaan_sungai: r.pemeliharaan_sungai,
+        neraca_air: r.neraca_air,
+        status: r.status,
+      }));
       await prisma.waterData.createMany({
-        data: recordsToInsert as any[]
+        data: prismaRecords as any[]
       });
     }
 
