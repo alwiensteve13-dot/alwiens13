@@ -10,12 +10,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Latitude and Longitude are required' }, { status: 400 });
     }
 
+    // Validasi input agar hanya angka koordinat & tanggal yang diteruskan ke NASA
+    const latNum = Number(lat);
+    const lonNum = Number(lon);
+    if (!Number.isFinite(latNum) || !Number.isFinite(lonNum) || Math.abs(latNum) > 90 || Math.abs(lonNum) > 180) {
+      return NextResponse.json({ error: 'Invalid latitude/longitude' }, { status: 400 });
+    }
+
     const start = startDate || '20000101';
     const end = endDate || '20251231';
+    if (!/^\d{8}$/.test(String(start)) || !/^\d{8}$/.test(String(end))) {
+      return NextResponse.json({ error: 'Invalid date format (YYYYMMDD)' }, { status: 400 });
+    }
 
     // NASA POWER API URL for daily point data
     // parameters: PRECTOTCORR = Precipitation Corrected
-    const url = `https://power.larc.nasa.gov/api/temporal/daily/point?parameters=PRECTOTCORR&community=RE&longitude=${lon}&latitude=${lat}&start=${start}&end=${end}&format=CSV`;
+    const url = `https://power.larc.nasa.gov/api/temporal/daily/point?parameters=PRECTOTCORR&community=RE&longitude=${lonNum}&latitude=${latNum}&start=${start}&end=${end}&format=CSV`;
 
     console.log(`Fetching NASA data: ${url}`);
     

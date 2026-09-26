@@ -6309,19 +6309,7 @@
     "pdfUrl": "/uploads/1784682389738-Wae_Ruhu_Water_Resilience_Profile.pdf",
     "soilTypeUrl": "/geojson/soiltype-2.json",
     "landCoverUrl": "/geojson/landcover-2.json",
-    "riverUrl": "/geojson/river-2.json",
-    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-    "demnasName": "DEMNAS - DAS Way Ruhu",
-    "demnasSize": "Master DEMNAS",
-    "demnasList": [
-      {
-        "id": "dem-1785808976605-7890m",
-        "name": "DEMNAS - DAS Way Ruhu",
-        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-        "size": "Master DEMNAS",
-        "createdAt": "2026-08-04T02:02:56.605Z"
-      }
-    ]
+    "riverUrl": "/geojson/river-2.json"
   },
   {
     "id": "3",
@@ -12094,25 +12082,6 @@
     "need": "55.6 m³/s",
     "status": "Surplus",
     "color": "#db2777",
-    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-    "demnasName": "DEMNAS - DAS Way Ruhu",
-    "demnasSize": "Master DEMNAS",
-    "demnasList": [
-      {
-        "id": "dem-1785808976744-959s6",
-        "name": "DEMNAS - DAS Way Ruhu",
-        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-        "size": "Master DEMNAS",
-        "createdAt": "2026-08-04T02:02:56.744Z"
-      },
-      {
-        "id": "dem-1785807785487-tnijr",
-        "name": "DEMNAS - Ambon Seram",
-        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
-        "size": "465.7 MB",
-        "createdAt": "2026-08-04T01:43:05.487Z"
-      }
-    ],
     "soilTypeUrl": "/geojson/soiltype-3.json",
     "landCoverUrl": "/geojson/landcover-3.json"
   },
@@ -14273,25 +14242,6 @@
     ],
     "color": "#0284c7",
     "status": "Belum ada data",
-    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-    "demnasName": "DEMNAS - DAS Way Ruhu",
-    "demnasSize": "Master DEMNAS",
-    "demnasList": [
-      {
-        "id": "dem-1785808976916-nhxde",
-        "name": "DEMNAS - DAS Way Ruhu",
-        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-        "size": "Master DEMNAS",
-        "createdAt": "2026-08-04T02:02:56.916Z"
-      },
-      {
-        "id": "dem-1785807785615-x1qkw",
-        "name": "DEMNAS - Ambon Seram",
-        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
-        "size": "465.7 MB",
-        "createdAt": "2026-08-04T01:43:05.615Z"
-      }
-    ],
     "landCoverUrl": "/geojson/landcover-mock-1784530973200.json",
     "soilTypeUrl": "/geojson/soiltype-mock-1784530973200.json"
   },
@@ -15768,25 +15718,6 @@
     ],
     "color": "#f59e0b",
     "status": "Belum ada data",
-    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-    "demnasName": "DEMNAS - DAS Way Ruhu",
-    "demnasSize": "Master DEMNAS",
-    "demnasList": [
-      {
-        "id": "dem-1785808977055-x4ruf",
-        "name": "DEMNAS - DAS Way Ruhu",
-        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-        "size": "Master DEMNAS",
-        "createdAt": "2026-08-04T02:02:57.055Z"
-      },
-      {
-        "id": "dem-1785807785749-3mod0",
-        "name": "DEMNAS - Ambon Seram",
-        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
-        "size": "465.7 MB",
-        "createdAt": "2026-08-04T01:43:05.749Z"
-      }
-    ],
     "soilTypeUrl": "/geojson/soiltype-mock-1784531326680.json",
     "landCoverUrl": "/geojson/landcover-mock-1784531326680.json"
   },
@@ -34448,25 +34379,6 @@
     "color": "#16a34a",
     "status": "Belum ada data",
     "pdfUrl": "/uploads/1784600847561-MatakaboW.pdf",
-    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-    "demnasName": "DEMNAS - DAS Way Ruhu",
-    "demnasSize": "Master DEMNAS",
-    "demnasList": [
-      {
-        "id": "dem-1785808977203-al9wq",
-        "name": "DEMNAS - DAS Way Ruhu",
-        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-        "size": "Master DEMNAS",
-        "createdAt": "2026-08-04T02:02:57.203Z"
-      },
-      {
-        "id": "dem-1785807785893-idh2y",
-        "name": "DEMNAS - Ambon Seram",
-        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
-        "size": "465.7 MB",
-        "createdAt": "2026-08-04T01:43:05.893Z"
-      }
-    ],
     "landCoverUrl": "/geojson/landcover-mock-1784534345916.json",
     "soilTypeUrl": "/geojson/soiltype-mock-1784534345916.json"
   },
@@ -66400,26 +66312,7 @@
     "color": "#8b5cf6",
     "status": "Belum ada data",
     "landCoverUrl": "/geojson/landcover-mock-1784598513312.json",
-    "soilTypeUrl": "/geojson/soiltype-mock-1784598513312.json",
-    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-    "demnasName": "DEMNAS - DAS Way Ruhu",
-    "demnasSize": "Master DEMNAS",
-    "demnasList": [
-      {
-        "id": "dem-1785808977341-kjff0",
-        "name": "DEMNAS - DAS Way Ruhu",
-        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-        "size": "Master DEMNAS",
-        "createdAt": "2026-08-04T02:02:57.341Z"
-      },
-      {
-        "id": "dem-1785807786025-fragm",
-        "name": "DEMNAS - Ambon Seram",
-        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
-        "size": "465.7 MB",
-        "createdAt": "2026-08-04T01:43:06.025Z"
-      }
-    ]
+    "soilTypeUrl": "/geojson/soiltype-mock-1784598513312.json"
   },
   {
     "id": "mock-1784599021085",
@@ -70221,26 +70114,7 @@
     "pdfUrl": "/uploads/1784691942510-Hidrologi_Wae_Batu_Merah_2026.pdf",
     "landCoverUrl": "/geojson/landcover-mock-1784599021085.json",
     "soilTypeUrl": "/geojson/soiltype-mock-1784599021085.json",
-    "riverUrl": "/geojson/river-mock-1784599021085.json",
-    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-    "demnasName": "DEMNAS - DAS Way Ruhu",
-    "demnasSize": "Master DEMNAS",
-    "demnasList": [
-      {
-        "id": "dem-1785808977493-ypp2j",
-        "name": "DEMNAS - DAS Way Ruhu",
-        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-        "size": "Master DEMNAS",
-        "createdAt": "2026-08-04T02:02:57.493Z"
-      },
-      {
-        "id": "dem-1785807786153-p9nob",
-        "name": "DEMNAS - Ambon Seram",
-        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
-        "size": "465.7 MB",
-        "createdAt": "2026-08-04T01:43:06.153Z"
-      }
-    ]
+    "riverUrl": "/geojson/river-mock-1784599021085.json"
   },
   {
     "id": "mock-1784599778934",
@@ -85615,25 +85489,6 @@
     ],
     "color": "#4f46e5",
     "status": "Belum ada data",
-    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-    "demnasName": "DEMNAS - DAS Way Ruhu",
-    "demnasSize": "Master DEMNAS",
-    "demnasList": [
-      {
-        "id": "dem-1785808977645-qbtv0",
-        "name": "DEMNAS - DAS Way Ruhu",
-        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-        "size": "Master DEMNAS",
-        "createdAt": "2026-08-04T02:02:57.645Z"
-      },
-      {
-        "id": "dem-1785807786288-tt90i",
-        "name": "DEMNAS - Ambon Seram",
-        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
-        "size": "465.7 MB",
-        "createdAt": "2026-08-04T01:43:06.288Z"
-      }
-    ],
     "soilTypeUrl": "/geojson/soiltype-mock-1784599778934.json",
     "landCoverUrl": "/geojson/landcover-mock-1784599778934.json"
   },
@@ -108174,25 +108029,6 @@
     ],
     "color": "#9333ea",
     "status": "Belum ada data",
-    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-    "demnasName": "DEMNAS - DAS Way Ruhu",
-    "demnasSize": "Master DEMNAS",
-    "demnasList": [
-      {
-        "id": "dem-1785808977785-ybtee",
-        "name": "DEMNAS - DAS Way Ruhu",
-        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-        "size": "Master DEMNAS",
-        "createdAt": "2026-08-04T02:02:57.785Z"
-      },
-      {
-        "id": "dem-1785807786425-jx2vi",
-        "name": "DEMNAS - Ambon Seram",
-        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
-        "size": "465.7 MB",
-        "createdAt": "2026-08-04T01:43:06.425Z"
-      }
-    ],
     "landCoverUrl": "/geojson/landcover-mock-1784599843976.json",
     "soilTypeUrl": "/geojson/soiltype-mock-1784599843976.json"
   },
@@ -124685,25 +124521,6 @@
     ],
     "color": "#65a30d",
     "status": "Belum ada data",
-    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-    "demnasName": "DEMNAS - DAS Way Ruhu",
-    "demnasSize": "Master DEMNAS",
-    "demnasList": [
-      {
-        "id": "dem-1785808977935-wmlna",
-        "name": "DEMNAS - DAS Way Ruhu",
-        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-        "size": "Master DEMNAS",
-        "createdAt": "2026-08-04T02:02:57.935Z"
-      },
-      {
-        "id": "dem-1785807786556-dt9pd",
-        "name": "DEMNAS - Ambon Seram",
-        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
-        "size": "465.7 MB",
-        "createdAt": "2026-08-04T01:43:06.556Z"
-      }
-    ],
     "landCoverUrl": "/geojson/landcover-mock-1784600111015.json",
     "soilTypeUrl": "/geojson/soiltype-mock-1784600111015.json"
   },
@@ -131612,25 +131429,6 @@
     ],
     "color": "#06b6d4",
     "status": "Belum ada data",
-    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-    "demnasName": "DEMNAS - DAS Way Ruhu",
-    "demnasSize": "Master DEMNAS",
-    "demnasList": [
-      {
-        "id": "dem-1785808978075-o5nz5",
-        "name": "DEMNAS - DAS Way Ruhu",
-        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-        "size": "Master DEMNAS",
-        "createdAt": "2026-08-04T02:02:58.075Z"
-      },
-      {
-        "id": "dem-1785807786690-vptbf",
-        "name": "DEMNAS - Ambon Seram",
-        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
-        "size": "465.7 MB",
-        "createdAt": "2026-08-04T01:43:06.690Z"
-      }
-    ],
     "landCoverUrl": "/geojson/landcover-mock-1784600186418.json",
     "soilTypeUrl": "/geojson/soiltype-mock-1784600186418.json"
   },
@@ -132963,25 +132761,6 @@
     ],
     "color": "#10b981",
     "status": "Belum ada data",
-    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-    "demnasName": "DEMNAS - DAS Way Ruhu",
-    "demnasSize": "Master DEMNAS",
-    "demnasList": [
-      {
-        "id": "dem-1785808978226-remay",
-        "name": "DEMNAS - DAS Way Ruhu",
-        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-        "size": "Master DEMNAS",
-        "createdAt": "2026-08-04T02:02:58.226Z"
-      },
-      {
-        "id": "dem-1785807786812-bhhjl",
-        "name": "DEMNAS - Ambon Seram",
-        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
-        "size": "465.7 MB",
-        "createdAt": "2026-08-04T01:43:06.812Z"
-      }
-    ],
     "landCoverUrl": "/geojson/landcover-mock-1784600360100.json",
     "soilTypeUrl": "/geojson/soiltype-mock-1784600360100.json"
   },
@@ -139906,25 +139685,6 @@
     ],
     "color": "#ea580c",
     "status": "Belum ada data",
-    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-    "demnasName": "DEMNAS - DAS Way Ruhu",
-    "demnasSize": "Master DEMNAS",
-    "demnasList": [
-      {
-        "id": "dem-1785808978383-j7zzl",
-        "name": "DEMNAS - DAS Way Ruhu",
-        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-        "size": "Master DEMNAS",
-        "createdAt": "2026-08-04T02:02:58.383Z"
-      },
-      {
-        "id": "dem-1785807786937-189yj",
-        "name": "DEMNAS - Ambon Seram",
-        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
-        "size": "465.7 MB",
-        "createdAt": "2026-08-04T01:43:06.937Z"
-      }
-    ],
     "landCoverUrl": "/geojson/landcover-mock-1784600659501.json",
     "soilTypeUrl": "/geojson/soiltype-mock-1784600659501.json"
   },
@@ -145941,25 +145701,6 @@
     ],
     "color": "#0d9488",
     "status": "Belum ada data",
-    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-    "demnasName": "DEMNAS - DAS Way Ruhu",
-    "demnasSize": "Master DEMNAS",
-    "demnasList": [
-      {
-        "id": "dem-1785808978518-p9e1v",
-        "name": "DEMNAS - DAS Way Ruhu",
-        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-        "size": "Master DEMNAS",
-        "createdAt": "2026-08-04T02:02:58.518Z"
-      },
-      {
-        "id": "dem-1785807787083-jr1uq",
-        "name": "DEMNAS - Ambon Seram",
-        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
-        "size": "465.7 MB",
-        "createdAt": "2026-08-04T01:43:07.083Z"
-      }
-    ],
     "landCoverUrl": "/geojson/landcover-mock-1784602353280.json",
     "soilTypeUrl": "/geojson/soiltype-mock-1784602353280.json"
   },
@@ -147248,25 +146989,6 @@
     ],
     "color": "#ca8a04",
     "status": "Belum ada data",
-    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-    "demnasName": "DEMNAS - DAS Way Ruhu",
-    "demnasSize": "Master DEMNAS",
-    "demnasList": [
-      {
-        "id": "dem-1785808978664-u29g3",
-        "name": "DEMNAS - DAS Way Ruhu",
-        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-        "size": "Master DEMNAS",
-        "createdAt": "2026-08-04T02:02:58.664Z"
-      },
-      {
-        "id": "dem-1785807787212-ce999",
-        "name": "DEMNAS - Ambon Seram",
-        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
-        "size": "465.7 MB",
-        "createdAt": "2026-08-04T01:43:07.212Z"
-      }
-    ],
     "landCoverUrl": "/geojson/landcover-mock-1784606120567.json",
     "soilTypeUrl": "/geojson/soiltype-mock-1784606120567.json"
   },
@@ -151539,25 +151261,6 @@
     ],
     "color": "#059669",
     "status": "Belum ada data",
-    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-    "demnasName": "DEMNAS - DAS Way Ruhu",
-    "demnasSize": "Master DEMNAS",
-    "demnasList": [
-      {
-        "id": "dem-1785808978796-69qpk",
-        "name": "DEMNAS - DAS Way Ruhu",
-        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-        "size": "Master DEMNAS",
-        "createdAt": "2026-08-04T02:02:58.796Z"
-      },
-      {
-        "id": "dem-1785807787343-32w8k",
-        "name": "DEMNAS - Ambon Seram",
-        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
-        "size": "465.7 MB",
-        "createdAt": "2026-08-04T01:43:07.343Z"
-      }
-    ],
     "soilTypeUrl": "/geojson/soiltype-mock-1784606215869.json",
     "landCoverUrl": "/geojson/landcover-mock-1784606215869.json"
   },
@@ -155586,25 +155289,6 @@
     ],
     "color": "#c026d3",
     "status": "Belum ada data",
-    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-    "demnasName": "DEMNAS - DAS Way Ruhu",
-    "demnasSize": "Master DEMNAS",
-    "demnasList": [
-      {
-        "id": "dem-1785808978931-5whxx",
-        "name": "DEMNAS - DAS Way Ruhu",
-        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-        "size": "Master DEMNAS",
-        "createdAt": "2026-08-04T02:02:58.931Z"
-      },
-      {
-        "id": "dem-1785807787468-l8nua",
-        "name": "DEMNAS - Ambon Seram",
-        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
-        "size": "465.7 MB",
-        "createdAt": "2026-08-04T01:43:07.468Z"
-      }
-    ],
     "landCoverUrl": "/geojson/landcover-mock-1784606657545.json",
     "soilTypeUrl": "/geojson/soiltype-mock-1784606657545.json"
   },
@@ -166713,25 +166397,6 @@
     ],
     "color": "#d97706",
     "status": "Belum ada data",
-    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-    "demnasName": "DEMNAS - DAS Way Ruhu",
-    "demnasSize": "Master DEMNAS",
-    "demnasList": [
-      {
-        "id": "dem-1785808979067-qgu8y",
-        "name": "DEMNAS - DAS Way Ruhu",
-        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-        "size": "Master DEMNAS",
-        "createdAt": "2026-08-04T02:02:59.067Z"
-      },
-      {
-        "id": "dem-1785807787600-66sby",
-        "name": "DEMNAS - Ambon Seram",
-        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
-        "size": "465.7 MB",
-        "createdAt": "2026-08-04T01:43:07.600Z"
-      }
-    ],
     "soilTypeUrl": "/geojson/soiltype-mock-1784684513699.json",
     "landCoverUrl": "/geojson/landcover-mock-1784684513699.json"
   },
@@ -170952,25 +170617,6 @@
     ],
     "color": "#2563eb",
     "status": "Belum ada data",
-    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-    "demnasName": "DEMNAS - DAS Way Ruhu",
-    "demnasSize": "Master DEMNAS",
-    "demnasList": [
-      {
-        "id": "dem-1785808979194-lopg9",
-        "name": "DEMNAS - DAS Way Ruhu",
-        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-        "size": "Master DEMNAS",
-        "createdAt": "2026-08-04T02:02:59.194Z"
-      },
-      {
-        "id": "dem-1785807787724-qsfue",
-        "name": "DEMNAS - Ambon Seram",
-        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
-        "size": "465.7 MB",
-        "createdAt": "2026-08-04T01:43:07.724Z"
-      }
-    ],
     "landCoverUrl": "/geojson/landcover-mock-1784690798664.json",
     "soilTypeUrl": "/geojson/soiltype-mock-1784690798664.json"
   },
@@ -173227,25 +172873,6 @@
     ],
     "color": "#7c3aed",
     "status": "Belum ada data",
-    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-    "demnasName": "DEMNAS - DAS Way Ruhu",
-    "demnasSize": "Master DEMNAS",
-    "demnasList": [
-      {
-        "id": "dem-1785808979329-fv60m",
-        "name": "DEMNAS - DAS Way Ruhu",
-        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-        "size": "Master DEMNAS",
-        "createdAt": "2026-08-04T02:02:59.329Z"
-      },
-      {
-        "id": "dem-1785807787854-xfv6n",
-        "name": "DEMNAS - Ambon Seram",
-        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
-        "size": "465.7 MB",
-        "createdAt": "2026-08-04T01:43:07.854Z"
-      }
-    ],
     "landCoverUrl": "/geojson/landcover-mock-1784796652634.json",
     "soilTypeUrl": "/geojson/soiltype-mock-1784796652634.json"
   },
@@ -180710,25 +180337,6 @@
     ],
     "color": "#b45309",
     "status": "Belum ada data",
-    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-    "demnasName": "DEMNAS - DAS Way Ruhu",
-    "demnasSize": "Master DEMNAS",
-    "demnasList": [
-      {
-        "id": "dem-1785808979463-lpqw5",
-        "name": "DEMNAS - DAS Way Ruhu",
-        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-        "size": "Master DEMNAS",
-        "createdAt": "2026-08-04T02:02:59.463Z"
-      },
-      {
-        "id": "dem-1785807787984-w0vc2",
-        "name": "DEMNAS - Ambon Seram",
-        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
-        "size": "465.7 MB",
-        "createdAt": "2026-08-04T01:43:07.984Z"
-      }
-    ],
     "soilTypeUrl": "/geojson/soiltype-mock-1784796720544.json",
     "landCoverUrl": "/geojson/landcover-mock-1784796720544.json"
   },
@@ -200793,25 +200401,6 @@
     ],
     "color": "#0891b2",
     "status": "Belum ada data",
-    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-    "demnasName": "DEMNAS - DAS Way Ruhu",
-    "demnasSize": "Master DEMNAS",
-    "demnasList": [
-      {
-        "id": "dem-1785808979592-qiscg",
-        "name": "DEMNAS - DAS Way Ruhu",
-        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-        "size": "Master DEMNAS",
-        "createdAt": "2026-08-04T02:02:59.592Z"
-      },
-      {
-        "id": "dem-1785807788117-dxm1c",
-        "name": "DEMNAS - Ambon Seram",
-        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
-        "size": "465.7 MB",
-        "createdAt": "2026-08-04T01:43:08.117Z"
-      }
-    ],
     "landCoverUrl": "/geojson/landcover-mock-1784796788483.json",
     "soilTypeUrl": "/geojson/soiltype-mock-1784796788483.json"
   },
@@ -210760,25 +210349,6 @@
     ],
     "color": "#be123c",
     "status": "Belum ada data",
-    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-    "demnasName": "DEMNAS - DAS Way Ruhu",
-    "demnasSize": "Master DEMNAS",
-    "demnasList": [
-      {
-        "id": "dem-1785808979723-6cba5",
-        "name": "DEMNAS - DAS Way Ruhu",
-        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-        "size": "Master DEMNAS",
-        "createdAt": "2026-08-04T02:02:59.723Z"
-      },
-      {
-        "id": "dem-1785807788254-zljps",
-        "name": "DEMNAS - Ambon Seram",
-        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
-        "size": "465.7 MB",
-        "createdAt": "2026-08-04T01:43:08.254Z"
-      }
-    ],
     "landCoverUrl": "/geojson/landcover-mock-1784796841176.json",
     "soilTypeUrl": "/geojson/soiltype-mock-1784796841176.json"
   },
@@ -227947,25 +227517,6 @@
     ],
     "color": "#15803d",
     "status": "Belum ada data",
-    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-    "demnasName": "DEMNAS - DAS Way Ruhu",
-    "demnasSize": "Master DEMNAS",
-    "demnasList": [
-      {
-        "id": "dem-1785808979855-hnitz",
-        "name": "DEMNAS - DAS Way Ruhu",
-        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-        "size": "Master DEMNAS",
-        "createdAt": "2026-08-04T02:02:59.855Z"
-      },
-      {
-        "id": "dem-1785807788384-rowz0",
-        "name": "DEMNAS - Ambon Seram",
-        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
-        "size": "465.7 MB",
-        "createdAt": "2026-08-04T01:43:08.384Z"
-      }
-    ],
     "soilTypeUrl": "/geojson/soiltype-mock-1784796861915.json",
     "landCoverUrl": "/geojson/landcover-mock-1784796861915.json"
   },
@@ -232086,25 +231637,6 @@
     ],
     "color": "#6366f1",
     "status": "Belum ada data",
-    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-    "demnasName": "DEMNAS - DAS Way Ruhu",
-    "demnasSize": "Master DEMNAS",
-    "demnasList": [
-      {
-        "id": "dem-1785808979985-attxt",
-        "name": "DEMNAS - DAS Way Ruhu",
-        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-        "size": "Master DEMNAS",
-        "createdAt": "2026-08-04T02:02:59.985Z"
-      },
-      {
-        "id": "dem-1785807788514-77xh2",
-        "name": "DEMNAS - Ambon Seram",
-        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
-        "size": "465.7 MB",
-        "createdAt": "2026-08-04T01:43:08.514Z"
-      }
-    ],
     "landCoverUrl": "/geojson/landcover-mock-1784797060023.json",
     "soilTypeUrl": "/geojson/soiltype-mock-1784797060023.json"
   },
@@ -240666,26 +240198,7 @@
     "color": "#d946ef",
     "status": "Belum ada data",
     "landCoverUrl": "/geojson/landcover-mock-1784869342389.json",
-    "soilTypeUrl": "/geojson/soiltype-mock-1784869342389.json",
-    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-    "demnasName": "DEMNAS - DAS Way Ruhu",
-    "demnasSize": "Master DEMNAS",
-    "demnasList": [
-      {
-        "id": "dem-1785808980109-yogxt",
-        "name": "DEMNAS - DAS Way Ruhu",
-        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-        "size": "Master DEMNAS",
-        "createdAt": "2026-08-04T02:03:00.109Z"
-      },
-      {
-        "id": "dem-1785807788646-gmx2o",
-        "name": "DEMNAS - Ambon Seram",
-        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
-        "size": "465.7 MB",
-        "createdAt": "2026-08-04T01:43:08.646Z"
-      }
-    ]
+    "soilTypeUrl": "/geojson/soiltype-mock-1784869342389.json"
   },
   {
     "id": "mock-1784872167665",
@@ -256404,25 +255917,6 @@
     ],
     "color": "#0ea5e9",
     "status": "Belum ada data",
-    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-    "demnasName": "DEMNAS - DAS Way Ruhu",
-    "demnasSize": "Master DEMNAS",
-    "demnasList": [
-      {
-        "id": "dem-1785808980235-bivzj",
-        "name": "DEMNAS - DAS Way Ruhu",
-        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-        "size": "Master DEMNAS",
-        "createdAt": "2026-08-04T02:03:00.235Z"
-      },
-      {
-        "id": "dem-1785807788773-iadgp",
-        "name": "DEMNAS - Ambon Seram",
-        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
-        "size": "465.7 MB",
-        "createdAt": "2026-08-04T01:43:08.773Z"
-      }
-    ],
     "soilTypeUrl": "/geojson/soiltype-mock-1784872167665.json",
     "landCoverUrl": "/geojson/landcover-mock-1784872167665.json"
   },
@@ -260075,25 +259569,6 @@
     ],
     "color": "#ec4899",
     "status": "Belum ada data",
-    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-    "demnasName": "DEMNAS - DAS Way Ruhu",
-    "demnasSize": "Master DEMNAS",
-    "demnasList": [
-      {
-        "id": "dem-1785808980361-t3ivv",
-        "name": "DEMNAS - DAS Way Ruhu",
-        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-        "size": "Master DEMNAS",
-        "createdAt": "2026-08-04T02:03:00.361Z"
-      },
-      {
-        "id": "dem-1785807788898-r8zn6",
-        "name": "DEMNAS - Ambon Seram",
-        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
-        "size": "465.7 MB",
-        "createdAt": "2026-08-04T01:43:08.898Z"
-      }
-    ],
     "landCoverUrl": "/geojson/landcover-mock-1784872433872.json",
     "soilTypeUrl": "/geojson/soiltype-mock-1784872433872.json"
   },
@@ -277278,25 +276753,6 @@
     ],
     "color": "#14b8a6",
     "status": "Belum ada data",
-    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-    "demnasName": "DEMNAS - DAS Way Ruhu",
-    "demnasSize": "Master DEMNAS",
-    "demnasList": [
-      {
-        "id": "dem-1785808980489-vjfsk",
-        "name": "DEMNAS - DAS Way Ruhu",
-        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-        "size": "Master DEMNAS",
-        "createdAt": "2026-08-04T02:03:00.489Z"
-      },
-      {
-        "id": "dem-1785807789025-ugmrq",
-        "name": "DEMNAS - Ambon Seram",
-        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
-        "size": "465.7 MB",
-        "createdAt": "2026-08-04T01:43:09.025Z"
-      }
-    ],
     "soilTypeUrl": "/geojson/soiltype-mock-1785210909535.json",
     "landCoverUrl": "/geojson/landcover-mock-1785210909535.json"
   },
@@ -285449,25 +284905,6 @@
     ],
     "color": "#f43f5e",
     "status": "Belum ada data",
-    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-    "demnasName": "DEMNAS - DAS Way Ruhu",
-    "demnasSize": "Master DEMNAS",
-    "demnasList": [
-      {
-        "id": "dem-1785808980628-unke3",
-        "name": "DEMNAS - DAS Way Ruhu",
-        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-        "size": "Master DEMNAS",
-        "createdAt": "2026-08-04T02:03:00.628Z"
-      },
-      {
-        "id": "dem-1785807789156-47kvc",
-        "name": "DEMNAS - Ambon Seram",
-        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
-        "size": "465.7 MB",
-        "createdAt": "2026-08-04T01:43:09.156Z"
-      }
-    ],
     "soilTypeUrl": "/geojson/soiltype-mock-1785480001746.json",
     "landCoverUrl": "/geojson/landcover-mock-1785480001746.json"
   },
@@ -288852,25 +288289,6 @@
     ],
     "color": "#84cc16",
     "status": "Belum ada data",
-    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-    "demnasName": "DEMNAS - DAS Way Ruhu",
-    "demnasSize": "Master DEMNAS",
-    "demnasList": [
-      {
-        "id": "dem-1785808980756-66t8q",
-        "name": "DEMNAS - DAS Way Ruhu",
-        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-        "size": "Master DEMNAS",
-        "createdAt": "2026-08-04T02:03:00.756Z"
-      },
-      {
-        "id": "dem-1785807789286-t1mlb",
-        "name": "DEMNAS - Ambon Seram",
-        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
-        "size": "465.7 MB",
-        "createdAt": "2026-08-04T01:43:09.286Z"
-      }
-    ],
     "landCoverUrl": "/geojson/landcover-mock-1785480394028.json",
     "soilTypeUrl": "/geojson/soiltype-mock-1785480394028.json"
   },
@@ -290551,25 +289969,6 @@
     ],
     "color": "#a855f7",
     "status": "Belum ada data",
-    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-    "demnasName": "DEMNAS - DAS Way Ruhu",
-    "demnasSize": "Master DEMNAS",
-    "demnasList": [
-      {
-        "id": "dem-1785808980880-kt2t6",
-        "name": "DEMNAS - DAS Way Ruhu",
-        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-        "size": "Master DEMNAS",
-        "createdAt": "2026-08-04T02:03:00.880Z"
-      },
-      {
-        "id": "dem-1785807789410-r2jvm",
-        "name": "DEMNAS - Ambon Seram",
-        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
-        "size": "465.7 MB",
-        "createdAt": "2026-08-04T01:43:09.410Z"
-      }
-    ],
     "landCoverUrl": "/geojson/landcover-mock-1785480676773.json",
     "soilTypeUrl": "/geojson/soiltype-mock-1785480676773.json"
   },
@@ -311878,25 +311277,6 @@
     ],
     "color": "#ef4444",
     "status": "Belum ada data",
-    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-    "demnasName": "DEMNAS - DAS Way Ruhu",
-    "demnasSize": "Master DEMNAS",
-    "demnasList": [
-      {
-        "id": "dem-1785808981012-wlfdb",
-        "name": "DEMNAS - DAS Way Ruhu",
-        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-        "size": "Master DEMNAS",
-        "createdAt": "2026-08-04T02:03:01.012Z"
-      },
-      {
-        "id": "dem-1785807789538-h9p71",
-        "name": "DEMNAS - Ambon Seram",
-        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
-        "size": "465.7 MB",
-        "createdAt": "2026-08-04T01:43:09.538Z"
-      }
-    ],
     "landCoverUrl": "/geojson/landcover-mock-1785481325472.json",
     "soilTypeUrl": "/geojson/soiltype-mock-1785481325472.json"
   },
@@ -315277,25 +314657,6 @@
     ],
     "color": "#38bdf8",
     "status": "Belum ada data",
-    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-    "demnasName": "DEMNAS - DAS Way Ruhu",
-    "demnasSize": "Master DEMNAS",
-    "demnasList": [
-      {
-        "id": "dem-1785808981148-6rrvk",
-        "name": "DEMNAS - DAS Way Ruhu",
-        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-        "size": "Master DEMNAS",
-        "createdAt": "2026-08-04T02:03:01.148Z"
-      },
-      {
-        "id": "dem-1785807789668-zm7lz",
-        "name": "DEMNAS - Ambon Seram",
-        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
-        "size": "465.7 MB",
-        "createdAt": "2026-08-04T01:43:09.668Z"
-      }
-    ],
     "soilTypeUrl": "/geojson/soiltype-mock-1785486502892.json",
     "landCoverUrl": "/geojson/landcover-mock-1785486502892.json"
   },
@@ -322008,25 +321369,6 @@
     ],
     "color": "#4ade80",
     "status": "Belum ada data",
-    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-    "demnasName": "DEMNAS - DAS Way Ruhu",
-    "demnasSize": "Master DEMNAS",
-    "demnasList": [
-      {
-        "id": "dem-1785808981287-6dd9v",
-        "name": "DEMNAS - DAS Way Ruhu",
-        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-        "size": "Master DEMNAS",
-        "createdAt": "2026-08-04T02:03:01.288Z"
-      },
-      {
-        "id": "dem-1785807789794-viqpl",
-        "name": "DEMNAS - Ambon Seram",
-        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
-        "size": "465.7 MB",
-        "createdAt": "2026-08-04T01:43:09.794Z"
-      }
-    ],
     "soilTypeUrl": "/geojson/soiltype-mock-1785487406819.json",
     "landCoverUrl": "/geojson/landcover-mock-1785487406819.json"
   },
@@ -342375,25 +341717,6 @@
     ],
     "color": "#f97316",
     "status": "Belum ada data",
-    "demnasUrl": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-    "demnasName": "DEMNAS - DAS Way Ruhu",
-    "demnasSize": "Master DEMNAS",
-    "demnasList": [
-      {
-        "id": "dem-1785808981433-ej9g5",
-        "name": "DEMNAS - DAS Way Ruhu",
-        "url": "https://tanahair.indonesia.go.id/portal-web/unduh/demnas",
-        "size": "Master DEMNAS",
-        "createdAt": "2026-08-04T02:03:01.433Z"
-      },
-      {
-        "id": "dem-1785807789923-hfflg",
-        "name": "DEMNAS - Ambon Seram",
-        "url": "/uploads/demnas-1785807785051-Ambon_Seram.tif",
-        "size": "465.7 MB",
-        "createdAt": "2026-08-04T01:43:09.923Z"
-      }
-    ],
     "landCoverUrl": "/geojson/landcover-mock-1785565879455.json",
     "soilTypeUrl": "/geojson/soiltype-mock-1785565879455.json"
   },

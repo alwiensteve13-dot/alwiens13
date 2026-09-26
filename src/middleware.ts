@@ -10,7 +10,10 @@ import { SESSION_COOKIE, verifySessionToken } from "@/lib/session";
  * Token diverifikasi dengan HMAC (AUTH_SECRET), jadi cookie yang dibuat sendiri
  * oleh pengunjung tidak akan diterima.
  */
-const PUBLIC_API_MUTATIONS = new Set(["/api/auth/login", "/api/auth/logout"]);
+// POST yang boleh dipakai pengunjung publik (tidak mengubah data):
+// - login/logout
+// - nasa-rainfall: proxy baca-saja data curah hujan NASA untuk tombol unduh di halaman utama
+const PUBLIC_API_MUTATIONS = new Set(["/api/auth/login", "/api/auth/logout", "/api/nasa-rainfall"]);
 const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
 export async function middleware(request: NextRequest) {

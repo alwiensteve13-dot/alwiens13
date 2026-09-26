@@ -66,6 +66,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       /* abaikan */
     }
+    // Sinkronisasi awal status sesi dari server (setState terjadi setelah fetch selesai).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     refresh();
   }, [refresh]);
 

@@ -21,9 +21,6 @@ interface Region {
   landCoverUrl?: string;
   soilTypeUrl?: string;
   riverUrl?: string;
-  demnasUrl?: string;
-  demnasName?: string;
-  demnasSize?: string;
 }
 
 interface WaterData {

@@ -1,5 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { apiSuccess, apiError } from "@/lib/api-response";
+import fs from "fs";
+import path from "path";
 
 let prisma: PrismaClient | null = null;
 try {
@@ -83,7 +85,17 @@ export async function GET(
     return apiSuccess(region);
   } catch (error) {
     console.warn("Database connection failed, using mock data.", error);
-    const mock = MOCK_DAS_DATA.find(d => d.id === id);
+    // Sumber data yang sama dengan /api/regions: public/mock-regions.json
+    let mockRegions: any[] = MOCK_DAS_DATA;
+    try {
+      const filePath = path.join(process.cwd(), "public", "mock-regions.json");
+      if (fs.existsSync(filePath)) {
+        mockRegions = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+      }
+    } catch (e) {
+      console.warn("Failed to read mock-regions.json:", e);
+    }
+    const mock = mockRegions.find((d: any) => d.id === id);
     if (!mock) {
       return apiError("Wilayah DAS tidak ditemukan", 404);
     }

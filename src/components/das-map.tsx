@@ -20,13 +20,10 @@ export interface DasData {
   landCoverUrl?: string;
   soilTypeUrl?: string;
   riverUrl?: string;
-  demnasUrl?: string;
-  demnasName?: string;
-  demnasSize?: string;
-  demnasList?: any[];
 }
 
 import { getColorFromProperty, getLabelFromProperty, stringToColor } from '@/lib/color-utils';
+import turfArea from '@turf/area';
 export { getColorFromProperty, getLabelFromProperty, stringToColor };
 
 function SearchPinMarker({ coord }: { coord: [number, number] | null }) {
@@ -300,6 +297,22 @@ function DasPolygonsRenderer({ data, selectedId, onSelectDas, polygonOpacity, hi
     return () => { map.off("zoomend", onZoom); };
   }, [map]);
 
+  // Luas dihitung dari polygon yang benar-benar ditampilkan (rumus sama dengan panel ringkasan),
+  // agar popup dan panel tidak menampilkan angka luas yang berbeda.
+  const areaById = useMemo(() => {
+    const out: Record<string, string> = {};
+    for (const d of data) {
+      if (!d.geojson) continue;
+      try {
+        const km2 = turfArea(d.geojson) / 1_000_000;
+        if (km2 > 0) out[d.id] = `${km2.toFixed(2)} km²`;
+      } catch {
+        /* geometri tidak valid → pakai label tersimpan */
+      }
+    }
+    return out;
+  }, [data]);
+
   const sortedData = useMemo(() => {
     if (!selectedId) return data;
     return [...data].sort((a, b) => {
@@ -340,9 +353,9 @@ function DasPolygonsRenderer({ data, selectedId, onSelectDas, polygonOpacity, hi
               <h4 className="font-bold text-slate-800 dark:text-white text-lg mb-2">{das.name}</h4>
               <div className="space-y-1.5 text-slate-600 dark:text-slate-300">
                 <p><span className="font-semibold text-slate-700 dark:text-slate-200">Wilayah:</span> {das.region}</p>
-                <p><span className="font-semibold text-slate-700 dark:text-slate-200">Luas:</span> {das.area}</p>
+                <p><span className="font-semibold text-slate-700 dark:text-slate-200">Luas:</span> {areaById[das.id] ?? das.area}</p>
                 <p><span className="font-semibold text-slate-700 dark:text-slate-200">Status:</span> 
-                  <span className={`ml-1 px-2 py-0.5 rounded-full text-xs font-bold ${das.status === 'Surplus' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                  <span className={`ml-1 px-2 py-0.5 rounded-full text-xs font-bold ${das.status === 'Surplus' ? 'bg-emerald-100 text-emerald-700' : das.status === 'Defisit' ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-600'}`}>
                     {das.status}
                   </span>
                 </p>
@@ -361,14 +374,9 @@ function DasPolygonsRenderer({ data, selectedId, onSelectDas, polygonOpacity, hi
             </div>
             <span className="text-xs opacity-80 block">{das.region}</span>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <span className={`text-[10px] font-bold inline-block px-2 py-0.5 rounded-full ${das.status === 'Surplus' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300'}`}>
+              <span className={`text-[10px] font-bold inline-block px-2 py-0.5 rounded-full ${das.status === 'Surplus' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' : das.status === 'Defisit' ? 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'}`}>
                 {das.status} {das.debit ? `• ${das.debit}` : ''}
               </span>
-              {das.demnasUrl && (
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300">
-                  🏔️ DEM
-                </span>
-              )}
             </div>
           </Tooltip>
         );
@@ -508,7 +516,6 @@ export default function DasMap({
   const [currentOpacity, setCurrentOpacity] = useState(polygonOpacity || 0.4);
   const [showOpacitySlider, setShowOpacitySlider] = useState(false);
   const [showLegendModal, setShowLegendModal] = useState(false);
-  const [showDemnasModal, setShowDemnasModal] = useState(false);
 
   // Plot Titik Koordinat Manual States
   const [plottedPoints, setPlottedPoints] = useState<PlottedPoint[]>([]);
@@ -624,7 +631,7 @@ export default function DasMap({
 
   return (
     <div className="relative w-full h-full bg-[#f8fafc] dark:bg-[#0f172a]">
-      {/* Floating Polygon Layer & DEMNAS Download Menu (Top Center) */}
+      {/* Floating Polygon Layer Menu (Top Center) */}
       {selectedId && (() => {
         const activeDas = data.find(d => d.id === selectedId);
         if (!activeDas) return null;
@@ -770,26 +777,6 @@ export default function DasMap({
             <span>Legenda</span>
           </button>
 
-          <div className="w-[1px] h-3.5 bg-slate-200 dark:bg-slate-700" />
-
-          {/* DEMNAS Download Button */}
-          <button
-            onClick={() => {
-              setShowDemnasModal(!showDemnasModal);
-              if (showLegendModal) setShowLegendModal(false);
-              if (showOpacitySlider) setShowOpacitySlider(false);
-              if (showPlotModal) setShowPlotModal(false);
-            }}
-            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
-              showDemnasModal 
-                ? 'bg-teal-600 text-white shadow-xs' 
-                : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
-            }`}
-            title="Unduh Data DEMNAS (Digital Elevation Model)"
-          >
-            <span>🏔️</span>
-            <span>DEMNAS</span>
-          </button>
         </div>
 
         {/* Plot Koordinat Panel Overlay */}
@@ -1085,70 +1072,6 @@ export default function DasMap({
             </div>
           </div>
         )}
-
-        {/* DEMNAS Downloader Panel Overlay */}
-        {showDemnasModal && (
-          <div className="w-80 p-3 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl border border-white/60 dark:border-slate-800/80 shadow-2xl pointer-events-auto transition-all animate-in fade-in slide-in-from-top-2 max-h-[75vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 mb-3">
-              <h4 className="font-bold text-xs text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
-                <span className="text-teal-500">🏔️</span> Download Data DEMNAS
-              </h4>
-              <button 
-                onClick={() => setShowDemnasModal(false)}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs px-1.5 py-0.5 rounded-md cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-
-            <p className="text-[11px] text-slate-600 dark:text-slate-300 mb-3">
-              Digital Elevation Model Nasional (DEMNAS) resolusi tinggi untuk pemetaan elevasi & analisis hidro-orografi DAS Maluku.
-            </p>
-
-            <div className="space-y-2">
-              {data.map((das) => (
-                <div
-                  key={`demnas-item-${das.id}`}
-                  className={`p-2.5 rounded-xl border transition-all ${
-                    selectedId === das.id
-                      ? 'bg-teal-500/10 border-teal-500/40 shadow-xs'
-                      : 'bg-slate-50/80 dark:bg-slate-800/60 border-slate-200/80 dark:border-slate-700/80'
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: das.color }} />
-                        <span className="font-bold text-xs text-slate-800 dark:text-slate-200 truncate">
-                          {das.name}
-                        </span>
-                      </div>
-                      <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 font-mono truncate">
-                        {das.region}
-                      </div>
-                    </div>
-
-                    {das.demnasUrl ? (
-                      <a
-                        href={das.demnasUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="px-2.5 py-1 rounded-lg bg-teal-600 hover:bg-teal-500 text-white text-[10.5px] font-bold transition flex items-center gap-1 shadow-xs shrink-0"
-                      >
-                        <span>⬇️</span>
-                        <span>Unduh ({das.demnasSize || 'DEMNAS'})</span>
-                      </a>
-                    ) : (
-                      <span className="text-[9.5px] text-slate-400 dark:text-slate-500 font-semibold px-2 py-0.5 rounded bg-slate-200/60 dark:bg-slate-800 shrink-0">
-                        Belum Ada
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
 
       <MapContainer 
@@ -1193,7 +1116,7 @@ export default function DasMap({
           selectedId={selectedId} 
           onSelectDas={handlePolygonSelect} 
           polygonOpacity={currentOpacity}
-          hideSelected={showLandCover || showSoilType || showRiver}
+          hideSelected={(showLandCover && !!landCoverGeojson) || (showSoilType && !!soilTypeGeojson) || (showRiver && !!riverGeojson)}
         />
 
         <SearchPinMarker coord={searchCoordinate} />

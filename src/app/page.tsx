@@ -320,10 +320,6 @@ export default function Home() {
         landCoverUrl: r.landCoverUrl,
         soilTypeUrl: r.soilTypeUrl,
         riverUrl: r.riverUrl,
-        demnasUrl: r.demnasUrl,
-        demnasName: r.demnasName,
-        demnasSize: r.demnasSize,
-        demnasList: r.demnasList
       };
       
       const isWaya = r.name?.toLowerCase().includes("waya");
@@ -378,37 +374,48 @@ export default function Home() {
   const [soilTypeGeojson, setSoilTypeGeojson] = useState<any>(null);
   const [riverGeojson, setRiverGeojson] = useState<any>(null);
 
+  const [thematicLoading, setThematicLoading] = useState(false);
+  const selectedLayerKey = selectedDas
+    ? `${selectedDas.id}|${selectedDas.landCoverUrl || ""}|${selectedDas.soilTypeUrl || ""}|${selectedDas.riverUrl || ""}`
+    : "";
+
   useEffect(() => {
+    // Lapisan tematik hanya diambil dari URL milik DAS yang dipilih.
+    // Sebelumnya, jika file tidak ada, web memakai data DAS Way Ruhu (landcover-2/soiltype-2/river-2)
+    // sehingga DAS lain menampilkan lapisan yang salah.
     setLandCoverGeojson(null);
     setSoilTypeGeojson(null);
     setRiverGeojson(null);
-    if (selectedDas) {
-      const lcUrl = selectedDas.landCoverUrl || `/geojson/landcover-${selectedDas.id}.json`;
-      const stUrl = selectedDas.soilTypeUrl || `/geojson/soiltype-${selectedDas.id}.json`;
-      const rvUrl = selectedDas.riverUrl || `/geojson/river-${selectedDas.id}.json`;
-
-      fetch(lcUrl)
-        .then(r => r.ok ? r.json() : fetch('/geojson/landcover-2.json').then(res => res.json()))
-        .then(setLandCoverGeojson)
-        .catch(() => {
-          fetch('/geojson/landcover-2.json').then(res => res.json()).then(setLandCoverGeojson).catch(console.error);
-        });
-
-      fetch(stUrl)
-        .then(r => r.ok ? r.json() : fetch('/geojson/soiltype-2.json').then(res => res.json()))
-        .then(setSoilTypeGeojson)
-        .catch(() => {
-          fetch('/geojson/soiltype-2.json').then(res => res.json()).then(setSoilTypeGeojson).catch(console.error);
-        });
-
-      fetch(rvUrl)
-        .then(r => r.ok ? r.json() : fetch('/geojson/river-2.json').then(res => res.json()))
-        .then(setRiverGeojson)
-        .catch(() => {
-          fetch('/geojson/river-2.json').then(res => res.json()).then(setRiverGeojson).catch(console.error);
-        });
+    if (!selectedLayerKey) {
+      setThematicLoading(false);
+      return;
     }
-  }, [selectedDas]);
+    const [, lcUrl, stUrl, rvUrl] = selectedLayerKey.split("|");
+    let cancelled = false;
+    const load = async (url: string) => {
+      if (!url) return null;
+      try {
+        const res = await fetch(url);
+        if (!res.ok) return null;
+        const json = await res.json();
+        return json && (json.type || json.features) ? json : null;
+      } catch {
+        return null;
+      }
+    };
+    setThematicLoading(true);
+    Promise.all([load(lcUrl), load(stUrl), load(rvUrl)]).then(([lc, st, rv]) => {
+      // Abaikan hasil lama jika pengguna sudah memilih DAS lain.
+      if (cancelled) return;
+      setLandCoverGeojson(lc);
+      setSoilTypeGeojson(st);
+      setRiverGeojson(rv);
+      setThematicLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedLayerKey]);
 
   const landCoverLegendItems = useMemo(() => {
     if (!landCoverGeojson || !landCoverGeojson.features) return [];
@@ -1468,6 +1475,9 @@ export default function Home() {
                           </div>
                           <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Tampilkan Tutupan Lahan</span>
                         </label>
+                        {showLandCover && !thematicLoading && !landCoverGeojson && (
+                          <div className="ml-8 text-[11px] text-slate-500 dark:text-slate-400">Data tutupan lahan belum tersedia untuk DAS ini.</div>
+                        )}
                         {showLandCover && landCoverLegendItems.length > 0 && (
                           <div className="ml-8 mt-2 space-y-2 p-3 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-800/60 transition-all">
                             <div className="flex items-center justify-between text-emerald-900 dark:text-emerald-200 font-bold text-xs">
@@ -1507,6 +1517,9 @@ export default function Home() {
                           </div>
                           <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Tampilkan Jenis Tanah</span>
                         </label>
+                        {showSoilType && !thematicLoading && !soilTypeGeojson && (
+                          <div className="ml-8 text-[11px] text-slate-500 dark:text-slate-400">Data jenis tanah belum tersedia untuk DAS ini.</div>
+                        )}
                         {showSoilType && soilTypeLegendItems.length > 0 && (
                           <div className="ml-8 mt-1.5 flex flex-wrap gap-1.5 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60">
                             {soilTypeLegendItems.map((item, idx) => (
@@ -1529,7 +1542,11 @@ export default function Home() {
                         </label>
                         {showRiver && (
                           <div className="ml-8 text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                            {riverSummary || "Jaringan sungai aktif"}
+                            {riverGeojson
+                              ? (riverSummary || "Jaringan sungai aktif")
+                              : thematicLoading
+                                ? "Memuat jaringan sungai…"
+                                : "Data jaringan sungai belum tersedia untuk DAS ini."}
                           </div>
                         )}
                       </div>
@@ -1592,7 +1609,7 @@ export default function Home() {
                             </div>
                           </div>
                           <div className="text-right shrink-0">
-                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${d.status === 'Surplus' ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400' : 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-400'}`}>
+                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${d.status === 'Surplus' ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400' : d.status === 'Defisit' ? 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'}`}>
                               {d.status}
                             </span>
                           </div>
