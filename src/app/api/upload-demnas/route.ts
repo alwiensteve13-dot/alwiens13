@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
+import { sanitizeFileName } from "@/lib/safe-path";
 import fs from "fs";
 import { apiSuccess, apiError } from "@/lib/api-response";
 import { PrismaClient } from "@prisma/client";
@@ -35,7 +36,7 @@ export async function POST(request: NextRequest) {
       }
 
       const buffer = Buffer.from(await file.arrayBuffer());
-      const filename = `demnas-${Date.now()}-${file.name.replace(/\s+/g, "_")}`;
+      const filename = `demnas-${Date.now()}-${sanitizeFileName(file.name)}`;
       const uploadDir = path.join(process.cwd(), "public/uploads");
       const tmpDir = path.join("/tmp", "uploads");
 

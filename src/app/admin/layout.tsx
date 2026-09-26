@@ -1,7 +1,7 @@
 "use client";
 
 import AuthGuard from "@/components/auth-guard";
-import { authClient } from "@/lib/auth-client";
+import { useAuth } from "@/lib/auth-context";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
@@ -96,20 +96,10 @@ function Sidebar({
   onClose: () => void;
 }) {
   const pathname = usePathname();
-  const { data: session } = authClient.useSession();
-  const user = session?.user;
+  const { user, logout } = useAuth();
 
   const handleLogout = async () => {
-    try { await authClient.signOut(); } catch (e) {}
-    // Clear ALL session storage
-    if (typeof window !== "undefined") {
-      sessionStorage.removeItem("neraca_air_session");
-      localStorage.removeItem("neraca_air_session");
-    }
-    document.cookie = `neraca_air_session=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;SameSite=Lax`;
-    document.cookie = `better-auth.session_token=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;SameSite=Lax`;
-    document.cookie = `__Secure-better-auth.session_token=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;SameSite=Lax`;
-    window.location.replace("/login");
+    await logout();
   };
 
   return (

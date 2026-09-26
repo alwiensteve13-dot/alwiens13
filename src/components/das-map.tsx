@@ -1177,6 +1177,15 @@ export default function DasMap({
               maxZoom={20}
             />
           </LayersControl.BaseLayer>
+          <LayersControl.BaseLayer name="Topografi">
+            <TileLayer
+              attribution='Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, SRTM | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (CC-BY-SA)'
+              url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
+              subdomains="abc"
+              maxNativeZoom={17}
+              maxZoom={20}
+            />
+          </LayersControl.BaseLayer>
         </LayersControl>
         
         <DasPolygonsRenderer 

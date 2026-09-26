@@ -1,44 +1,23 @@
 "use client";
 
-import { authClient } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { useAuth } from "@/lib/auth-context";
+import { useEffect, type ReactNode } from "react";
 
 /**
- * AuthGuard — wraps any page / layout that requires authentication.
- * Uses sessionStorage (dies on tab close) as the ONLY client-side session check.
- * This ensures users MUST log in every time they open a new browser/tab.
+ * AuthGuard — membungkus halaman yang wajib login.
+ * Status sesi diambil dari server (/api/auth/session); middleware juga
+ * sudah memblokir /admin tanpa sesi valid, jadi ini lapisan kedua di sisi browser.
  */
 export default function AuthGuard({ children }: { children: ReactNode }) {
-  const { data: session, isPending: isLoading } = authClient.useSession();
-  const [authChecked, setAuthChecked] = useState(false);
-  const [isAuthed, setIsAuthed] = useState(false);
+  const { isAuthenticated, isLoading } = useAuth();
 
   useEffect(() => {
-    // Clear any legacy localStorage session to prevent bypass
-    try { localStorage.removeItem("neraca_air_session"); } catch (e) {}
-
-    // Check sessionStorage OR session cookie — ensures auth works reliably across tab/redirects
-    const hasSessionStorage = typeof window !== "undefined" 
-      && sessionStorage.getItem("neraca_air_session") === "active";
-    const hasSessionCookie = typeof document !== "undefined"
-      && document.cookie.includes("neraca_air_session=active");
-    
-    setIsAuthed(hasSessionStorage || hasSessionCookie);
-    setAuthChecked(true);
-  }, []);
-
-  // Also accept Better Auth server session if available
-  const isAuthenticated = !!session?.user || isAuthed;
-
-  useEffect(() => {
-    if (authChecked && !isLoading && !isAuthenticated) {
+    if (!isLoading && !isAuthenticated) {
       window.location.replace("/login?redirect=/admin");
     }
-  }, [authChecked, isLoading, isAuthenticated]);
+  }, [isLoading, isAuthenticated]);
 
-  // Still checking auth state
-  if (!authChecked || (isLoading && !isAuthed)) {
+  if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-950">
         <div className="flex flex-col items-center gap-4">
@@ -49,7 +28,6 @@ export default function AuthGuard({ children }: { children: ReactNode }) {
     );
   }
 
-  // Not authenticated → redirect
   if (!isAuthenticated) {
     return null;
   }

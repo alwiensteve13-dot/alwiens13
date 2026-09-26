@@ -7,6 +7,9 @@ export async function GET(req: NextRequest) {
   const s = req.nextUrl.searchParams.get("s") || "a";
   
   if (!x || !y || !z) return new NextResponse("Missing params", { status: 400 });
+  // Hanya angka tile yang valid (mencegah penyusupan URL).
+  if (![x, y, z].every((v) => /^\d{1,8}$/.test(v))) return new NextResponse("Invalid params", { status: 400 });
+  if (!/^[abc]$/.test(s)) return new NextResponse("Invalid params", { status: 400 });
   
   const osmUrl = `https://${s}.tile.openstreetmap.org/${z}/${x}/${y}.png`;
   

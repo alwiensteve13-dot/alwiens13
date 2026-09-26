@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
+import { isSafeId } from "@/lib/safe-path";
 import fs from "fs";
 
 export const dynamic = 'force-dynamic';
@@ -39,6 +40,10 @@ export async function POST(request: NextRequest) {
         { error: "regionId dan data GeoJSON wajib diisi" },
         { status: 400 }
       );
+    }
+
+    if (!isSafeId(regionId)) {
+      return NextResponse.json({ error: "regionId tidak valid." }, { status: 400 });
     }
 
     const uploadDir = path.join(process.cwd(), "public/geojson");

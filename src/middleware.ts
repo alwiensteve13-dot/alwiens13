@@ -1,37 +1,35 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { SESSION_COOKIE, verifySessionToken } from "@/lib/session";
 
 /**
- * Middleware — lightweight server-side guard.
+ * Middleware — penjaga di sisi server.
  *
- * For the frontend-first stub we check a simple cookie
- * (`neraca_air_session`). Later this will be replaced by a
- * Better Auth session token verification.
+ * - /admin/*                      → wajib sesi pengelola yang valid (token bertanda tangan)
+ * - /api/* dengan POST/PUT/PATCH/DELETE → wajib sesi valid, kecuali login/logout
  *
- * Protected paths: /admin and any sub-routes.
+ * Token diverifikasi dengan HMAC (AUTH_SECRET), jadi cookie yang dibuat sendiri
+ * oleh pengunjung tidak akan diterima.
  */
-export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-  const session = 
-    request.cookies.get("better-auth.session_token")?.value || 
-    request.cookies.get("__Secure-better-auth.session_token")?.value || 
-    request.cookies.get("neraca_air_session")?.value;
+const PUBLIC_API_MUTATIONS = new Set(["/api/auth/login", "/api/auth/logout"]);
+const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
-  /* Protect /admin routes */
-  if (pathname.startsWith("/admin")) {
-    if (!session) {
-      const loginUrl = new URL("/login", request.url);
-      loginUrl.searchParams.set("redirect", pathname);
-      return NextResponse.redirect(loginUrl);
-    }
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const session = await verifySessionToken(request.cookies.get(SESSION_COOKIE)?.value);
+
+  if (pathname.startsWith("/admin") && !session) {
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("redirect", pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
-  /* Protect API mutating routes (POST, PUT, DELETE) */
-  if (pathname.startsWith("/api") && !pathname.startsWith("/api/auth")) {
-    if (["POST", "PUT", "DELETE"].includes(request.method)) {
-      if (!session) {
-        return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
-      }
-    }
+  if (
+    pathname.startsWith("/api") &&
+    MUTATING_METHODS.has(request.method) &&
+    !PUBLIC_API_MUTATIONS.has(pathname) &&
+    !session
+  ) {
+    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
 
   return NextResponse.next();

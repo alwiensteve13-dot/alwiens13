@@ -6,6 +6,8 @@ export async function GET(req: NextRequest) {
   const z = req.nextUrl.searchParams.get("z");
   
   if (!x || !y || !z) return new NextResponse("Missing params", { status: 400 });
+  // Hanya angka tile yang valid (mencegah penyusupan URL).
+  if (![x, y, z].every((v) => /^\d{1,8}$/.test(v))) return new NextResponse("Invalid params", { status: 400 });
   
   const googleUrl = `https://mt1.google.com/vt/lyrs=s&x=${x}&y=${y}&z=${z}`;
   

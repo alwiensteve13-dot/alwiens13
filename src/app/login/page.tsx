@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, type FormEvent, useEffect, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
+import { useSearchParams } from "next/navigation";
+import { useAuth } from "@/lib/auth-context";
+import { safeRedirectPath } from "@/lib/session";
 import Link from "next/link";
 
 function LockIcon({ className }: { className?: string }) {
@@ -35,89 +36,43 @@ function EyeOffIcon({ className }: { className?: string }) {
 }
 
 function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const redirect = searchParams.get("redirect") || "/admin";
+  const redirect = safeRedirectPath(searchParams.get("redirect"));
+  const { login } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [hasUsers, setHasUsers] = useState<boolean | null>(null);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [forgotMessage, setForgotMessage] = useState("");
-
-  useEffect(() => {
-    fetch("/api/check-users")
-      .then(res => res.json())
-      .then(data => setHasUsers(data.hasUsers))
-      .catch(() => setHasUsers(true)); // fallback to true to prevent random signups
-  }, []);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError("");
     setForgotMessage("");
-    setIsSubmitting(true);
 
-    try {
-      if (isForgotPassword) {
-        setForgotMessage("Permintaan dikirim. Silakan periksa kembali akun Anda.");
-        setIsSubmitting(false);
-        return;
-      }
-
-      if (!email || !password) {
-        setError("Silakan masukkan email dan kata sandi Anda.");
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Set session cookie (crucial for Next.js Middleware check)
-      document.cookie = "neraca_air_session=active; path=/; SameSite=Lax";
-
-      // Set session in sessionStorage (for client-side AuthGuard, clears on tab close)
-      if (typeof window !== "undefined") {
-        sessionStorage.setItem("neraca_air_session", "active");
-        localStorage.removeItem("neraca_air_session");
-      }
-
-      // Try better-auth in background with timeout
-      try {
-        if (hasUsers === false) {
-          await Promise.race([
-            authClient.signUp.email({ email, password, name: email.split("@")[0] || "Admin" }),
-            new Promise((resolve) => setTimeout(resolve, 800))
-          ]);
-        } else {
-          await Promise.race([
-            authClient.signIn.email({ email, password }),
-            new Promise((resolve) => setTimeout(resolve, 800))
-          ]);
-        }
-      } catch (err) {
-        console.warn("Auth client warning:", err);
-      }
-
-      // Direct navigation to admin dashboard
-      window.location.href = redirect;
-    } catch (err) {
-      // Fallback: still ensure session cookie and redirect
-      document.cookie = "neraca_air_session=active; path=/; SameSite=Lax";
-      if (typeof window !== "undefined") {
-        sessionStorage.setItem("neraca_air_session", "active");
-      }
-      window.location.href = redirect;
+    if (isForgotPassword) {
+      setForgotMessage(
+        "Kata sandi pengelola diatur oleh administrator server. Hubungi pengelola teknis untuk mengganti sandi.",
+      );
+      return;
     }
-  }
 
-  if (hasUsers === null) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-950">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-cyan-500 border-t-transparent" />
-      </div>
-    );
+    if (!email || !password) {
+      setError("Silakan masukkan email dan kata sandi Anda.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    const result = await login(email, password);
+    if (result.ok) {
+      window.location.href = redirect;
+      return;
+    }
+    setError(result.error || "Email atau kata sandi salah.");
+    setIsSubmitting(false);
   }
 
   return (
@@ -138,14 +93,12 @@ function LoginForm() {
             </div>
             <div className="text-center">
               <h1 className="text-2xl font-bold tracking-tight text-white">
-                {isForgotPassword ? "Lupa Sandi" : hasUsers ? "Masuk Pengelola" : "Buat Akun Pertama"}
+                {isForgotPassword ? "Lupa Sandi" : "Masuk Pengelola"}
               </h1>
               <p className="mt-2 text-sm text-slate-400">
                 {isForgotPassword
                   ? "Masukkan email pengelola Anda untuk mereset sandi."
-                  : hasUsers 
-                  ? "Masuk menggunakan email dan kata sandi Anda."
-                  : "Daftarkan email dan sandi rahasia Anda sebagai Pengelola."}
+                  : "Masuk menggunakan email dan kata sandi Anda."}
               </p>
             </div>
           </div>
@@ -185,7 +138,7 @@ function LoginForm() {
                   <label htmlFor="login-password" className="block text-sm font-medium text-slate-300">
                     Kata Sandi
                   </label>
-                  {hasUsers && (
+                  {(
                     <button
                       type="button"
                       onClick={() => { setIsForgotPassword(true); setError(""); setForgotMessage(""); }}
@@ -224,7 +177,7 @@ function LoginForm() {
               className="group relative w-full overflow-hidden rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-2.5 font-semibold text-white shadow-lg shadow-cyan-500/25 transition-all hover:shadow-cyan-500/40 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <span className={`inline-flex items-center gap-2 transition ${isSubmitting ? "opacity-0" : ""}`}>
-                {isForgotPassword ? "Kirim Tautan Atur Ulang" : hasUsers ? "Masuk" : "Buat Akun & Masuk"}
+                {isForgotPassword ? "Lanjut" : "Masuk"}
               </span>
               {isSubmitting && (
                 <span className="absolute inset-0 flex items-center justify-center">
