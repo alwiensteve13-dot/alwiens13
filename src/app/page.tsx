@@ -1380,7 +1380,7 @@ export default function Home() {
                           <Legend verticalAlign="bottom" align="center" wrapperStyle={{paddingTop: '15px', fontSize: '10.5px', color: isDark ? '#94a3b8' : '#64748b'}} />
                           <Bar dataKey="debit" fill="#0ea5e9" radius={[2, 2, 0, 0]} name="Ketersediaan" />
                           <Bar dataKey="need" fill="#ef4444" radius={[2, 2, 0, 0]} name="Kebutuhan" />
-                          <Bar dataKey="na" radius={[2, 2, 0, 0]} name="Neraca Air (NA)">
+                          <Bar dataKey="na" fill="#10b981" radius={[2, 2, 0, 0]} name="Neraca Air (NA)">
                             {chartData.map((entry: any, index: number) => (
                               <Cell key={`public-na-cell-${index}`} fill={entry.na >= 0 ? '#10b981' : '#ef4444'} />
                             ))}
@@ -1765,7 +1765,7 @@ export default function Home() {
                     <Legend verticalAlign="bottom" align="center" wrapperStyle={{paddingTop: '25px', fontSize: '13px', fontWeight: 600, color: isDark ? '#94a3b8' : '#64748b'}} />
                     <Bar dataKey="debit" fill="#0ea5e9" radius={[4, 4, 0, 0]} barSize={12} name="Ketersediaan (Debit)" />
                     <Bar dataKey="need" fill="#ef4444" radius={[4, 4, 0, 0]} barSize={12} name="Kebutuhan Air" />
-                    <Bar dataKey="na" radius={[4, 4, 0, 0]} barSize={12} name="Neraca Air (NA)">
+                    <Bar dataKey="na" fill="#10b981" radius={[4, 4, 0, 0]} barSize={12} name="Neraca Air (NA)">
                       {chartData.map((entry: any, index: number) => (
                         <Cell key={`modal-na-cell-${index}`} fill={entry.na >= 0 ? '#10b981' : '#ef4444'} />
                       ))}
