@@ -1122,9 +1122,10 @@ export default function Home() {
         
 
 
-        <div className={`grid transition-all duration-300 ${isFullscreen ? 'gap-0 grid-cols-1 md:grid-cols-5' : 'gap-8 lg:grid-cols-4'}`}>
+        {/* DAS dipilih -> panel ringkasan melebar sampai setengah layar (peta setengah kiri) */}
+        <div className={`grid transition-all duration-300 ${isFullscreen ? (selectedDas ? 'gap-0 grid-cols-1 md:grid-cols-2' : 'gap-0 grid-cols-1 md:grid-cols-5') : (selectedDas ? 'gap-6 lg:grid-cols-2' : 'gap-8 lg:grid-cols-4')}`}>
           {/* Map Column */}
-          <div className={`relative transition-all duration-300 z-0 ${isFullscreen ? 'md:col-span-4 h-[calc(100dvh-64px)]' : 'lg:col-span-3 h-[600px] md:h-[700px] lg:h-[800px]'}`}>
+          <div className={`relative transition-all duration-300 z-0 ${isFullscreen ? `${selectedDas ? 'md:col-span-1' : 'md:col-span-4'} h-[calc(100dvh-64px)]` : `${selectedDas ? 'lg:col-span-1' : 'lg:col-span-3'} h-[600px] md:h-[700px] lg:h-[800px]`}`}>
             <DasMap 
               onSelectDas={setSelectedDasId} 
               selectedId={selectedDasId} 
@@ -1654,7 +1655,7 @@ export default function Home() {
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white">
                   Grafik Neraca Air - {selectedDas.name} ({selectedDas.region})
                 </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Tampilan Layar Penuh 24 Periode Setengah Bulanan</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Tampilan lengkap: neraca air 24 periode setengah bulanan dan hasil Simulasi HEC-HMS</p>
               </div>
 
               <div className="flex items-center gap-3">
@@ -1692,6 +1693,25 @@ export default function Home() {
             </div>
 
             <div className="p-6 flex-1 overflow-y-auto">
+              <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+                <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 p-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Debit Air</p>
+                  <p className="text-lg font-bold text-slate-900 dark:text-white">{selectedDas.debit}</p>
+                </div>
+                <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 p-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Kebutuhan</p>
+                  <p className="text-lg font-bold text-slate-900 dark:text-white">{selectedDas.need}</p>
+                </div>
+                <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 p-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Wilayah</p>
+                  <p className="text-sm font-bold text-slate-900 dark:text-white">{selectedDas.region || "-"}</p>
+                </div>
+                <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 p-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Luas DAS</p>
+                  <p className="text-sm font-bold text-slate-900 dark:text-white">{selectedDasAreaKm2 ? `${selectedDasAreaKm2} km²` : selectedDas.area || "-"}</p>
+                </div>
+              </div>
+              <h4 className="mb-1 text-sm font-bold text-slate-900 dark:text-white">Grafik Neraca Air {chartYear}</h4>
               <div className="h-[440px] w-full" id="modal-chart-container">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={chartData} margin={{ top: 20, right: 20, left: 0, bottom: 65 }} barGap={2}>
@@ -1844,6 +1864,11 @@ export default function Home() {
                   </div>
                 </div>
               )}
+
+              {/* Hasil Simulasi HEC-HMS lengkap (sama seperti panel samping) */}
+              <div className="mt-6">
+                <HmsPanel key={`modal-${selectedDas.id}`} dasId={selectedDas.id} />
+              </div>
             </div>
 
             {/* Modal Footer Controls */}
