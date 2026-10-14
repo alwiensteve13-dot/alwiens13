@@ -1,7 +1,7 @@
 {
  "format": "hms-neraca-air",
  "versi": 1,
- "dibuat": "2026-10-14T20:36:14",
+ "dibuat": "2026-10-14T21:42:45",
  "aplikasi": "HEC-HMS DAS Analyzer - Simulasi",
  "das": {
   "nama": "Bubi",
@@ -71,7 +71,11 @@
   "namaArsip": null,
   "slug": "bubi"
  },
- "cek_hecms": null,
+ "cek_hecms": {
+  "status": "sangat dekat",
+  "teks": "Sangat dekat dengan HEC-HMS asli (selisih debit terbesar 0,6831% dari puncak, di S1)",
+  "versi": "4.14"
+ },
  "tahun": [
   {
    "tahun": 2001,
@@ -1874,14 +1878,15 @@
    "kunci": "weibull",
    "nama": "Ketersediaan_Weibull_Bubi_Outlet.xlsx",
    "berkas": "Ketersediaan_Weibull_Bubi_Outlet.xlsx",
-   "ukuran": 465669
+   "ukuran": 465670
   },
   {
    "kunci": "harian15",
    "nama": "Ketersediaan_15Harian_2025_Bubi_Outlet.xlsx",
    "berkas": "Ketersediaan_15Harian_2025_Bubi_Outlet.xlsx",
-   "ukuran": 405715
+   "ukuran": 405714
   }
  ],
- "diimpor": "2026-10-14T11:50:37.591Z"
+ "diimpor": "2026-10-14T12:47:11.706Z",
+ "dikirim_dari": "Simulasi HEC-HMS (tombol Kirim ke web Neraca Air)"
 }
