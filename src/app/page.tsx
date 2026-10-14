@@ -12,6 +12,9 @@ import area from "@turf/area";
 import { point, polygon } from "@turf/helpers";
 
 import { getColorFromProperty, getLabelFromProperty, ensureUniqueRegionColors, DISTINCT_POLYGON_PALETTE } from "@/lib/color-utils";
+import HmsPanel from "@/components/hms-panel";
+import { LoginRequiredDialog, LoginRequiredCard } from "@/components/login-required";
+import { useAuth } from "@/lib/auth-context";
 
 const REGION_COLORS = DISTINCT_POLYGON_PALETTE;
 
@@ -21,6 +24,9 @@ import initialRegionsData from "../../public/mock-regions.json";
 import initialWaterData from "../../public/mock-water.json";
 
 export default function Home() {
+  // Semua unduhan/cetak di halaman publik hanya untuk pengguna yang sudah login.
+  const { isAuthenticated } = useAuth();
+  const [mintaLogin, setMintaLogin] = useState(false);
   const [regions, setRegions] = useState<any[]>(() => ensureUniqueRegionColors(initialRegionsData));
   const [selectedDasId, setSelectedDasId] = useState<string | null>(null);
   const [pdfUrls, setPdfUrls] = useState<Record<string, string>>({});
@@ -774,6 +780,7 @@ export default function Home() {
 
   const handlePrintPublicChart = (containerId?: string) => {
     if (!selectedDas) return;
+    if (!isAuthenticated) { setMintaLogin(true); return; }
     const regionName = selectedDas.name;
     const regionDesc = selectedDas.region || "Maluku";
 
@@ -1462,6 +1469,9 @@ export default function Home() {
                     </div>
                   </div>
 
+                  {/* Hasil Simulasi HEC-HMS (muncul bila sudah diimpor admin) */}
+                  <HmsPanel key={selectedDas.id} dasId={selectedDas.id} />
+
                   {/* Layer Toggles */}
                   <div className="border-t border-slate-100 dark:border-slate-800 pt-6">
                     <h4 className="font-bold text-sm text-slate-900 dark:text-white mb-3 uppercase tracking-wider">Lapisan Peta Tambahan</h4>
@@ -1557,7 +1567,16 @@ export default function Home() {
 
 
 
-                  {currentPdfUrl && (
+                  {currentPdfUrl && !isAuthenticated && (
+                    <div className="mt-2 pt-4 border-t border-slate-100 dark:border-slate-800 transition-colors duration-300">
+                      <h4 className="font-bold text-slate-900 dark:text-white mb-3">Dokumen PDF Terlampir</h4>
+                      <LoginRequiredCard
+                        judul={decodeURIComponent(String(currentPdfUrl).split("/").pop() || "Dokumen PDF").replace(/^\d{10,}-/, "")}
+                        pesan="Dokumen dapat dilihat dan diunduh setelah login."
+                      />
+                    </div>
+                  )}
+                  {currentPdfUrl && isAuthenticated && (
                     <div className="mt-2 pt-4 border-t border-slate-100 dark:border-slate-800 transition-colors duration-300">
                       <h4 className="font-bold text-slate-900 dark:text-white mb-3">Dokumen PDF Terlampir</h4>
                       <div className="w-full h-[400px] rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 mb-4 bg-slate-100 dark:bg-slate-800">
@@ -1625,6 +1644,8 @@ export default function Home() {
       </main>
 
       {/* Fullscreen Chart Modal */}
+      <LoginRequiredDialog open={mintaLogin} onClose={() => setMintaLogin(false)} />
+
       {isChartModalOpen && selectedDas && (
         <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/75 backdrop-blur-md p-4 animate-in fade-in">
           <div className="w-full max-w-6xl max-h-[92vh] flex flex-col rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden">

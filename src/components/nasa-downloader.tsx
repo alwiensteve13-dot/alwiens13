@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import { useAuth } from '@/lib/auth-context';
+import { LoginRequiredCard } from '@/components/login-required';
 
 // Fungsi untuk mengekstrak centroid dari geojson
 function getGeojsonCentroid(geojson: any): { lat: number, lon: number } | null {
@@ -52,6 +54,7 @@ function getGeojsonCentroid(geojson: any): { lat: number, lon: number } | null {
 }
 
 export default function NasaDownloader({ selectedDas }: { selectedDas: any }) {
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [errorMsg, setErrorMsg] = useState('');
@@ -263,6 +266,16 @@ export default function NasaDownloader({ selectedDas }: { selectedDas: any }) {
     // Reset input
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
+
+  // Unduhan data hujan hanya untuk pengguna yang sudah login
+  if (!authLoading && !isAuthenticated) {
+    return (
+      <div className="transition-colors duration-300">
+        <h4 className="font-bold text-slate-900 dark:text-white mb-3">Data Iklim NASA POWER</h4>
+        <LoginRequiredCard judul="Unduh data hujan NASA POWER" pesan="Unduhan data hanya untuk pengguna yang sudah login." />
+      </div>
+    );
+  }
 
   return (
     <div className="transition-colors duration-300">
