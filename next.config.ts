@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
     '/api/hms': ['./data/hms/**/*'],
     '/api/hms/*': ['./data/hms/**/*'],
     '/api/hms/*/unduh': ['./data/hms/**/*'],
+    '/api/hms/*/data': ['./data/hms/**/*'],
   },
   allowedDevOrigins: ['southampton-reggae-tires-responded.trycloudflare.com'],
   experimental: {

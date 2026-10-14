@@ -11,6 +11,7 @@ import {
   ResponsiveContainer, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ReferenceLine,
 } from "recharts";
 import { useAuth } from "@/lib/auth-context";
+import HmsAndalanDetail from "@/components/hms-andalan-detail";
 
 type Seri = (number | null)[];
 interface Ringkasan {
@@ -37,7 +38,7 @@ interface Ringkasan {
 }
 
 const BULAN = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
-const WARNA = { q50: "#0ea5e9", q80: "#10b981", q90: "#f59e0b", rata: "#94a3b8", tahun: "#a855f7" };
+const WARNA = { q50: "#0ea5e9", q80: "#10b981", q90: "#f59e0b", q95: "#ef4444", rata: "#94a3b8", tahun: "#a855f7" };
 
 function angka(v: number | null | undefined, n = 3) {
   return v == null || !isFinite(v) ? "-" : v.toLocaleString("id-ID", { minimumFractionDigits: n, maximumFractionDigits: n });
@@ -55,6 +56,7 @@ export default function HmsPanel({ dasId }: { dasId: string }) {
   const [skala, setSkala] = useState<"15" | "bulan">("15");
   const [tahunBanding, setTahunBanding] = useState("");
   const [fdcLog, setFdcLog] = useState(true);
+  const [detail, setDetail] = useState(false);
 
   useEffect(() => {
     // komponen dipasang ulang per DAS (key), jadi state tidak perlu dikosongkan di sini
@@ -76,6 +78,7 @@ export default function HmsPanel({ dasId }: { dasId: string }) {
       Q50: src?.q50?.[i] ?? null,
       Q80: src?.q80?.[i] ?? null,
       Q90: src?.q90?.[i] ?? null,
+      Q95: src?.q95?.[i] ?? null,
       "Rata-rata": src?.rata?.[i] ?? null,
       ...(banding ? { [`Tahun ${tahunBanding}`]: banding[i] ?? null } : {}),
     }));
@@ -180,11 +183,17 @@ export default function HmsPanel({ dasId }: { dasId: string }) {
             <Line type="monotone" dataKey="Q50" stroke={WARNA.q50} strokeWidth={1.5} dot={false} connectNulls />
             <Line type="monotone" dataKey="Q80" stroke={WARNA.q80} strokeWidth={2.5} dot={{ r: 2 }} connectNulls />
             <Line type="monotone" dataKey="Q90" stroke={WARNA.q90} strokeWidth={1.5} dot={false} connectNulls />
+            <Line type="monotone" dataKey="Q95" stroke={WARNA.q95} strokeWidth={1.2} dot={false} connectNulls />
             <Line type="monotone" dataKey="Rata-rata" stroke={WARNA.rata} strokeDasharray="4 3" dot={false} connectNulls />
             {tahunBanding && <Line type="monotone" dataKey={`Tahun ${tahunBanding}`} stroke={WARNA.tahun} strokeWidth={1.5} dot={false} connectNulls />}
           </LineChart>
         </ResponsiveContainer>
       </div>
+      <button onClick={() => setDetail(true)}
+        className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-lg border border-cyan-200 dark:border-cyan-800/60 bg-cyan-50 dark:bg-cyan-950/40 px-3 py-2 text-xs font-bold text-cyan-800 dark:text-cyan-200 hover:bg-cyan-100 dark:hover:bg-cyan-900/60">
+        ⤢ Tabel &amp; grafik debit andalan lengkap (Q50/Q80/Q90/Q95)
+      </button>
+      {detail && <HmsAndalanDetail data={data} dasId={dasId} onClose={() => setDetail(false)} />}
       <p className="mt-1 text-[10px] text-slate-500 dark:text-slate-400">
         Peluang Weibull P = m/(n+1) dari {tl.length} tahun lengkap; Q80 = debit yang tersedia ≥ 80% waktu.
         {tahunBanding && !(data.tahun || []).find((t) => String(t.tahun) === tahunBanding)?.lengkap ? " * tahun tidak lengkap." : ""}
@@ -233,23 +242,25 @@ export default function HmsPanel({ dasId }: { dasId: string }) {
             </div>
           )}
           <ul className="space-y-1.5">
-            {data.unduhan.map((u) => {
-              const judul = u.kunci === "weibull" ? "Ketersediaan air - Weibull (semua tahun)"
+            {[{ kunci: "data", nama: `Debit_Andalan_${data.das.nama}_${data.das.elemen}.xlsx`, berkas: "", ukuran: 0 }, ...data.unduhan].map((u) => {
+              const judul = u.kunci === "data" ? "Data debit andalan lengkap (Q50/Q80/Q90/Q95, tiap tahun, kurva durasi)"
+                : u.kunci === "weibull" ? "Ketersediaan air - Weibull (semua tahun)"
                 : u.kunci === "harian15" ? `Ketersediaan air 15 harian${data.excel?.harian15?.tahun ? ` tahun ${data.excel.harian15.tahun}` : ""}` : u.nama;
               const isi = (
                 <>
                   <span className="flex min-w-0 flex-col">
                     <span className="truncate font-semibold">{judul}</span>
-                    <span className="truncate text-[10px] opacity-70">{u.nama} · {ukuran(u.ukuran)}</span>
+                    <span className="truncate text-[10px] opacity-70">{u.nama}{u.ukuran ? ` · ${ukuran(u.ukuran)}` : ""}</span>
                   </span>
                   <span className="shrink-0 text-[10px] font-bold">{isAuthenticated ? "Unduh .xlsx" : "🔒 Login"}</span>
                 </>
               );
               const cls = "flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-xs transition";
               return (
-                <li key={u.berkas}>
+                <li key={u.kunci + u.berkas}>
                   {isAuthenticated ? (
-                    <a href={`/api/hms/${encodeURIComponent(dasId)}/unduh?berkas=${encodeURIComponent(u.berkas)}`} download={u.nama}
+                    <a href={u.kunci === "data" ? `/api/hms/${encodeURIComponent(dasId)}/data`
+                      : `/api/hms/${encodeURIComponent(dasId)}/unduh?berkas=${encodeURIComponent(u.berkas)}`} download={u.nama}
                       className={`${cls} border-emerald-200/70 dark:border-emerald-800/60 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 hover:bg-emerald-100 dark:hover:bg-emerald-900/60`}>
                       {isi}
                     </a>
