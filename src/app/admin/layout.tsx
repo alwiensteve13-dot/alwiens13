@@ -83,6 +83,7 @@ function DropletIcon({ className }: { className?: string }) {
 /* ------------------------------------------------------------------ */
 const NAV_ITEMS = [
   { href: "/admin", label: "Dasbor", icon: HomeIcon },
+  { href: "/admin/hecms", label: "Impor HEC-HMS", icon: UploadIcon },
 ];
 
 /* ------------------------------------------------------------------ */
