@@ -475,9 +475,13 @@ function MapResizeHandler() {
     const timer = setTimeout(() => map.invalidateSize(), 300);
     const handleResize = () => map.invalidateSize();
     window.addEventListener('resize', handleResize);
+    // kolom peta berubah lebar (mis. panel DAS melebar) -> peta disesuaikan
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(() => map.invalidateSize()) : null;
+    ro?.observe(map.getContainer());
     return () => {
       clearTimeout(timer);
       window.removeEventListener('resize', handleResize);
+      ro?.disconnect();
     };
   }, [map]);
   return null;

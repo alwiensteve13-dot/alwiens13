@@ -100,7 +100,7 @@ export default function HmsPanel({ dasId }: { dasId: string }) {
   const nil = "text-sm font-bold text-slate-900 dark:text-white";
 
   return (
-    <div className="border-t border-slate-100 dark:border-slate-800 pt-6" id="hms-panel">
+    <div className="@container border-t border-slate-100 dark:border-slate-800 pt-6" id="hms-panel">
       <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
         <h4 className="font-bold text-base text-slate-900 dark:text-white">Hasil Simulasi HEC-HMS</h4>
         <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-bold">
@@ -117,12 +117,12 @@ export default function HmsPanel({ dasId }: { dasId: string }) {
       </div>
 
       {/* Ringkasan model */}
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-2 @xl:grid-cols-5">
         <div className={kartu}><p className={lbl}>Luas DAS model</p><p className={nil}>{angka(data.das.luas_km2, 2)} km²</p></div>
         <div className={kartu}><p className={lbl}>Sub-basin / reach</p><p className={nil}>{data.das.jumlah_subbasin ?? "-"} / {data.das.jumlah_reach ?? "-"}</p></div>
         <div className={kartu}><p className={lbl}>Debit rata-rata</p><p className={nil}>{angka(data.hasil?.debit_rata)} m³/s</p></div>
         <div className={kartu}><p className={lbl}>Q80 harian (andalan)</p><p className={`${nil} text-emerald-600 dark:text-emerald-400`}>{angka(data.hasil?.q80_harian)} m³/s</p></div>
-        <div className={`${kartu} col-span-2`}>
+        <div className={`${kartu} col-span-2 @xl:col-span-1`}>
           <p className={lbl}>Debit puncak</p>
           <p className={nil}>{angka(data.hasil?.debit_puncak)} m³/s <span className="font-medium text-slate-500 dark:text-slate-400">({data.hasil?.waktu_puncak || "-"})</span></p>
         </div>
@@ -150,6 +150,8 @@ export default function HmsPanel({ dasId }: { dasId: string }) {
         )}
       </dl>
 
+      <div className="grid gap-x-6 @3xl:grid-cols-2">
+      <div className="min-w-0">
       {/* Grafik debit andalan */}
       <div className="mt-5 flex flex-wrap items-center justify-between gap-2">
         <h5 className="text-sm font-bold text-slate-900 dark:text-white">Debit andalan (Weibull)</h5>
@@ -198,10 +200,11 @@ export default function HmsPanel({ dasId }: { dasId: string }) {
         Peluang Weibull P = m/(n+1) dari {tl.length} tahun lengkap; Q80 = debit yang tersedia ≥ 80% waktu.
         {tahunBanding && !(data.tahun || []).find((t) => String(t.tahun) === tahunBanding)?.lengkap ? " * tahun tidak lengkap." : ""}
       </p>
+      </div>
 
       {/* Kurva durasi aliran */}
       {fdc.length > 0 && (
-        <>
+        <div className="min-w-0">
           <div className="mt-5 flex items-center justify-between gap-2">
             <h5 className="text-sm font-bold text-slate-900 dark:text-white">Kurva durasi aliran <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">harian</span></h5>
             <div className="flex shrink-0 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden text-[11px] font-semibold">
@@ -228,8 +231,9 @@ export default function HmsPanel({ dasId }: { dasId: string }) {
               </LineChart>
             </ResponsiveContainer>
           </div>
-        </>
+        </div>
       )}
+      </div>
 
       {/* Unduhan */}
       {data.unduhan && data.unduhan.length > 0 && (
@@ -241,7 +245,7 @@ export default function HmsPanel({ dasId }: { dasId: string }) {
               <Link href="/login?redirect=/" className="shrink-0 rounded-md bg-amber-600 px-2.5 py-1 font-bold text-white hover:bg-amber-500">Masuk</Link>
             </div>
           )}
-          <ul className="space-y-1.5">
+          <ul className="grid gap-1.5 @2xl:grid-cols-2">
             {[{ kunci: "data", nama: `Debit_Andalan_${data.das.nama}_${data.das.elemen}.xlsx`, berkas: "", ukuran: 0 }, ...data.unduhan].map((u) => {
               const judul = u.kunci === "data" ? "Data debit andalan lengkap (Q50/Q80/Q90/Q95, tiap tahun, kurva durasi)"
                 : u.kunci === "weibull" ? "Ketersediaan air - Weibull (semua tahun)"
