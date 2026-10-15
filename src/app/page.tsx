@@ -1089,10 +1089,10 @@ export default function Home() {
   }, [chartData]);
 
   return (
-    <div className={`kaca-akar min-h-screen text-slate-900 dark:text-slate-100 transition-colors duration-300 ${isFullscreen ? '' : 'isi-rel'}`}>
+    <div className={`kaca-akar min-h-screen text-slate-900 dark:text-slate-100 transition-colors duration-300 h-dvh min-h-[520px] flex flex-col overflow-hidden ${isFullscreen ? '' : 'isi-rel'}`}>
       {!isFullscreen && <KacaRel aktif="neraca" masuk={isAuthenticated} gelap={isDark} onTema={toggleTheme} />}
       {/* Header */}
-      <header className={`kaca-kepala ${isFullscreen ? 'penuh' : ''} transition-colors duration-300 no-print`}>
+      <header className={`kaca-kepala shrink-0 ${isFullscreen ? 'penuh' : ''} transition-colors duration-300 no-print`}>
         <div className={`mx-auto flex min-h-[72px] items-center justify-between gap-4 transition-all duration-300 ${isFullscreen ? 'w-full px-4' : 'w-full px-5 sm:px-6'}`}>
           <div className="flex items-center gap-3 min-w-0">
             <div className="flex h-11 w-11 items-center justify-center overflow-hidden shrink-0">
@@ -1142,14 +1142,14 @@ export default function Home() {
         </div>
       </header>
 
-      <main className={`mx-auto transition-all duration-300 ${isFullscreen ? 'w-full px-0 py-0' : 'w-full px-4 py-8 sm:px-6 lg:px-8'}`}>
+      <main className={`mx-auto w-full flex-1 min-h-0 transition-all duration-300 ${isFullscreen ? 'p-0' : 'px-2.5 py-2.5 sm:px-6 sm:py-5 lg:pl-0 lg:pr-[18px]'}`}>
         
 
 
         {/* DAS dipilih -> panel ringkasan melebar sampai setengah layar (peta setengah kiri) */}
-        <div className={`grid transition-all duration-300 ${isFullscreen ? (selectedDas ? 'gap-0 grid-cols-1 md:grid-cols-2' : 'gap-0 grid-cols-1 md:grid-cols-5') : (selectedDas ? 'gap-6 lg:grid-cols-2' : 'gap-8 lg:grid-cols-4')}`}>
+        <div className={`grid h-full min-h-0 transition-all duration-300 ${isFullscreen ? (selectedDas ? 'gap-0 grid-cols-1 grid-rows-[minmax(0,1fr)_minmax(0,1.3fr)] md:grid-rows-1 md:grid-cols-2' : 'gap-0 grid-cols-1 grid-rows-[minmax(0,1fr)_minmax(0,1.3fr)] md:grid-rows-1 md:grid-cols-5') : (selectedDas ? 'gap-2.5 sm:gap-6 grid-rows-[minmax(0,1fr)_minmax(0,1.3fr)] lg:grid-rows-1 lg:grid-cols-2' : 'gap-2.5 sm:gap-6 lg:gap-8 grid-rows-[minmax(0,1fr)_minmax(0,1.3fr)] lg:grid-rows-1 lg:grid-cols-4')}`}>
           {/* Map Column */}
-          <div className={`relative transition-all duration-300 z-0 ${isFullscreen ? `${selectedDas ? 'md:col-span-1' : 'md:col-span-4'} h-[calc(100dvh-72px)]` : `${selectedDas ? 'lg:col-span-1' : 'lg:col-span-3'} h-[600px] md:h-[700px] lg:h-[800px]`}`}>
+          <div className={`relative transition-all duration-300 z-0 ${isFullscreen ? `${selectedDas ? 'md:col-span-1' : 'md:col-span-4'} h-full min-h-0` : `${selectedDas ? 'lg:col-span-1' : 'lg:col-span-3'} h-full min-h-0`}`}>
             <DasMap 
               onSelectDas={setSelectedDasId} 
               selectedId={selectedDasId} 
@@ -1187,9 +1187,9 @@ export default function Home() {
           </div>
 
           {/* Details Column */}
-          <div className={`flex flex-col gap-6 transition-all duration-300 z-10 no-print ${isFullscreen ? 'md:col-span-1 border-l border-slate-200 dark:border-slate-800 kaca-sisi p-4 overflow-y-auto h-[calc(100dvh-72px)]' : 'lg:col-span-1 h-[600px] md:h-[700px] lg:h-[800px]'}`}>
+          <div className={`flex flex-col gap-2.5 sm:gap-6 transition-all duration-300 z-10 no-print ${isFullscreen ? 'md:col-span-1 border-l border-slate-200 dark:border-slate-800 kaca-sisi p-2.5 sm:p-4 overflow-y-auto h-full min-h-0' : 'lg:col-span-1 h-full min-h-0'}`}>
             {/* Search/Select */}
-            <div className="kaca-panel rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm relative z-20 transition-colors duration-300">
+            <div className="kaca-panel shrink-0 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-6 shadow-sm relative z-20 transition-colors duration-300">
               <div className="mb-2 flex items-end justify-between">
                 <label htmlFor="das-search" className="block text-sm font-semibold text-slate-700 dark:text-slate-300">Cari Wilayah DAS</label>
                 <div className="text-xs font-medium text-slate-500 dark:text-slate-400 text-right">
@@ -1245,7 +1245,7 @@ export default function Home() {
 
             {/* Details Card */}
             {selectedDas ? (
-              <div className="kaca-panel flex flex-1 flex-col rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden transition-all duration-500 animate-in fade-in slide-in-from-bottom-4 min-h-0 relative">
+              <div className="kaca-panel flex flex-1 min-h-0 flex-col rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden transition-all duration-500 animate-in fade-in slide-in-from-bottom-4 min-h-0 relative">
                 <div className="h-2 w-full shrink-0" style={{ backgroundColor: selectedDas.color }} />
                 <div className="p-6 flex flex-col gap-6 overflow-y-auto scrollbar-hide">
                   <div className="flex items-start justify-between">

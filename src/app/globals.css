@@ -270,6 +270,14 @@ html.kaca { background: var(--latar); }
 .kaca :is(input, select, textarea):focus { border-color: var(--aksen-garis) !important; box-shadow: var(--fokus) !important; outline: none; }
 .kaca input[type="checkbox"], .kaca input[type="radio"], .kaca input[type="range"] { accent-color: var(--aksen); }
 
+/* ---------- Scrollbar tipis seperti Kalibrasi & Simulasi ---------- */
+.kaca, .kaca * { scrollbar-width: thin; scrollbar-color: var(--garis) transparent; }
+.kaca ::-webkit-scrollbar { width: 10px; height: 10px; }
+.kaca ::-webkit-scrollbar-thumb { background: var(--garis); border-radius: 99px; border: 3px solid transparent; background-clip: content-box; }
+.kaca ::-webkit-scrollbar-thumb:hover { background-color: var(--teks-redup); }
+.kaca ::-webkit-scrollbar-track, .kaca ::-webkit-scrollbar-corner { background: transparent; }
+.kaca ::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+
 /* ---------- Kepala halaman (kaca, mengapung) ---------- */
 .kaca .kaca-kepala {
   position: sticky; top: 12px; z-index: 40;
@@ -326,6 +334,7 @@ html.kaca { background: var(--latar); }
   box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 10px 20px -10px rgba(232,89,15,.9);
 }
 .kaca .nav-sela { width: 44px; height: 1px; margin: 8px 0; background: var(--garis-lembut); }
+.kaca .app-nav { flex-shrink: 0; }
 .kaca .nav-kaki { margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 10px; }
 .kaca .isi-rel { padding-left: calc(var(--rel-l) + var(--rel-x) * 2); }
 @media (max-width: 900px) {
