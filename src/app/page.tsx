@@ -593,6 +593,26 @@ export default function Home() {
     return bins;
   }, [selectedDasId, chartYear, allWaterData, waterUsers]);
 
+  // DAS dipilih -> tahun grafik otomatis ke tahun neraca yang terakhir dikirim dari Simulasi HEC-HMS
+  // (tahun Excel 15 harian), supaya grafik langsung sama dengan hasil simulasi.
+  const airRef = useRef(allWaterData);
+  useEffect(() => { airRef.current = allWaterData; }, [allWaterData]);
+  useEffect(() => {
+    if (!selectedDasId) return;
+    let batal = false;
+    fetch(`/api/hms/${encodeURIComponent(selectedDasId)}`, { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => {
+        const th = j?.data?.excel?.harian15?.tahun;
+        if (batal || !th) return;
+        const ada = (airRef.current as { regionId?: string; region_id?: string; period: string }[]).some((d) =>
+          String(d.regionId ?? d.region_id) === String(selectedDasId) && new Date(d.period).getUTCFullYear() === Number(th));
+        if (ada) setChartYear(String(th));
+      })
+      .catch(() => {});
+    return () => { batal = true; };
+  }, [selectedDasId]);
+
   // Update search query when selectedDasId changes (e.g. clicked on map)
   useEffect(() => {
     if (selectedDasId && selectedDas) {
