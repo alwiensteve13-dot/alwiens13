@@ -1,7 +1,7 @@
 {
  "format": "hms-neraca-air",
  "versi": 1,
- "dibuat": "2026-10-15T10:12:08",
+ "dibuat": "2026-10-15T10:46:34",
  "aplikasi": "HEC-HMS DAS Analyzer - Simulasi",
  "das": {
   "nama": "rutilep",
@@ -1862,15 +1862,15 @@
    "kunci": "weibull",
    "nama": "Ketersediaan_Weibull_rutilep_Outlet.xlsx",
    "berkas": "Ketersediaan_Weibull_rutilep_Outlet.xlsx",
-   "ukuran": 459079
+   "ukuran": 459081
   },
   {
    "kunci": "harian15",
    "nama": "Ketersediaan_15Harian_2025_rutilep_Outlet.xlsx",
    "berkas": "Ketersediaan_15Harian_2025_rutilep_Outlet.xlsx",
-   "ukuran": 399124
+   "ukuran": 399125
   }
  ],
- "diimpor": "2026-10-15T01:12:24.298Z",
+ "diimpor": "2026-10-15T01:46:48.391Z",
  "dikirim_dari": "Simulasi HEC-HMS (tombol Kirim ke web Neraca Air)"
 }
