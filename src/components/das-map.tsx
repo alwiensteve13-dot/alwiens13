@@ -634,7 +634,7 @@ export default function DasMap({
   );
 
   return (
-    <div className="relative w-full h-full bg-[#f8fafc] dark:bg-[#0f172a]">
+    <div className="kaca-peta relative w-full h-full bg-[#f8fafc] dark:bg-[#0f172a]">
       {/* Floating Polygon Layer Menu (Top Center) */}
       {selectedId && (() => {
         const activeDas = data.find(d => d.id === selectedId);

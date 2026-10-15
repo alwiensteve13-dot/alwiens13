@@ -15,6 +15,7 @@ import { getColorFromProperty, getLabelFromProperty, ensureUniqueRegionColors, D
 import HmsPanel from "@/components/hms-panel";
 import { LoginRequiredDialog, LoginRequiredCard } from "@/components/login-required";
 import { useAuth } from "@/lib/auth-context";
+import KacaRel from "@/components/kaca-rel";
 
 const REGION_COLORS = DISTINCT_POLYGON_PALETTE;
 
@@ -1088,21 +1089,25 @@ export default function Home() {
   }, [chartData]);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-cyan-200 dark:selection:bg-cyan-900 transition-colors duration-300">
+    <div className={`kaca-akar min-h-screen text-slate-900 dark:text-slate-100 transition-colors duration-300 ${isFullscreen ? '' : 'isi-rel'}`}>
+      {!isFullscreen && <KacaRel aktif="neraca" masuk={isAuthenticated} gelap={isDark} onTema={toggleTheme} />}
       {/* Header */}
-      <header className="sticky top-0 z-40 w-full border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-950/80 backdrop-blur-lg transition-colors duration-300 no-print">
-        <div className={`mx-auto flex h-16 items-center justify-between transition-all duration-300 ${isFullscreen ? 'w-full px-0' : 'w-full px-4 sm:px-6 lg:px-8'}`}>
-          <div className={`flex items-center gap-2 ${isFullscreen ? 'ml-4' : ''}`}>
-            <div className="flex h-10 w-10 items-center justify-center overflow-hidden shrink-0">
+      <header className={`kaca-kepala ${isFullscreen ? 'penuh' : ''} transition-colors duration-300 no-print`}>
+        <div className={`mx-auto flex min-h-[72px] items-center justify-between gap-4 transition-all duration-300 ${isFullscreen ? 'w-full px-4' : 'w-full px-5 sm:px-6'}`}>
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="flex h-11 w-11 items-center justify-center overflow-hidden shrink-0">
               <img src="/logo-pu.svg" alt="Logo PUPR" className="h-full w-full object-contain" />
             </div>
-            <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white hidden sm:block">Neraca Air PSDA Balai Wilayah Sungai Maluku</span>
-            <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white sm:hidden">BWS Maluku</span>
+            <div className="min-w-0">
+              <span className="kaca-alis">BWS Maluku &middot; PSDA</span>
+              <span className="kaca-judul text-xl hidden sm:block truncate">Neraca Air PSDA Balai Wilayah Sungai Maluku</span>
+              <span className="kaca-judul text-xl sm:hidden">Neraca Air BWS Maluku</span>
+            </div>
           </div>
-          <div className="flex items-center gap-4">
-            <button
+          <div className="flex items-center gap-3">
+            {isFullscreen && <button
               onClick={toggleTheme}
-              className="p-2 rounded-full text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition-colors focus:outline-none"
+              className="tombol-ikon focus:outline-none"
               aria-label="Toggle Dark Mode"
             >
               {isDark ? (
@@ -1114,10 +1119,10 @@ export default function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                 </svg>
               )}
-            </button>
+            </button>}
             <button
               onClick={toggleFullscreen}
-              className="p-2 rounded-full text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition-colors focus:outline-none"
+              className="tombol-ikon focus:outline-none"
               title="Layar Penuh"
               aria-label="Toggle Fullscreen"
             >
@@ -1131,8 +1136,8 @@ export default function Home() {
                 </svg>
               )}
             </button>
-            <Link href="/admin" className={`rounded-full bg-slate-900 dark:bg-cyan-600 py-2 text-sm font-medium text-white transition hover:bg-slate-800 dark:hover:bg-cyan-500 focus:outline-none focus:ring-2 focus:ring-slate-900/50 dark:focus:ring-cyan-500/50 ${isFullscreen ? 'px-4 mr-4' : 'px-4'}`}>
-              Masuk Pengelola
+            <Link href="/admin" className="tombol-aksen px-4 py-2.5 text-sm whitespace-nowrap focus:outline-none">
+              {isAuthenticated ? "Halaman Pengelola" : "Masuk Pengelola"}
             </Link>
           </div>
         </div>
@@ -1145,7 +1150,7 @@ export default function Home() {
         {/* DAS dipilih -> panel ringkasan melebar sampai setengah layar (peta setengah kiri) */}
         <div className={`grid transition-all duration-300 ${isFullscreen ? (selectedDas ? 'gap-0 grid-cols-1 md:grid-cols-2' : 'gap-0 grid-cols-1 md:grid-cols-5') : (selectedDas ? 'gap-6 lg:grid-cols-2' : 'gap-8 lg:grid-cols-4')}`}>
           {/* Map Column */}
-          <div className={`relative transition-all duration-300 z-0 ${isFullscreen ? `${selectedDas ? 'md:col-span-1' : 'md:col-span-4'} h-[calc(100dvh-64px)]` : `${selectedDas ? 'lg:col-span-1' : 'lg:col-span-3'} h-[600px] md:h-[700px] lg:h-[800px]`}`}>
+          <div className={`relative transition-all duration-300 z-0 ${isFullscreen ? `${selectedDas ? 'md:col-span-1' : 'md:col-span-4'} h-[calc(100dvh-72px)]` : `${selectedDas ? 'lg:col-span-1' : 'lg:col-span-3'} h-[600px] md:h-[700px] lg:h-[800px]`}`}>
             <DasMap 
               onSelectDas={setSelectedDasId} 
               selectedId={selectedDasId} 
@@ -1183,9 +1188,9 @@ export default function Home() {
           </div>
 
           {/* Details Column */}
-          <div className={`flex flex-col gap-6 transition-all duration-300 z-10 no-print ${isFullscreen ? 'md:col-span-1 border-l border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-950/95 p-4 overflow-y-auto h-[calc(100dvh-64px)]' : 'lg:col-span-1 h-[600px] md:h-[700px] lg:h-[800px]'}`}>
+          <div className={`flex flex-col gap-6 transition-all duration-300 z-10 no-print ${isFullscreen ? 'md:col-span-1 border-l border-slate-200 dark:border-slate-800 kaca-sisi p-4 overflow-y-auto h-[calc(100dvh-72px)]' : 'lg:col-span-1 h-[600px] md:h-[700px] lg:h-[800px]'}`}>
             {/* Search/Select */}
-            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm relative z-20 transition-colors duration-300">
+            <div className="kaca-panel rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm relative z-20 transition-colors duration-300">
               <div className="mb-2 flex items-end justify-between">
                 <label htmlFor="das-search" className="block text-sm font-semibold text-slate-700 dark:text-slate-300">Cari Wilayah DAS</label>
                 <div className="text-xs font-medium text-slate-500 dark:text-slate-400 text-right">
@@ -1241,7 +1246,7 @@ export default function Home() {
 
             {/* Details Card */}
             {selectedDas ? (
-              <div className="flex flex-1 flex-col rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden transition-all duration-500 animate-in fade-in slide-in-from-bottom-4 min-h-0 relative">
+              <div className="kaca-panel flex flex-1 flex-col rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden transition-all duration-500 animate-in fade-in slide-in-from-bottom-4 min-h-0 relative">
                 <div className="h-2 w-full shrink-0" style={{ backgroundColor: selectedDas.color }} />
                 <div className="p-6 flex flex-col gap-6 overflow-y-auto scrollbar-hide">
                   <div className="flex items-start justify-between">
@@ -1630,7 +1635,7 @@ export default function Home() {
                 </div>
               </div>
             ) : (
-              <div className="flex flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm relative min-h-0 transition-colors duration-300">
+              <div className="kaca-panel flex flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm relative min-h-0 transition-colors duration-300">
                 <div className="p-6 h-full flex flex-col overflow-hidden">
                   <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4">Daftar Wilayah DAS</h3>
                   <div className="relative flex-1 overflow-hidden group">
@@ -1669,7 +1674,7 @@ export default function Home() {
 
       {isChartModalOpen && selectedDas && (
         <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/75 backdrop-blur-md p-4 animate-in fade-in">
-          <div className="w-full max-w-6xl max-h-[92vh] flex flex-col rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden">
+          <div className="kaca-modal w-full max-w-6xl max-h-[92vh] flex flex-col rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden">
             <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
               <div>
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white">
