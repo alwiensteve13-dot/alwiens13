@@ -7,7 +7,7 @@ import Link from "next/link";
  */
 export default function ResetPasswordPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-cyan-950 px-4">
+    <div className="kaca-masuk kaca-gelap flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-cyan-950 px-4">
       <div className="w-full max-w-md rounded-2xl border border-white/10 bg-white/5 p-8 text-center shadow-2xl backdrop-blur-xl">
         <h1 className="text-2xl font-bold tracking-tight text-white">Atur Ulang Sandi</h1>
         <p className="mt-3 text-sm text-slate-400">

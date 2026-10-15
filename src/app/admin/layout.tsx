@@ -201,7 +201,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
   return (
     <AuthGuard>
-      <div className="flex min-h-screen bg-slate-950">
+      <div className="kaca-admin kaca-gelap flex min-h-screen bg-slate-950">
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
         {/* Main content */}

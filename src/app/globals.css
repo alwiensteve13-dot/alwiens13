@@ -121,3 +121,274 @@ body {
   animation-play-state: paused;
 }
 
+
+/* =====================================================================
+   TEMA KACA (glassy) — sama dengan aplikasi Simulasi HEC-HMS & Kalibrasi
+   Hujan Satelit: panel kaca buram di atas latar peta Maluku, rel navigasi
+   kiri, aksen jingga (aksi & pilihan), huruf Plus Jakarta Sans (lokal).
+   Aktif lewat <html class="kaca">; tema gelap tetap lewat kelas .dark.
+   Area cetak/ekspor (#print-section) tidak ikut tema.
+   ===================================================================== */
+@font-face {
+  font-family: "Jakarta";
+  src: url("/kaca/plus-jakarta-sans-var.woff2") format("woff2-variations"), url("/kaca/plus-jakarta-sans-var.woff2") format("woff2");
+  font-weight: 200 800; font-style: normal; font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Jakarta";
+  src: url("/kaca/plus-jakarta-sans-var-ext.woff2") format("woff2-variations"), url("/kaca/plus-jakarta-sans-var-ext.woff2") format("woff2");
+  font-weight: 200 800; font-style: normal; font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* Aksen: palet cyan (warna aksi bawaan situs) dipetakan ke jingga Kalibrasi */
+@theme {
+  --color-cyan-50: #fff4ec;
+  --color-cyan-100: #ffe6d4;
+  --color-cyan-200: #ffc9a6;
+  --color-cyan-300: #ffa66f;
+  --color-cyan-400: #ff8a45;
+  --color-cyan-500: #f7772d;
+  --color-cyan-600: #e8590f;
+  --color-cyan-700: #c94b0b;
+  --color-cyan-800: #a43c0c;
+  --color-cyan-900: #6e2a0c;
+  --color-cyan-950: #3f1606;
+}
+
+.kaca {
+  --latar: #e4eaee;
+  --latar-gambar: url("/kaca/latar-terang.jpg");
+  --latar-redup: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0) 45%, rgba(255,255,255,.22));
+  --kaca: rgba(255,255,255,.58);
+  --kaca-pekat: rgba(255,255,255,.84);
+  --kaca-padat: rgba(250,251,252,.96);
+  --kaca-tepi: rgba(255,255,255,.78);
+  --kaca-kilau: inset 0 1px 0 rgba(255,255,255,.85);
+  --kabur: blur(26px) saturate(165%);
+  --bayang-kaca: 0 1px 1px rgba(15,32,48,.05), 0 0 0 1px rgba(15,32,48,.045), 0 18px 44px -20px rgba(15,32,48,.30);
+  --bayang-apung: 0 2px 6px rgba(15,32,48,.08), 0 0 0 1px rgba(15,32,48,.05), 0 22px 50px -14px rgba(15,32,48,.35);
+  --permukaan: rgba(255,255,255,.62);
+  --permukaan-2: rgba(255,255,255,.40);
+  --permukaan-sorot: rgba(255,255,255,.92);
+  --garis: rgba(18,34,48,.13);
+  --garis-lembut: rgba(18,34,48,.075);
+  --teks: #12202a;
+  --teks-lembut: #3e4c57;
+  --teks-redup: #5c6a75;
+  --aksen: #e8590f;
+  --aksen-terang: #f7772d;
+  --aksen-teks: #b5410a;
+  --aksen-lembut: rgba(242,106,29,.11);
+  --aksen-garis: rgba(232,89,15,.45);
+  --fokus: 0 0 0 3px rgba(232,89,15,.28);
+  --r-xl: 28px; --r-l: 22px; --r-m: 16px; --r-s: 12px;
+  --rel-l: 80px; --rel-x: 16px;
+  --font-kaca: "Jakarta", "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+.kaca.dark, .kaca .kaca-gelap {
+  --latar: #0a1016;
+  --latar-gambar: url("/kaca/latar-gelap.jpg");
+  --latar-redup: linear-gradient(180deg, rgba(6,10,14,.30), rgba(6,10,14,.10) 40%, rgba(6,10,14,.38));
+  --kaca: rgba(19,25,32,.60);
+  --kaca-pekat: rgba(21,27,35,.84);
+  --kaca-padat: rgba(17,23,30,.95);
+  --kaca-tepi: rgba(255,255,255,.085);
+  --kaca-kilau: inset 0 1px 0 rgba(255,255,255,.07);
+  --bayang-kaca: 0 1px 1px rgba(0,0,0,.25), 0 22px 54px -22px rgba(0,0,0,.7);
+  --bayang-apung: 0 2px 6px rgba(0,0,0,.3), 0 24px 60px -16px rgba(0,0,0,.75);
+  --permukaan: rgba(255,255,255,.055);
+  --permukaan-2: rgba(255,255,255,.03);
+  --permukaan-sorot: rgba(255,255,255,.09);
+  --garis: rgba(255,255,255,.12);
+  --garis-lembut: rgba(255,255,255,.07);
+  --teks: #eef2f5;
+  --teks-lembut: #b9c3cb;
+  --teks-redup: #8f9ba6;
+  --aksen: #f26a1d;
+  --aksen-terang: #ff8a45;
+  --aksen-teks: #ff9b5e;
+  --aksen-lembut: rgba(255,122,46,.14);
+  --aksen-garis: rgba(255,138,69,.45);
+  --fokus: 0 0 0 3px rgba(255,138,69,.38);
+}
+
+/* ---------- Dasar & latar peta Maluku ---------- */
+.kaca body {
+  background: transparent;
+  font-family: var(--font-kaca);
+  letter-spacing: -.006em;
+  -webkit-font-smoothing: antialiased;
+}
+html.kaca { background: var(--latar); }
+.kaca body::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background: var(--latar-redup), var(--latar-gambar) center 38% / cover no-repeat, var(--latar);
+}
+.kaca ::selection { background: rgba(247,119,45,.32); }
+.kaca .kaca-akar { background: transparent !important; }
+
+/* ---------- Bahan kaca ---------- */
+.kaca .kaca-panel,
+.kaca :is(.rounded-2xl, .rounded-3xl).border:is(.bg-white, .bg-slate-900, .bg-white\/95, .bg-white\/80):not(#print-section *, .kaca-polos, .kaca-polos *) {
+  background: var(--kaca) !important;
+  -webkit-backdrop-filter: var(--kabur); backdrop-filter: var(--kabur);
+  border-color: var(--kaca-tepi) !important;
+  box-shadow: var(--kaca-kilau), var(--bayang-kaca) !important;
+}
+.kaca .kaca-panel { border-radius: var(--r-xl) !important; }
+/* Panel yang mengapung (dropdown, tooltip, popover, modal) lebih pekat agar teks terbaca */
+.kaca .kaca-apung,
+.kaca :is(.absolute, .fixed):is(.bg-white, .bg-white\/95, .bg-white\/80):not(#print-section *, .kaca-polos *),
+.kaca .rounded-xl.shadow-xl:is(.bg-white\/95, .bg-white):not(#print-section *, .kaca-polos *),
+.kaca .rounded-2xl.shadow-2xl:is(.bg-white\/95):not(#print-section *, .kaca-polos *) {
+  background: var(--kaca-pekat) !important;
+  -webkit-backdrop-filter: var(--kabur); backdrop-filter: var(--kabur);
+  border-color: var(--kaca-tepi) !important;
+  box-shadow: var(--bayang-apung) !important;
+}
+.kaca .kaca-modal, .kaca .rounded-3xl.bg-white:not(#print-section *, .kaca-polos *) {
+  background: var(--kaca-padat) !important;
+  -webkit-backdrop-filter: var(--kabur); backdrop-filter: var(--kabur);
+  border-color: var(--kaca-tepi) !important;
+  border-radius: var(--r-xl) !important;
+  box-shadow: var(--bayang-apung) !important;
+}
+/* Permukaan di dalam kaca (kartu kecil, baris daftar, isian) */
+.kaca :is(.kaca-panel, .kaca-modal) :is(.bg-white, .bg-slate-50, .bg-slate-50\/50, .bg-white\/60):not(#print-section *, .kaca-polos *, .absolute, .fixed) {
+  background: var(--permukaan) !important;
+}
+.kaca.dark :is(.kaca-panel, .kaca-modal) :is(.dark\:bg-slate-800, .dark\:bg-slate-900, .dark\:bg-slate-800\/50, .dark\:bg-slate-900\/60, .dark\:bg-slate-900\/50):not(#print-section *, .kaca-polos *, .absolute, .fixed) {
+  background: var(--permukaan) !important;
+}
+.kaca :is(.kaca-panel, .kaca-modal) :is(.border-slate-200, .border-slate-100, .border-slate-200\/80):not(#print-section *, .kaca-polos *) { border-color: var(--garis-lembut) !important; }
+.kaca.dark :is(.kaca-panel, .kaca-modal) :is(.dark\:border-slate-700, .dark\:border-slate-800, .dark\:border-slate-700\/80):not(#print-section *, .kaca-polos *) { border-color: var(--garis) !important; }
+.kaca :is(.kaca-panel, .kaca-modal) :is(input, select, textarea):not(#print-section *) {
+  background-color: var(--permukaan) !important; border-color: var(--garis) !important; border-radius: var(--r-s);
+}
+.kaca :is(input, select, textarea):focus { border-color: var(--aksen-garis) !important; box-shadow: var(--fokus) !important; outline: none; }
+.kaca input[type="checkbox"], .kaca input[type="radio"], .kaca input[type="range"] { accent-color: var(--aksen); }
+
+/* ---------- Kepala halaman (kaca, mengapung) ---------- */
+.kaca .kaca-kepala {
+  position: sticky; top: 12px; z-index: 40;
+  margin: 12px 18px 0 0; width: auto !important;
+  border-radius: var(--r-xl);
+  background: var(--kaca-pekat) !important;
+  -webkit-backdrop-filter: var(--kabur); backdrop-filter: var(--kabur);
+  border: 1px solid var(--kaca-tepi) !important;
+  box-shadow: var(--kaca-kilau), var(--bayang-kaca);
+}
+.kaca .kaca-kepala.penuh { margin: 0; border-radius: 0; top: 0; }
+.kaca .kaca-alis {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 10.5px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--teks-lembut);
+}
+.kaca .kaca-alis::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--aksen-terang); box-shadow: 0 0 0 4px var(--aksen-lembut); }
+.kaca .kaca-judul { color: var(--teks); font-weight: 750; letter-spacing: -.035em; line-height: 1.15; }
+.kaca .tombol-aksen {
+  color: #fff !important; border: 1px solid transparent;
+  background: linear-gradient(180deg, var(--aksen-terang), var(--aksen)) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.28), 0 8px 18px -10px rgba(232,89,15,.85);
+  border-radius: var(--r-s) !important; font-weight: 650;
+  transition: filter .15s, transform .15s;
+}
+.kaca .tombol-aksen:hover { filter: brightness(1.07); transform: translateY(-1px); }
+.kaca .tombol-ikon {
+  width: 42px; height: 42px; display: grid; place-items: center; border-radius: 50%;
+  color: var(--teks-lembut); background: var(--permukaan); border: 1px solid var(--garis-lembut);
+  transition: background .15s, color .15s;
+}
+.kaca .tombol-ikon:hover { background: var(--permukaan-sorot); color: var(--aksen-teks); }
+
+/* ---------- Rel navigasi kiri ---------- */
+.kaca .app-nav {
+  position: fixed; z-index: 1300;
+  left: var(--rel-x); top: var(--rel-x); bottom: var(--rel-x); width: var(--rel-l);
+  display: flex; flex-direction: column; align-items: center; padding: 16px 0 14px;
+  border-radius: var(--r-xl); background: var(--kaca-pekat);
+  -webkit-backdrop-filter: var(--kabur); backdrop-filter: var(--kabur);
+  border: 1px solid var(--kaca-tepi); box-shadow: var(--kaca-kilau), var(--bayang-kaca);
+}
+.kaca .nav-links { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 100%; }
+.kaca .nav-links a {
+  width: 68px; padding: 6px 0 7px; display: flex; flex-direction: column; align-items: center; gap: 5px;
+  border-radius: 18px; text-decoration: none; color: var(--teks-redup);
+  font-size: 10.5px; font-weight: 650; text-align: center; line-height: 1.15; transition: color .18s;
+}
+.kaca .nav-links a svg { width: 21px; height: 21px; padding: 11px; box-sizing: content-box; border-radius: 15px; transition: background .18s, color .18s; }
+.kaca .nav-links a:hover { color: var(--teks); }
+.kaca .nav-links a:hover svg { background: var(--permukaan-sorot); color: var(--teks); }
+.kaca .nav-links a[aria-current="page"] { color: var(--teks); }
+.kaca .nav-links a[aria-current="page"] svg {
+  color: #fff; background: linear-gradient(165deg, var(--aksen-terang), var(--aksen));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 10px 20px -10px rgba(232,89,15,.9);
+}
+.kaca .nav-sela { width: 44px; height: 1px; margin: 8px 0; background: var(--garis-lembut); }
+.kaca .nav-kaki { margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.kaca .isi-rel { padding-left: calc(var(--rel-l) + var(--rel-x) * 2); }
+@media (max-width: 900px) {
+  .kaca .app-nav {
+    position: sticky; top: 10px; left: auto; bottom: auto; width: auto; height: 62px; margin: 10px 10px 0;
+    flex-direction: row; padding: 0 10px; gap: 10px;
+  }
+  .kaca .nav-links { flex-direction: row; justify-content: center; flex: 1; gap: 2px; }
+  .kaca .nav-links a { width: auto; flex-direction: row; gap: 6px; padding: 4px 10px 4px 4px; font-size: 12px; }
+  .kaca .nav-links a svg { width: 18px; height: 18px; padding: 8px; border-radius: 12px; }
+  .kaca .nav-sela { display: none; }
+  .kaca .nav-kaki { margin: 0; flex-direction: row; }
+  .kaca .isi-rel { padding-left: 0; }
+  .kaca .kaca-kepala { margin: 10px; position: relative; top: 0; }
+}
+
+/* ---------- Peta ---------- */
+.kaca .isi-rel .kaca-peta {
+  border-radius: var(--r-xl); overflow: hidden;
+  background: var(--kaca) !important; border: 1px solid var(--kaca-tepi);
+  box-shadow: var(--kaca-kilau), var(--bayang-kaca);
+}
+.kaca .leaflet-container { border-radius: var(--r-l); }
+.kaca .leaflet-control-zoom a, .kaca .leaflet-bar { border-radius: 10px !important; }
+
+/* ---------- Halaman pengelola (selalu gelap) ---------- */
+.kaca .kaca-sisi { background: var(--kaca-pekat) !important; -webkit-backdrop-filter: var(--kabur); backdrop-filter: var(--kabur); border-color: var(--kaca-tepi) !important; }
+.kaca :is(.kaca-admin, .kaca-masuk) { background: transparent !important; position: relative; isolation: isolate; }
+.kaca :is(.kaca-admin, .kaca-masuk)::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background: var(--latar-redup), var(--latar-gambar) center 38% / cover no-repeat, var(--latar);
+}
+.kaca .kaca-admin :is(aside, header) {
+  background: var(--kaca-pekat) !important;
+  -webkit-backdrop-filter: var(--kabur); backdrop-filter: var(--kabur);
+  border-color: var(--kaca-tepi) !important;
+}
+.kaca .kaca-admin > aside { flex-shrink: 0; }
+.kaca .kaca-admin > div { min-width: 0; }
+@media (min-width: 1024px) {
+  .kaca .kaca-admin > aside {
+    position: sticky !important; top: 16px; height: calc(100vh - 32px); margin: 16px 0 16px 16px;
+    border-radius: var(--r-xl); border: 1px solid var(--kaca-tepi) !important; overflow: hidden;
+    box-shadow: var(--kaca-kilau), var(--bayang-kaca);
+  }
+  .kaca .kaca-admin header { margin: 16px 16px 0; border-radius: var(--r-xl); border: 1px solid var(--kaca-tepi) !important; top: 16px !important; }
+}
+.kaca .kaca-admin :is(.rounded-xl, .rounded-2xl).border:is(.bg-slate-900, .bg-slate-900\/50, .bg-slate-900\/60, .bg-slate-900\/80, .bg-slate-800\/50, .bg-white\/5, .bg-slate-800):not(.absolute, .fixed) {
+  background: var(--kaca) !important;
+  -webkit-backdrop-filter: var(--kabur); backdrop-filter: var(--kabur);
+  border-color: var(--kaca-tepi) !important;
+  box-shadow: var(--kaca-kilau), var(--bayang-kaca) !important;
+}
+.kaca .kaca-masuk :is(.rounded-xl, .rounded-2xl, .rounded-3xl).border:not(input, button, .absolute) {
+  background: var(--kaca) !important; -webkit-backdrop-filter: var(--kabur); backdrop-filter: var(--kabur);
+  border-color: var(--kaca-tepi) !important; box-shadow: var(--kaca-kilau), var(--bayang-kaca) !important;
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .kaca { --kaca: rgba(244,246,247,.94); --kaca-pekat: rgba(250,251,251,.97); }
+  .kaca.dark { --kaca: rgba(20,26,33,.95); --kaca-pekat: rgba(22,28,35,.97); }
+}
+@media print {
+  .kaca body::before, .kaca .app-nav { display: none !important; }
+  .kaca .isi-rel { padding-left: 0 !important; }
+}

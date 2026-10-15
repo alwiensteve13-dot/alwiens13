@@ -76,7 +76,7 @@ function LoginForm() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-cyan-950 px-4">
+    <div className="kaca-masuk kaca-gelap flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-cyan-950 px-4">
       {/* Decorative blobs */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-cyan-600/10 blur-3xl" />
@@ -88,7 +88,7 @@ function LoginForm() {
         <div className="rounded-2xl border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur-xl">
           {/* Header */}
           <div className="mb-8 flex flex-col items-center gap-3">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 shadow-lg shadow-cyan-500/25">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400 to-cyan-600 shadow-lg shadow-cyan-500/25">
               <LockIcon className="h-7 w-7 text-white" />
             </div>
             <div className="text-center">
@@ -174,7 +174,7 @@ function LoginForm() {
               id="login-submit"
               type="submit"
               disabled={isSubmitting}
-              className="group relative w-full overflow-hidden rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-2.5 font-semibold text-white shadow-lg shadow-cyan-500/25 transition-all hover:shadow-cyan-500/40 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+              className="group relative w-full overflow-hidden rounded-lg bg-gradient-to-r from-cyan-400 to-cyan-600 px-4 py-2.5 font-semibold text-white shadow-lg shadow-cyan-500/25 transition-all hover:shadow-cyan-500/40 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <span className={`inline-flex items-center gap-2 transition ${isSubmitting ? "opacity-0" : ""}`}>
                 {isForgotPassword ? "Lanjut" : "Masuk"}
@@ -213,7 +213,7 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="flex min-h-screen items-center justify-center bg-slate-950">
+      <div className="kaca-masuk kaca-gelap flex min-h-screen items-center justify-center bg-slate-950">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-cyan-500 border-t-transparent" />
       </div>
     }>
