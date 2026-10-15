@@ -1099,9 +1099,8 @@ export default function Home() {
               <img src="/logo-pu.svg" alt="Logo PUPR" className="h-full w-full object-contain" />
             </div>
             <div className="min-w-0">
-              <span className="kaca-alis">BWS Maluku &middot; PSDA</span>
-              <span className="kaca-judul text-xl hidden sm:block truncate">Neraca Air PSDA Balai Wilayah Sungai Maluku</span>
-              <span className="kaca-judul text-xl sm:hidden">Neraca Air BWS Maluku</span>
+              <span className="kaca-alis whitespace-nowrap">BWS Maluku &middot; PSDA</span>
+              <span className="kaca-judul block text-base sm:text-xl sm:truncate">NERACA AIR WILAYAH SUNGAI MALUKU</span>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -1136,7 +1135,7 @@ export default function Home() {
                 </svg>
               )}
             </button>
-            <Link href="/admin" className="tombol-aksen px-4 py-2.5 text-sm whitespace-nowrap focus:outline-none">
+            <Link href="/admin" className="tombol-aksen hidden sm:inline-block px-4 py-2.5 text-sm whitespace-nowrap focus:outline-none">
               {isAuthenticated ? "Halaman Pengelola" : "Masuk Pengelola"}
             </Link>
           </div>
