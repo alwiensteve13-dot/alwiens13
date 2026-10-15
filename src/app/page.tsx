@@ -42,6 +42,9 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchCoordinate, setSearchCoordinate] = useState<[number, number] | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  // Pencarian di kop: tampil sebagai ikon jingga, terbuka saat diklik
+  const [cariBuka, setCariBuka] = useState(false);
+  const cariRef = useRef<HTMLInputElement>(null);
 
   // Auto-scroll & Manual Scroll Refs for DAS List
   const dasListRef = useRef<HTMLDivElement>(null);
@@ -1082,7 +1085,7 @@ export default function Home() {
       {/* Header */}
       <header className={`kaca-kepala shrink-0 ${isFullscreen ? 'penuh' : ''} transition-colors duration-300 no-print`}>
         <div className={`mx-auto flex flex-wrap sm:flex-nowrap min-h-[72px] items-center justify-between gap-x-4 gap-y-2 py-2.5 transition-all duration-300 ${isFullscreen ? 'w-full px-4' : 'w-full px-5 sm:px-6'}`}>
-          <div className="flex items-center gap-3 min-w-0">
+          <div className="flex flex-1 items-center gap-3 min-w-0">
             <div className="flex h-11 w-11 items-center justify-center overflow-hidden shrink-0">
               <img src="/logo-pu.svg" alt="Logo PUPR" className="h-full w-full object-contain" />
             </div>
@@ -1091,8 +1094,21 @@ export default function Home() {
               <span className="kaca-judul block text-base sm:text-lg xl:text-xl sm:truncate">NERACA AIR WILAYAH SUNGAI MALUKU</span>
             </div>
           </div>
-          {/* Pencarian DAS (di kop, kanan atas) */}
-          <div className="kaca-cari relative w-full sm:w-[min(460px,42vw)] shrink-0">
+          {/* Pencarian DAS (di kop, kanan atas): ikon jingga, diklik baru terbuka */}
+          {!cariBuka && (
+            <button
+              type="button"
+              className="tombol-cari shrink-0"
+              onClick={() => { setCariBuka(true); setTimeout(() => cariRef.current?.focus(), 30); }}
+              aria-label="Cari wilayah DAS"
+              title="Cari wilayah DAS"
+            >
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="6.5" /><path d="m20 20-4.2-4.2" />
+              </svg>
+            </button>
+          )}
+          <div className={`kaca-cari relative w-full sm:w-[min(460px,42vw)] shrink-0 ${cariBuka ? 'terbuka' : 'hidden'}`}>
             <div className="mb-1 flex items-center justify-between gap-3 text-[11px] font-medium text-slate-500 dark:text-slate-400">
               <label htmlFor="das-search" className="font-semibold text-slate-700 dark:text-slate-300">Cari Wilayah DAS</label>
               <span className="whitespace-nowrap">
@@ -1102,12 +1118,13 @@ export default function Home() {
             </div>
             <div className="relative">
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <svg className="h-5 w-5 text-slate-400 dark:text-slate-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <svg className="h-5 w-5 text-cyan-600 dark:text-cyan-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clipRule="evenodd" />
                 </svg>
               </div>
               <input
                 id="das-search"
+                ref={cariRef}
                 type="text"
                 className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 py-2.5 pl-10 pr-4 text-sm text-slate-700 dark:text-slate-200 focus:border-cyan-500 dark:focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all placeholder-slate-400 dark:placeholder-slate-500"
                 placeholder="Ketik nama DAS, wilayah, atau koordinat (Lat, Lng)..."
@@ -1115,7 +1132,8 @@ export default function Home() {
                 value={searchQuery}
                 onChange={handleSearchChange}
                 onFocus={() => setIsDropdownOpen(true)}
-                onBlur={() => setTimeout(() => setIsDropdownOpen(false), 200)}
+                onBlur={() => setTimeout(() => { setIsDropdownOpen(false); setCariBuka(false); }, 200)}
+                onKeyDown={(e) => { if (e.key === "Escape") e.currentTarget.blur(); }}
                 autoComplete="off"
               />
               
@@ -1130,6 +1148,8 @@ export default function Home() {
                         setSelectedDasId(d.id);
                         setSearchQuery(`${d.name} (${d.region})`);
                         setIsDropdownOpen(false);
+                        setCariBuka(false);
+                        cariRef.current?.blur();
                       }}
                     >
                       <div className="font-semibold">{d.name}</div>
