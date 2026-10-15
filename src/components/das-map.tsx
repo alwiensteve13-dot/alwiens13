@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { MapContainer, TileLayer, Polygon, Popup, Tooltip, ZoomControl, useMap, Marker, CircleMarker, Pane, GeoJSON, LayersControl, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -617,6 +618,9 @@ export default function DasMap({
     return Array.from(itemMap.entries()).map(([label, { color, count }]) => ({ label, color, count }));
   }, [landCoverGeojson]);
 
+  // Wadah tombol alat peta di rel navigasi kiri (bila ada)
+  const relAlat = typeof document !== 'undefined' ? document.getElementById('rel-alat-peta') : null;
+
   const handleMapDeselect = useCallback(() => {
     onSelectDas(null);
   }, [onSelectDas]);
@@ -638,76 +642,132 @@ export default function DasMap({
 
       {/* Floating Map Controls Overlay (Top Right) */}
       <div className="absolute top-3 right-3 z-[1000] flex flex-col items-end gap-1.5 pointer-events-none">
-        {/* Control Buttons Bar */}
-        <div className="flex items-center gap-1 pointer-events-auto bg-white/75 dark:bg-slate-900/75 backdrop-blur-md hover:bg-white/90 dark:hover:bg-slate-900/90 p-1 rounded-xl border border-white/60 dark:border-slate-800/80 shadow-lg transition-all">
-          {/* Plot Manual Button */}
-          <button
-            onClick={() => {
-              setShowPlotModal(!showPlotModal);
-              if (showOpacitySlider) setShowOpacitySlider(false);
-              if (showLegendModal) setShowLegendModal(false);
-            }}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
-              showPlotModal 
-                ? 'bg-rose-600 text-white shadow-xs' 
-                : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
-            }`}
-            title="Plot Titik Koordinat Manual"
-          >
-            <span>📍</span>
-            <span>Plot Titik</span>
-            {plottedPoints.length > 0 && (
-              <span className="px-1.5 py-0.2 bg-rose-500 text-white rounded-full text-[9px] font-bold">
-                {plottedPoints.length}
-              </span>
-            )}
-          </button>
+        {/* Tombol alat peta: di rel navigasi kiri (bawah Kelola); bila rel tidak ada, bar lama di peta */}
+        {relAlat ? createPortal(
+          <>
+            <span className="nav-sela" aria-hidden="true" />
+            <button
+              type="button"
+              className="rel-alat"
+              aria-pressed={showPlotModal}
+              onClick={() => {
+                setShowPlotModal(!showPlotModal);
+                if (showOpacitySlider) setShowOpacitySlider(false);
+                if (showLegendModal) setShowLegendModal(false);
+              }}
+              title="Plot Titik Koordinat Manual"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11Z" /><circle cx="12" cy="10" r="2.4" />
+              </svg>
+              <span>Plot Titik</span>
+              {plottedPoints.length > 0 && <i className="rel-lencana">{plottedPoints.length}</i>}
+            </button>
+            <button
+              type="button"
+              className="rel-alat"
+              aria-pressed={showOpacitySlider}
+              onClick={() => {
+                setShowOpacitySlider(!showOpacitySlider);
+                if (showLegendModal) setShowLegendModal(false);
+                if (showPlotModal) setShowPlotModal(false);
+              }}
+              title={`Atur Transparansi Polygon DAS (${Math.round(currentOpacity * 100)}%)`}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M12 3v18m0-18 9 9-9 9M12 3 3 12l9 9" />
+              </svg>
+              <span>Transparansi {Math.round(currentOpacity * 100)}%</span>
+            </button>
+            <button
+              type="button"
+              className="rel-alat"
+              aria-pressed={showLegendModal}
+              onClick={() => {
+                setShowLegendModal(!showLegendModal);
+                if (showOpacitySlider) setShowOpacitySlider(false);
+                if (showPlotModal) setShowPlotModal(false);
+              }}
+              title="Tampilkan Legenda Peta"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3V6Z" /><path d="M9 3v15M15 6v15" />
+              </svg>
+              <span>Legenda</span>
+            </button>
+          </>,
+          relAlat
+        ) : (
+          <div className="flex items-center gap-1 pointer-events-auto bg-white/75 dark:bg-slate-900/75 backdrop-blur-md hover:bg-white/90 dark:hover:bg-slate-900/90 p-1 rounded-xl border border-white/60 dark:border-slate-800/80 shadow-lg transition-all">
+            {/* Plot Manual Button */}
+            <button
+              onClick={() => {
+                setShowPlotModal(!showPlotModal);
+                if (showOpacitySlider) setShowOpacitySlider(false);
+                if (showLegendModal) setShowLegendModal(false);
+              }}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
+                showPlotModal 
+                  ? 'bg-rose-600 text-white shadow-xs' 
+                  : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+              }`}
+              title="Plot Titik Koordinat Manual"
+            >
+              <span>📍</span>
+              <span>Plot Titik</span>
+              {plottedPoints.length > 0 && (
+                <span className="px-1.5 py-0.2 bg-rose-500 text-white rounded-full text-[9px] font-bold">
+                  {plottedPoints.length}
+                </span>
+              )}
+            </button>
 
-          <div className="w-[1px] h-3.5 bg-slate-200 dark:bg-slate-700" />
+            <div className="w-[1px] h-3.5 bg-slate-200 dark:bg-slate-700" />
 
-          {/* Opacity Control Button */}
-          <button
-            onClick={() => {
-              setShowOpacitySlider(!showOpacitySlider);
-              if (showLegendModal) setShowLegendModal(false);
-              if (showPlotModal) setShowPlotModal(false);
-            }}
-            className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
-              showOpacitySlider 
-                ? 'bg-indigo-600 text-white shadow-xs' 
-                : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
-            }`}
-            title="Atur Transparansi Polygon DAS"
-          >
-            <svg className="w-3.5 h-3.5 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v18m0-18l9 9-9 9M12 3L3 12l9 9" />
-            </svg>
-            <span>Transparansi ({Math.round(currentOpacity * 100)}%)</span>
-          </button>
+            {/* Opacity Control Button */}
+            <button
+              onClick={() => {
+                setShowOpacitySlider(!showOpacitySlider);
+                if (showLegendModal) setShowLegendModal(false);
+                if (showPlotModal) setShowPlotModal(false);
+              }}
+              className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
+                showOpacitySlider 
+                  ? 'bg-indigo-600 text-white shadow-xs' 
+                  : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+              }`}
+              title="Atur Transparansi Polygon DAS"
+            >
+              <svg className="w-3.5 h-3.5 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v18m0-18l9 9-9 9M12 3L3 12l9 9" />
+              </svg>
+              <span>Transparansi ({Math.round(currentOpacity * 100)}%)</span>
+            </button>
 
-          <div className="w-[1px] h-3.5 bg-slate-200 dark:bg-slate-700" />
+            <div className="w-[1px] h-3.5 bg-slate-200 dark:bg-slate-700" />
 
-          {/* Legend Toggle Button */}
-          <button
-            onClick={() => {
-              setShowLegendModal(!showLegendModal);
-              if (showOpacitySlider) setShowOpacitySlider(false);
-              if (showPlotModal) setShowPlotModal(false);
-            }}
-            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
-              showLegendModal 
-                ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-xs' 
-                : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
-            }`}
-            title="Tampilkan Legenda Peta"
-          >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-            </svg>
-            <span>Legenda</span>
-          </button>
+            {/* Legend Toggle Button */}
+            <button
+              onClick={() => {
+                setShowLegendModal(!showLegendModal);
+                if (showOpacitySlider) setShowOpacitySlider(false);
+                if (showPlotModal) setShowPlotModal(false);
+              }}
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
+                showLegendModal 
+                  ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-xs' 
+                  : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+              }`}
+              title="Tampilkan Legenda Peta"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+              </svg>
+              <span>Legenda</span>
+            </button>
 
-        </div>
+          </div>
+        )}
 
         {/* Plot Koordinat Panel Overlay */}
         {showPlotModal && (

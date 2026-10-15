@@ -350,6 +350,26 @@ html.kaca { background: var(--latar); }
   color: #fff; background: linear-gradient(165deg, var(--aksen-terang), var(--aksen));
   box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 10px 20px -10px rgba(232,89,15,.9);
 }
+.kaca .rel-alat-wadah { display: contents; }
+.kaca .nav-links .rel-alat {
+  position: relative; width: 68px; padding: 6px 0 7px; display: flex; flex-direction: column; align-items: center; gap: 5px;
+  border: 0; background: none; cursor: pointer; border-radius: 18px; color: var(--teks-redup);
+  font: inherit; font-size: 10.5px; font-weight: 650; text-align: center; line-height: 1.15; transition: color .18s;
+}
+.kaca .nav-links .rel-alat svg { width: 21px; height: 21px; padding: 11px; box-sizing: content-box; border-radius: 15px; transition: background .18s, color .18s; }
+.kaca .nav-links .rel-alat:hover { color: var(--teks); }
+.kaca .nav-links .rel-alat:hover svg { background: var(--permukaan-sorot); color: var(--teks); }
+.kaca .nav-links .rel-alat[aria-pressed="true"] { color: var(--teks); }
+.kaca .nav-links .rel-alat[aria-pressed="true"] svg {
+  color: #fff; background: linear-gradient(165deg, var(--aksen-terang), var(--aksen));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 10px 20px -10px rgba(232,89,15,.9);
+}
+.kaca .nav-links .rel-alat:focus-visible { outline: none; box-shadow: var(--fokus); }
+.kaca .rel-lencana {
+  position: absolute; top: 2px; right: 10px; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 99px;
+  display: grid; place-items: center; font-style: normal; font-size: 10px; font-weight: 800; color: #fff;
+  background: var(--aksen); box-shadow: 0 0 0 2px var(--kaca-pekat);
+}
 .kaca .nav-sela { width: 44px; height: 1px; margin: 8px 0; background: var(--garis-lembut); }
 .kaca .app-nav { flex-shrink: 0; }
 .kaca .nav-kaki { margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 10px; }
@@ -363,9 +383,20 @@ html.kaca { background: var(--latar); }
   .kaca .nav-links a { width: auto; flex-direction: row; gap: 6px; padding: 4px 10px 4px 4px; font-size: 12px; }
   .kaca .nav-links a svg { width: 18px; height: 18px; padding: 8px; border-radius: 12px; }
   .kaca .nav-sela { display: none; }
+  .kaca .nav-links { overflow-x: auto; justify-content: flex-start; }
+  .kaca .nav-links .rel-alat { width: auto; flex-direction: row; padding: 4px; }
+  .kaca .nav-links .rel-alat span { display: none; }
+  .kaca .nav-links .rel-alat svg { width: 18px; height: 18px; padding: 8px; border-radius: 12px; }
+  .kaca .rel-lencana { top: -2px; right: -2px; }
   .kaca .nav-kaki { margin: 0; flex-direction: row; }
   .kaca .isi-rel { padding-left: 0; }
   .kaca .kaca-kepala { margin: 10px; position: relative; top: 0; }
+}
+
+@media (max-width: 600px) {
+  .kaca .nav-links { justify-content: space-around; }
+  .kaca .nav-links a { padding: 4px; }
+  .kaca .nav-links a span { display: none; }
 }
 
 /* ---------- Peta ---------- */
