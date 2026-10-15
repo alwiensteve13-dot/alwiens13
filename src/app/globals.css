@@ -310,6 +310,12 @@ html.kaca { background: var(--latar); }
 }
 .kaca .tombol-ikon:hover { background: var(--permukaan-sorot); color: var(--aksen-teks); }
 
+.kaca .kaca-cari input {
+  background-color: var(--permukaan) !important; border-color: var(--garis) !important;
+  border-radius: var(--r-s) !important; color: var(--teks);
+}
+.kaca .kaca-cari input:focus { background-color: var(--permukaan-sorot) !important; }
+
 /* ---------- Rel navigasi kiri ---------- */
 .kaca .app-nav {
   position: fixed; z-index: 1300;

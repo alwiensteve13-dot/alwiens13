@@ -515,18 +515,6 @@ export default function Home() {
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(err => {
-        console.error(`Error attempting to enable full-screen mode: ${err.message}`);
-      });
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-      }
-    }
-  };
-
   const chartData = useMemo(() => {
     if (!selectedDasId || !chartYear) return [];
     
@@ -1093,51 +1081,70 @@ export default function Home() {
       {!isFullscreen && <KacaRel aktif="neraca" masuk={isAuthenticated} gelap={isDark} onTema={toggleTheme} />}
       {/* Header */}
       <header className={`kaca-kepala shrink-0 ${isFullscreen ? 'penuh' : ''} transition-colors duration-300 no-print`}>
-        <div className={`mx-auto flex min-h-[72px] items-center justify-between gap-4 transition-all duration-300 ${isFullscreen ? 'w-full px-4' : 'w-full px-5 sm:px-6'}`}>
+        <div className={`mx-auto flex flex-wrap sm:flex-nowrap min-h-[72px] items-center justify-between gap-x-4 gap-y-2 py-2.5 transition-all duration-300 ${isFullscreen ? 'w-full px-4' : 'w-full px-5 sm:px-6'}`}>
           <div className="flex items-center gap-3 min-w-0">
             <div className="flex h-11 w-11 items-center justify-center overflow-hidden shrink-0">
               <img src="/logo-pu.svg" alt="Logo PUPR" className="h-full w-full object-contain" />
             </div>
             <div className="min-w-0">
               <span className="kaca-alis whitespace-nowrap">BWS Maluku &middot; PSDA</span>
-              <span className="kaca-judul block text-base sm:text-xl sm:truncate">NERACA AIR WILAYAH SUNGAI MALUKU</span>
+              <span className="kaca-judul block text-base sm:text-lg xl:text-xl sm:truncate">NERACA AIR WILAYAH SUNGAI MALUKU</span>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            {isFullscreen && <button
-              onClick={toggleTheme}
-              className="tombol-ikon focus:outline-none"
-              aria-label="Toggle Dark Mode"
-            >
-              {isDark ? (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+          {/* Pencarian DAS (di kop, kanan atas) */}
+          <div className="kaca-cari relative w-full sm:w-[min(460px,42vw)] shrink-0">
+            <div className="mb-1 flex items-center justify-between gap-3 text-[11px] font-medium text-slate-500 dark:text-slate-400">
+              <label htmlFor="das-search" className="font-semibold text-slate-700 dark:text-slate-300">Cari Wilayah DAS</label>
+              <span className="whitespace-nowrap">
+                Total DAS: <span className="text-slate-700 dark:text-slate-300 font-bold">{regions.length}</span> &nbsp;|&nbsp;
+                Poligon Aktif: <span className="text-cyan-600 dark:text-cyan-400 font-bold">{dynamicDasData.filter(d => d.geojson).length}</span>
+              </span>
+            </div>
+            <div className="relative">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <svg className="h-5 w-5 text-slate-400 dark:text-slate-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clipRule="evenodd" />
                 </svg>
-              ) : (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                </svg>
+              </div>
+              <input
+                id="das-search"
+                type="text"
+                className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 py-2.5 pl-10 pr-4 text-sm text-slate-700 dark:text-slate-200 focus:border-cyan-500 dark:focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all placeholder-slate-400 dark:placeholder-slate-500"
+                placeholder="Ketik nama DAS, wilayah, atau koordinat (Lat, Lng)..."
+                aria-label="Cari wilayah DAS"
+                value={searchQuery}
+                onChange={handleSearchChange}
+                onFocus={() => setIsDropdownOpen(true)}
+                onBlur={() => setTimeout(() => setIsDropdownOpen(false), 200)}
+                autoComplete="off"
+              />
+              
+              {isDropdownOpen && filteredDas.length > 0 && (
+                <ul className="absolute z-50 mt-2 max-h-60 w-full overflow-auto rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-1 shadow-xl ring-1 ring-black ring-opacity-5 transition-colors duration-300">
+                  {filteredDas.map(d => (
+                    <li
+                      key={d.id}
+                      className="cursor-pointer px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-cyan-50 dark:hover:bg-slate-700 hover:text-cyan-900 dark:hover:text-cyan-100 transition-colors border-b border-slate-50 dark:border-slate-700 last:border-0"
+                      onMouseDown={(e) => {
+                        e.preventDefault(); // Prevents input blur before click fires
+                        setSelectedDasId(d.id);
+                        setSearchQuery(`${d.name} (${d.region})`);
+                        setIsDropdownOpen(false);
+                      }}
+                    >
+                      <div className="font-semibold">{d.name}</div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{d.region}</div>
+                    </li>
+                  ))}
+                </ul>
               )}
-            </button>}
-            <button
-              onClick={toggleFullscreen}
-              className="tombol-ikon focus:outline-none"
-              title="Layar Penuh"
-              aria-label="Toggle Fullscreen"
-            >
-              {isFullscreen ? (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 10l-5 5m0 0l5 5m-5-5h10m5-10l-5 5m0 0l-5-5m5 5V3" />
-                </svg>
-              ) : (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                </svg>
+              
+              {isDropdownOpen && filteredDas.length === 0 && (
+                <div className="absolute z-50 mt-2 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 shadow-xl text-center text-sm text-slate-500 dark:text-slate-400">
+                  Tidak ditemukan hasil untuk "{searchQuery}"
+                </div>
               )}
-            </button>
-            <Link href="/admin" className="tombol-aksen hidden sm:inline-block px-4 py-2.5 text-sm whitespace-nowrap focus:outline-none">
-              {isAuthenticated ? "Halaman Pengelola" : "Masuk Pengelola"}
-            </Link>
+            </div>
           </div>
         </div>
       </header>
@@ -1188,61 +1195,6 @@ export default function Home() {
 
           {/* Details Column */}
           <div className={`flex flex-col gap-2.5 sm:gap-6 transition-all duration-300 z-10 no-print ${isFullscreen ? 'md:col-span-1 border-l border-slate-200 dark:border-slate-800 kaca-sisi p-2.5 sm:p-4 overflow-y-auto h-full min-h-0' : 'lg:col-span-1 h-full min-h-0'}`}>
-            {/* Search/Select */}
-            <div className="kaca-panel shrink-0 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-6 shadow-sm relative z-20 transition-colors duration-300">
-              <div className="mb-2 flex items-end justify-between">
-                <label htmlFor="das-search" className="block text-sm font-semibold text-slate-700 dark:text-slate-300">Cari Wilayah DAS</label>
-                <div className="text-xs font-medium text-slate-500 dark:text-slate-400 text-right">
-                  Total DAS: <span className="text-slate-700 dark:text-slate-300 font-bold">{regions.length}</span> &nbsp;|&nbsp; 
-                  Poligon Aktif: <span className="text-cyan-600 dark:text-cyan-400 font-bold">{dynamicDasData.filter(d => d.geojson).length}</span>
-                </div>
-              </div>
-              <div className="relative">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <svg className="h-5 w-5 text-slate-400 dark:text-slate-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <input
-                  id="das-search"
-                  type="text"
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 py-3 pl-10 pr-4 text-sm text-slate-700 dark:text-slate-200 focus:border-cyan-500 dark:focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all placeholder-slate-400 dark:placeholder-slate-500"
-                  placeholder="Ketik nama DAS, wilayah, atau koordinat (Lat, Lng)..."
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                  onFocus={() => setIsDropdownOpen(true)}
-                  onBlur={() => setTimeout(() => setIsDropdownOpen(false), 200)}
-                  autoComplete="off"
-                />
-                
-                {isDropdownOpen && filteredDas.length > 0 && (
-                  <ul className="absolute z-50 mt-2 max-h-60 w-full overflow-auto rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-1 shadow-xl ring-1 ring-black ring-opacity-5 transition-colors duration-300">
-                    {filteredDas.map(d => (
-                      <li
-                        key={d.id}
-                        className="cursor-pointer px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-cyan-50 dark:hover:bg-slate-700 hover:text-cyan-900 dark:hover:text-cyan-100 transition-colors border-b border-slate-50 dark:border-slate-700 last:border-0"
-                        onMouseDown={(e) => {
-                          e.preventDefault(); // Prevents input blur before click fires
-                          setSelectedDasId(d.id);
-                          setSearchQuery(`${d.name} (${d.region})`);
-                          setIsDropdownOpen(false);
-                        }}
-                      >
-                        <div className="font-semibold">{d.name}</div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{d.region}</div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                
-                {isDropdownOpen && filteredDas.length === 0 && (
-                  <div className="absolute z-50 mt-2 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 shadow-xl text-center text-sm text-slate-500 dark:text-slate-400">
-                    Tidak ditemukan hasil untuk "{searchQuery}"
-                  </div>
-                )}
-              </div>
-            </div>
-
             {/* Details Card */}
             {selectedDas ? (
               <div className="kaca-panel flex flex-1 min-h-0 flex-col rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden transition-all duration-500 animate-in fade-in slide-in-from-bottom-4 min-h-0 relative">
