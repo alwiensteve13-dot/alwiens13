@@ -75,6 +75,8 @@ export default function KacaRel({
         <Link href="/admin" aria-current={aktif === "kelola" ? "page" : undefined} title={masuk ? "Halaman pengelola" : "Masuk sebagai pengelola"}>
           {Ikon.kelola}<span>{masuk ? "Kelola" : "Masuk"}</span>
         </Link>
+        {/* Alat peta (Plot Titik, Transparansi, Legenda) dipasang di sini oleh komponen peta */}
+        <div id="rel-alat-peta" className="rel-alat-wadah" />
       </div>
       {onTema && (
         <div className="nav-kaki">
