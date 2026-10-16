@@ -449,3 +449,133 @@ html.kaca { background: var(--latar); }
   .kaca body::before, .kaca .app-nav { display: none !important; }
   .kaca .isi-rel { padding-left: 0 !important; }
 }
+
+/* =============================================================
+   Panel kanan beranda: profil SATU DAS bergantian tiap 3 detik
+   (disamakan dengan panel kanan web Kalibrasi Hujan Satelit)
+   ============================================================= */
+.profil-bergilir {
+  --air: #2b6fd0; --air-lembut: rgba(43,111,208,.12);
+  --hijau: #127a45; --hijau-latar: rgba(18,122,69,.10);
+  --merah: #c42f2a; --merah-latar: rgba(196,47,42,.10);
+  --ubin: #ffffff; --ubin-tepi: rgba(255,255,255,.9);
+  --p-teks: var(--teks, #12202a); --p-lembut: var(--teks-lembut, #3e4c57); --p-redup: var(--teks-redup, #5c6a75);
+  --p-garis: var(--garis, rgba(18,34,48,.13)); --p-garis-lembut: var(--garis-lembut, rgba(18,34,48,.075));
+  --p-permukaan: var(--permukaan, rgba(255,255,255,.62));
+  --p-pekat: var(--kaca-pekat, rgba(255,255,255,.84));
+  display: flex; flex-direction: column; flex: 1 1 0; min-height: 0; height: 100%;
+  font-family: var(--font-kaca, inherit); color: var(--p-teks);
+}
+.dark .profil-bergilir, .kaca-gelap .profil-bergilir {
+  --air: #5aa7ff; --air-lembut: rgba(90,167,255,.16);
+  --hijau: #4fd18b; --hijau-latar: rgba(79,209,139,.12);
+  --merah: #ff6b6b; --merah-latar: rgba(255,107,107,.14);
+  --ubin: #f3f1ed; --ubin-tepi: rgba(255,255,255,.6);
+  --p-teks: var(--teks, #eef2f5); --p-lembut: var(--teks-lembut, #b9c3cb); --p-redup: var(--teks-redup, #8f9ba6);
+  --p-garis: var(--garis, rgba(255,255,255,.12)); --p-garis-lembut: var(--garis-lembut, rgba(255,255,255,.07));
+  --p-permukaan: var(--permukaan, rgba(255,255,255,.055)); --p-pekat: var(--kaca-pekat, rgba(21,27,35,.84));
+}
+.profil-bergilir .ringkas-bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 14px 20px 8px; font-size: 12.5px; color: var(--p-lembut); font-variant-numeric: tabular-nums;
+}
+.profil-bergilir .kendali-gilir { display: inline-flex; gap: 4px; }
+.profil-bergilir .kendali-gilir button {
+  width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%;
+  font-size: 17px; line-height: 1; color: var(--p-lembut);
+  background: var(--p-permukaan); border: 1px solid var(--p-garis-lembut); transition: color .15s, border-color .15s, transform .15s;
+}
+.profil-bergilir .kendali-gilir button:hover { color: var(--aksen-teks, #b5410a); border-color: var(--aksen-garis, rgba(232,89,15,.45)); }
+.profil-bergilir .kendali-gilir button:active { transform: scale(.94); }
+.profil-bergilir .kendali-gilir svg { width: 12px; height: 12px; }
+.profil-bergilir .kendali-gilir button[aria-pressed="true"] { color: #fff; background: var(--aksen, #e8590f); border-color: transparent; }
+
+.profil-bergilir .rincian {
+  position: relative; flex: 1 1 0; min-height: 0; overflow: auto; overscroll-behavior: contain;
+  padding: 0 20px 20px;
+}
+.profil-bergilir .rincian-kepala {
+  position: sticky; top: 0; z-index: 2;
+  display: flex; align-items: center; gap: 10px;
+  margin: 0 -20px 6px; padding: 14px 20px 14px;
+  background: linear-gradient(var(--p-pekat) 78%, transparent);
+}
+.profil-bergilir .rincian-kepala h3 { flex: 1; min-width: 0; margin: 0; font-size: 20px; font-weight: 750; letter-spacing: -.035em; line-height: 1.2; }
+.profil-bergilir .titik.besar { width: 14px; height: 14px; border-radius: 50%; flex: none; box-shadow: 0 0 0 4px var(--p-permukaan); }
+.profil-bergilir h4 { margin: 20px 0 9px; font-size: 10.5px; font-weight: 750; letter-spacing: .13em; text-transform: uppercase; color: var(--p-redup); }
+.profil-bergilir .mutu-das { margin-top: 4px; padding: 11px 13px; border-radius: 14px; background: var(--p-permukaan); border: 1px solid var(--p-garis-lembut); }
+.profil-bergilir .mutu-das p { margin: 7px 0 0; font-size: 12px; line-height: 1.55; color: var(--p-lembut); font-variant-numeric: tabular-nums; }
+.profil-bergilir .mutu-das p b { color: var(--p-teks); }
+.profil-bergilir .lencana-mutu {
+  display: inline-flex; align-items: center; white-space: nowrap; padding: 3px 10px; font-size: 11.5px;
+  border-radius: 999px; border: 1px solid transparent; font-weight: 700; letter-spacing: .005em;
+}
+.profil-bergilir .lencana-mutu.baik  { color: var(--hijau); background: var(--hijau-latar); border-color: color-mix(in srgb, var(--hijau) 32%, transparent); }
+.profil-bergilir .lencana-mutu.lemah { color: var(--merah); background: var(--merah-latar); border-color: color-mix(in srgb, var(--merah) 32%, transparent); }
+.profil-bergilir .lencana-mutu.lama  { color: var(--p-lembut); background: var(--p-permukaan); border-color: var(--p-garis); }
+.profil-bergilir .kartu-ringkas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.profil-bergilir .kartu-ringkas > div {
+  padding: 11px 12px; border-radius: 14px; color: #13202a;
+  background: var(--ubin); border: 1px solid var(--ubin-tepi);
+  box-shadow: 0 10px 22px -16px rgba(8, 18, 28, .6);
+}
+.profil-bergilir .kartu-ringkas span { display: block; font-size: 9.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #66727d; }
+.profil-bergilir .kartu-ringkas b { display: block; margin-top: 3px; font-size: 21px; font-weight: 750; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.profil-bergilir .kartu-ringkas small { display: block; font-size: 11px; color: #46535e; }
+.profil-bergilir .grafik-bulanan { display: block; width: 100%; height: auto; margin-top: 12px; }
+.profil-bergilir .grafik-bulanan .g-grid { stroke: var(--p-garis-lembut); stroke-width: 1; }
+.profil-bergilir .grafik-bulanan .g-sumbu { fill: var(--p-redup); font-size: 9px; font-family: var(--font-kaca, inherit); }
+.profil-bergilir .grafik-bulanan .g-batang { fill: var(--air); opacity: .9; }
+.profil-bergilir .grafik-bulanan .g-r80 { stroke: var(--aksen-terang, #f7772d); stroke-width: 2.4; stroke-linecap: round; }
+.profil-bergilir .legenda-grafik { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 6px; font-size: 11.5px; color: var(--p-lembut); }
+.profil-bergilir .legenda-grafik span { display: inline-flex; align-items: center; gap: 6px; }
+.profil-bergilir .legenda-grafik .kotak-batang { width: 10px; height: 10px; border-radius: 3px; background: var(--air); }
+.profil-bergilir .legenda-grafik .garis-r80 { width: 14px; height: 3px; border-radius: 2px; background: var(--aksen-terang, #f7772d); }
+.profil-bergilir table.info { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.profil-bergilir table.info th, .profil-bergilir table.info td { padding: 6px 0; text-align: left; vertical-align: top; border-bottom: 1px solid var(--p-garis-lembut); background: none; }
+.profil-bergilir table.info tr:last-child > * { border-bottom: 0; }
+.profil-bergilir table.info th { width: 46%; padding-right: 12px; font-weight: 500; color: var(--p-redup); }
+.profil-bergilir table.info td { font-weight: 600; font-variant-numeric: tabular-nums; }
+.profil-bergilir .tombol-baris { display: flex; gap: 7px; margin-top: 18px; }
+.profil-bergilir .tombol-buka {
+  min-height: 36px; padding: 0 16px; border-radius: 999px; font-size: 12.5px; font-weight: 650;
+  color: var(--p-teks); background: var(--p-permukaan); border: 1px solid var(--p-garis);
+  transition: border-color .15s, color .15s, transform .15s;
+}
+.profil-bergilir .tombol-buka:hover { color: var(--aksen-teks, #b5410a); border-color: var(--aksen-garis, rgba(232,89,15,.45)); transform: translateY(-1px); }
+.profil-bergilir .kosong { padding: 20px; font-size: 13px; color: var(--p-redup); }
+
+/* Transisi pergantian DAS (sama dengan web Kalibrasi) */
+.profil-bergilir .rincian-hantu {
+  position: absolute; z-index: 3; left: 0; right: 0; top: 0; box-sizing: border-box; overflow: hidden; pointer-events: none;
+  padding: 0 20px; animation: das-keluar .24s cubic-bezier(.4, 0, 1, 1) both;
+}
+.profil-bergilir .rincian-hantu * { animation: none !important; }
+.profil-bergilir .rincian-hantu .rincian-kepala { position: static; }
+@keyframes das-keluar { to { opacity: 0; transform: translateY(-8px); } }
+@keyframes das-masuk { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes das-pudar { from { opacity: 0; } }
+@keyframes das-titik { 0% { transform: scale(.4); box-shadow: 0 0 0 0 color-mix(in srgb, var(--warna-das, #888) 45%, transparent); }
+                       60% { transform: scale(1.12); }
+                       100% { transform: scale(1); box-shadow: 0 0 0 4px var(--p-permukaan); } }
+@keyframes batang-tumbuh { from { transform: scaleY(.04); opacity: 0; } to { transform: scaleY(1); opacity: .9; } }
+.profil-bergilir .ganti-das .rincian-kepala { animation: das-masuk .42s cubic-bezier(.2, .7, .3, 1) both; }
+.profil-bergilir .ganti-das .rincian-kepala .titik.besar { animation: das-titik .6s cubic-bezier(.3, 1.3, .5, 1) .05s both; }
+.profil-bergilir .ganti-das .mutu-das { animation: das-masuk .42s cubic-bezier(.2, .7, .3, 1) .07s both; }
+.profil-bergilir .ganti-das h4 { animation: das-masuk .42s cubic-bezier(.2, .7, .3, 1) .12s both; }
+.profil-bergilir .ganti-das .kartu-ringkas > div { animation: das-masuk .42s cubic-bezier(.2, .7, .3, 1) both; }
+.profil-bergilir .ganti-das .kartu-ringkas > div:nth-child(1) { animation-delay: .12s; }
+.profil-bergilir .ganti-das .kartu-ringkas > div:nth-child(2) { animation-delay: .17s; }
+.profil-bergilir .ganti-das .kartu-ringkas > div:nth-child(3) { animation-delay: .22s; }
+.profil-bergilir .ganti-das .kartu-ringkas > div:nth-child(4) { animation-delay: .27s; }
+.profil-bergilir .ganti-das .grafik-bulanan .g-batang {
+  transform-box: fill-box; transform-origin: 50% 100%;
+  animation: batang-tumbuh .55s cubic-bezier(.2, .7, .3, 1) calc(.2s + var(--i, 0) * .03s) both;
+}
+.profil-bergilir .ganti-das .grafik-bulanan .g-r80 { animation: das-pudar .4s ease calc(.45s + var(--i, 0) * .03s) both; }
+.profil-bergilir .ganti-das .legenda-grafik, .profil-bergilir .ganti-das .tombol-baris { animation: das-masuk .42s cubic-bezier(.2, .7, .3, 1) .3s both; }
+.profil-bergilir .ganti-das table.info { animation: das-masuk .42s cubic-bezier(.2, .7, .3, 1) .36s both; }
+@media (prefers-reduced-motion: reduce) {
+  .profil-bergilir .rincian-hantu { display: none; }
+  .profil-bergilir .ganti-das, .profil-bergilir .ganti-das * { animation: none !important; }
+}

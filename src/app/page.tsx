@@ -21,6 +21,7 @@ const REGION_COLORS = DISTINCT_POLYGON_PALETTE;
 
 const DasMap = dynamic(() => import("@/components/das-map"), { ssr: false, loading: () => <div className="h-full w-full bg-slate-100 animate-pulse rounded-2xl flex items-center justify-center text-slate-400 font-medium">Memuat Peta Interaktif...</div> });
 
+import ProfilDasBergilir from "@/components/profil-das-bergilir";
 import initialRegionsData from "../../public/mock-regions.json";
 import initialWaterData from "../../public/mock-water.json";
 
@@ -362,8 +363,6 @@ export default function Home() {
     });
   }, [regions, allWaterData, geojsons, chartYear, waterUsers]);
 
-  // Duplicate data for infinite marquee scroll
-  const marqueeData = useMemo(() => [...dynamicDasData, ...dynamicDasData, ...dynamicDasData], [dynamicDasData]);
 
   const selectedDas = useMemo(() => dynamicDasData.find(d => d.id === selectedDasId), [dynamicDasData, selectedDasId]);
   const currentPdfUrl = selectedDas ? pdfUrls[selectedDas.id] : null;
@@ -1607,33 +1606,8 @@ export default function Home() {
               </div>
             ) : (
               <div className="kaca-panel flex flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm relative min-h-0 transition-colors duration-300">
-                <div className="p-6 h-full flex flex-col overflow-hidden">
-                  <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4">Daftar Wilayah DAS</h3>
-                  <div className="relative flex-1 overflow-hidden group">
-                    <div className="flex flex-col gap-3 animate-marquee-vertical group-hover:[animation-play-state:paused]">
-                      {[...dynamicDasData, ...dynamicDasData].map((d, index) => (
-                        <div 
-                          key={`${d.id}-${index}`} 
-                          className="rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/50 p-3.5 shadow-sm hover:shadow-md transition cursor-pointer flex items-center justify-between group/item"
-                          onClick={() => setSelectedDasId(d.id)}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="h-9 w-2 rounded-full shrink-0" style={{ backgroundColor: d.color }} />
-                            <div>
-                              <h4 className="font-bold text-sm text-slate-900 dark:text-white group-hover/item:text-cyan-600 dark:group-hover/item:text-cyan-400 transition-colors">{d.name}</h4>
-                              <p className="text-xs text-slate-500 dark:text-slate-400">{d.region}</p>
-                            </div>
-                          </div>
-                          <div className="text-right shrink-0">
-                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${d.status === 'Surplus' ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400' : d.status === 'Defisit' ? 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'}`}>
-                              {d.status}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
+                <ProfilDasBergilir daftar={dynamicDasData} dataAir={allWaterData} penggunaAir={waterUsers}
+                  tahun={chartYear} onPilih={(id) => setSelectedDasId(id)} />
               </div>
             )}
           </div>
