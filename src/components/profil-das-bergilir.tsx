@@ -34,7 +34,6 @@ type Props = {
 };
 
 const JEDA = 3000;          // lama tiap DAS tampil (ms)
-const JEDA_MANUAL = 15000;  // setelah ‹ › ditekan, beri waktu baca lebih lama sekali
 const BULAN = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
 
 const angka = (v: number | null | undefined, d = 2) =>
@@ -205,10 +204,8 @@ export default function ProfilDasBergilir({ daftar, dataAir, penggunaAir, tahun,
     [daftar]);
   const [aktifId, setAktifId] = useState<string | null>(null);
   const [hantu, setHantu] = useState<{ id: string; top: number; tinggi: number } | null>(null);
-  const [jalan, setJalan] = useState(true);
   const panelRef = useRef<HTMLDivElement>(null);
   const tahan = useRef(false);
-  const tunda = useRef(false);
 
   const aktif = urut.find(d => d.id === aktifId) || urut[0];
   const profil = useMemo(() => new Map(urut.map(d => [d.id, hitungProfil(d, dataAir, penggunaAir, tahun)])),
@@ -222,11 +219,10 @@ export default function ProfilDasBergilir({ daftar, dataAir, penggunaAir, tahun,
     if (panel) panel.scrollTop = 0;
   }, [aktif]);
 
-  const lompat = useCallback((arah: number, manual = false) => {
+  const lompat = useCallback((arah: number) => {
     if (!urut.length || !aktif) return;
     const i = urut.findIndex(d => d.id === aktif.id);
     const j = ((i < 0 ? 0 : i) + arah + urut.length) % urut.length;
-    if (manual) tunda.current = true;
     ganti(urut[j].id);
   }, [urut, aktif, ganti]);
 
@@ -241,15 +237,13 @@ export default function ProfilDasBergilir({ daftar, dataAir, penggunaAir, tahun,
   // jadwal diulang tanpa berganti.
   const [detak, setDetak] = useState(0);
   useEffect(() => {
-    if (!jalan || kurangiGerak() || urut.length < 2) return;
-    const tunggu = tunda.current ? JEDA_MANUAL : JEDA;
-    tunda.current = false;
+    if (kurangiGerak() || urut.length < 2) return;
     const t = setTimeout(() => {
       if (document.hidden || tahan.current) setDetak(x => x + 1);
       else lompat(1);
-    }, tunggu);
+    }, JEDA);
     return () => clearTimeout(t);
-  }, [jalan, urut.length, aktif?.id, lompat, detak]);
+  }, [urut.length, aktif?.id, lompat, detak]);
 
   if (!aktif) {
     return <div className="profil-bergilir"><p className="kosong">Belum ada DAS.</p></div>;
@@ -260,20 +254,6 @@ export default function ProfilDasBergilir({ daftar, dataAir, penggunaAir, tahun,
     <div className="profil-bergilir"
       onPointerEnter={() => { tahan.current = true; }}
       onPointerLeave={() => { tahan.current = false; }}>
-      <div className="ringkas-bar">
-        <span>{urut.length} DAS · neraca {tahun}</span>
-        <span className="kendali-gilir">
-          <button type="button" onClick={() => lompat(-1, true)} aria-label="DAS sebelumnya" title="DAS sebelumnya">‹</button>
-          <button type="button" onClick={() => setJalan(j => !j)} aria-pressed={!jalan}
-            aria-label={jalan ? "Hentikan pergantian otomatis" : "Lanjutkan pergantian otomatis"}
-            title={jalan ? "Hentikan pergantian otomatis" : "Lanjutkan pergantian otomatis"}>
-            {jalan
-              ? <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" /></svg>
-              : <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor" /></svg>}
-          </button>
-          <button type="button" onClick={() => lompat(1, true)} aria-label="DAS berikutnya" title="DAS berikutnya">›</button>
-        </span>
-      </div>
       <section ref={panelRef} className="rincian ada" aria-live="off" aria-label="Profil DAS">
         <div key={aktif.id} className="ganti-das" style={{ "--warna-das": aktif.color } as CSSProperties}>
           <IsiProfil d={aktif} p={profil.get(aktif.id)!} tahun={tahun} onPilih={onPilih} />
