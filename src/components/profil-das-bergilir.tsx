@@ -62,8 +62,6 @@ type Profil = {
   debitMin: number | null;
   debitRata: number | null;
   butuhRata: number | null;
-  kebRata: number | null;
-  pemRata: number | null;
   pengguna: number;
 };
 
@@ -73,13 +71,11 @@ function hitungProfil(d: Das, dataAir: BarisAir[], penggunaAir: Pengguna[], tahu
     (x.regionId === d.id || (waya && x.regionId === "mock-1787820000000")) &&
     new Date(x.period).getUTCFullYear().toString() === tahun);
   const per = Array.from({ length: 12 }, () => ({ sd: 0, nd: 0, sb: 0, nb: 0 }));
-  let nDefisit = 0, debitMin: number | null = null, sd = 0, sb = 0, sk = 0, sp = 0;
+  let nDefisit = 0, debitMin: number | null = null, sd = 0, sb = 0;
   for (const x of baris) {
     const m = new Date(x.period).getUTCMonth();
     const deb = Number(x.debit_air) || 0;
-    const keb = Number(x.kebutuhan_air) || 0, pem = Number(x.pemeliharaan_sungai) || 0;
-    const butuh = keb + pem;
-    sk += keb; sp += pem;
+    const butuh = (Number(x.kebutuhan_air) || 0) + (Number(x.pemeliharaan_sungai) || 0);
     per[m].sd += deb; per[m].nd++;
     per[m].sb += butuh; per[m].nb++;
     sd += deb; sb += butuh;
@@ -93,154 +89,65 @@ function hitungProfil(d: Das, dataAir: BarisAir[], penggunaAir: Pengguna[], tahu
     debitMin,
     debitRata: baris.length ? sd / baris.length : null,
     butuhRata: baris.length ? sb / baris.length : null,
-    kebRata: baris.length ? sk / baris.length : null,
-    pemRata: baris.length ? sp / baris.length : null,
     pengguna: penggunaAir.filter(u => u.regionId === d.id).length,
   };
 }
 
-/* Kartu statistik neraca (desain "stat-card" Uiverse.io oleh code-town3, disesuaikan):
-   donat pembagian ketersediaan air + legenda + grafik garis bulanan dengan tooltip.
-   Menu titik tiga memilih seri grafik garis. */
-export type Seri = "ketersediaan" | "kebutuhan" | "neraca";
-const SERI: { id: Seri; label: string; kelas: string; warna: string }[] = [
-  { id: "ketersediaan", label: "Ketersediaan", kelas: "sales", warna: "#3d8bff" },
-  { id: "kebutuhan", label: "Kebutuhan", kelas: "product", warna: "#ff6a3d" },
-  { id: "neraca", label: "Neraca", kelas: "income", warna: "#1ecb6b" },
-];
-
-function StatNeraca({ p, tahun, seri, onSeri, menuBuka, onMenu }: {
-  p: Profil; tahun: string; seri: Seri; onSeri?: (s: Seri) => void; menuBuka?: boolean; onMenu?: (b: boolean) => void;
-}) {
-  const deb = p.debitRata ?? 0, keb = p.kebRata ?? 0, pem = p.pemRata ?? 0;
-  const ada = p.nPeriode > 0 && deb + keb + pem > 0;
-  // Donat: bagian ketersediaan yang dipakai kebutuhan, pemeliharaan sungai, dan sisanya.
-  const total = Math.max(deb, keb + pem) || 1;
-  const bagian = [
-    { kelas: "product", nilai: keb / total },
-    { kelas: "income", nilai: pem / total },
-    { kelas: "sales", nilai: Math.max(0, deb - keb - pem) / total },
-  ];
-  const R = 60, C = 2 * Math.PI * R, CELAH = 0.025 * C;
-  let jalan = 0;
-  const segmen = bagian.map((b, i) => {
-    const pj = b.nilai * C;
-    const tampil = pj > CELAH * 1.2 ? pj - CELAH : pj > 0 ? Math.max(pj * 0.5, 0.5) : 0;
-    const el = tampil > 0 ? (
-      <circle key={b.kelas} className={`donut-segment ${b.kelas}`} cx="85" cy="85" r={R}
-        strokeDasharray={`${tampil} ${C}`} strokeDashoffset={-jalan} style={{ "--i": i, "--pj": tampil } as CSSProperties} />
-    ) : null;
-    jalan += pj;
-    return el;
-  });
-  const pakai = deb > 0 ? (keb + pem) / deb : null;
-  const selisih = p.debitRata != null && p.butuhRata != null ? p.debitRata - p.butuhRata : null;
-
-  // Grafik garis bulanan untuk seri terpilih
-  const nilai = p.bulan.map(b => seri === "ketersediaan" ? b.debit
-    : seri === "kebutuhan" ? b.butuh
-    : b.debit != null && b.butuh != null ? b.debit - b.butuh : null);
-  const sah = nilai.filter((v): v is number => v != null && Number.isFinite(v));
-  const W = 360, H = 120, kiri = 12, kanan = 12, atas = 14, bawah = 24;
-  const lo = Math.min(0, ...sah), hi = Math.max(...sah, lo + 1e-6);
-  const xs = (i: number) => kiri + (W - kiri - kanan) * (i / 11);
-  const ys = (v: number) => atas + (H - atas - bawah) * (1 - (v - lo) / (hi - lo || 1));
-  const titik = nilai.map((v, i) => (v == null ? null : { x: xs(i), y: ys(v), v, i })).filter(Boolean) as { x: number; y: number; v: number; i: number }[];
-  const jalur = titik.map((t, k) => `${k ? "L" : "M"}${t.x.toFixed(1)},${t.y.toFixed(1)}`).join(" ");
-  const panjang = titik.reduce((a, t, k) => k ? a + Math.hypot(t.x - titik[k - 1].x, t.y - titik[k - 1].y) : 0, 0);
-  const s0 = SERI.find(x => x.id === seri)!;
-
+/* Grafik batang bulanan (ketersediaan) + garis kebutuhan, gaya grafik hujan bulanan di web Kalibrasi. */
+function GrafikBulanan({ p }: { p: Profil }) {
+  const b = p.bulan.map(x => x.debit);
+  const k = p.bulan.map(x => x.butuh);
+  if (!b.some(v => v != null && v > 0) && !k.some(v => v != null && v > 0)) return null;
+  const W = 320, H = 132, kiri = 30, bawah = 18, atas = 8;
+  const nilai = [...b, ...k].filter((v): v is number => v != null && Number.isFinite(v));
+  const maks = Math.max(...nilai, 0.001);
+  const langkah = [0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100, 200, 500].find(s => maks / s <= 5) || 1000;
+  const puncak = Math.ceil(maks / langkah) * langkah;
+  const y = (v: number) => atas + (H - atas - bawah) * (1 - v / puncak);
+  const lebar = (W - kiri - 4) / 12;
+  const garisGrid: number[] = [];
+  for (let v = 0; v <= puncak + langkah / 1000; v += langkah) garisGrid.push(Number(v.toFixed(4)));
   return (
-    <div className="stat-card">
-      <div className="stat-card-header">
-        <h2 className="stat-card-title">Neraca {tahun}</h2>
-        {onSeri && (
-          <div className="menu-wrapper">
-            <button type="button" className="menu-dots" aria-label="Pilih grafik" aria-expanded={!!menuBuka}
-              onClick={() => onMenu?.(!menuBuka)}><span /><span /><span /></button>
-            <div className={`menu-select${menuBuka ? " buka" : ""}`} role="menu">
-              {SERI.map(x => (
-                <div key={x.id} role="menuitemradio" aria-checked={seri === x.id} tabIndex={0}
-                  className={seri === x.id ? "pilih" : ""}
-                  onClick={() => { onSeri(x.id); onMenu?.(false); }}
-                  onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSeri(x.id); onMenu?.(false); } }}>
-                  {x.label}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+    <>
+      <svg className="grafik-bulanan" viewBox={`0 0 ${W} ${H}`} role="img"
+        aria-label="Ketersediaan air rata-rata bulanan dan kebutuhan air, Januari sampai Desember">
+        {garisGrid.map(v => (
+          <g key={v}>
+            <line x1={kiri} x2={W - 2} y1={y(v)} y2={y(v)} className="g-grid" />
+            <text x={kiri - 4} y={y(v) + 3} className="g-sumbu" textAnchor="end">{v.toLocaleString("id-ID")}</text>
+          </g>
+        ))}
+        {b.map((v, i) => {
+          const x = kiri + i * lebar + lebar * 0.16;
+          const w = lebar * 0.68;
+          return (
+            <g key={i}>
+              {v != null && (
+                <rect x={x} y={y(v)} width={w} height={Math.max(0, y(0) - y(v))} rx={2} className="g-batang"
+                  style={{ "--i": i } as CSSProperties}>
+                  <title>{`${BULAN[i]}: ketersediaan ${m3s(v)} m³/s`}</title>
+                </rect>
+              )}
+              {k[i] != null && (k[i] as number) > 0 && (
+                <line x1={x - 1} x2={x + w + 1} y1={y(k[i] as number)} y2={y(k[i] as number)} className="g-r80"
+                  style={{ "--i": i } as CSSProperties}>
+                  <title>{`${BULAN[i]}: kebutuhan + pemeliharaan ${m3s(k[i])} m³/s`}</title>
+                </line>
+              )}
+              <text x={x + w / 2} y={H - 5} className="g-sumbu" textAnchor="middle">{BULAN[i].charAt(0)}</text>
+            </g>
+          );
+        })}
+      </svg>
+      <div className="legenda-grafik">
+        <span><i className="kotak-batang" />Ketersediaan (m³/s)</span>
+        {k.some(v => v != null && v > 0) && <span><i className="garis-r80" />Kebutuhan + pemeliharaan</span>}
       </div>
-
-      {ada ? (
-        <>
-          <div className="stat-card-chart">
-            <svg className="donut" viewBox="0 0 170 170" role="img"
-              aria-label={`Pemakaian ketersediaan air ${pakai != null ? Math.round(pakai * 100) + "%" : ""}`}>
-              <circle className="donut-bg" cx="85" cy="85" r={R} />
-              <g transform="rotate(-90 85 85)">{segmen}</g>
-              <text x="85" y="88" textAnchor="middle" className="donut-text-main">
-                {pakai == null ? "–" : pakai > 9.99 ? ">999%" : `${Math.round(pakai * 100)}%`}
-              </text>
-              <text x="85" y="112" textAnchor="middle" className="donut-text-sub">terpakai</text>
-            </svg>
-          </div>
-
-          <div className="stat-card-legend">
-            <div className="legend-item">
-              <span>Ketersediaan rata-rata</span>
-              <span>
-                <span className="legend-value">{m3s(p.debitRata)}</span>
-                {selisih != null && (
-                  <span className={`legend-change${selisih < 0 ? " turun" : ""}`}>{selisih >= 0 ? "+" : ""}{m3s(selisih)}</span>
-                )}
-              </span>
-            </div>
-            <div className="legend-item"><span><span className="legend-dot product" />Kebutuhan air</span><span>{m3s(keb)} m³/s</span></div>
-            <div className="legend-item"><span><span className="legend-dot income" />Pemeliharaan sungai</span><span>{m3s(pem)} m³/s</span></div>
-            <div className="legend-item"><span><span className="legend-dot sales" />Sisa (surplus)</span><span>{m3s(Math.max(0, deb - keb - pem))} m³/s</span></div>
-          </div>
-
-          {titik.length > 1 && (<>
-            <div className="seri-label"><i style={{ background: s0.warna }} />{seri === "kebutuhan" ? "Kebutuhan + pemeliharaan" : seri === "neraca" ? "Neraca (surplus/defisit)" : "Ketersediaan"} bulanan, m³/s</div>
-            <svg className="linechart" viewBox={`0 0 ${W} ${H}`} role="img"
-              aria-label={`${s0.label} bulanan ${tahun}, Januari sampai Desember`}
-              style={{ "--warna-seri": s0.warna, "--panjang": panjang } as CSSProperties}>
-              {lo < 0 && <line x1={kiri} x2={W - kanan} y1={ys(0)} y2={ys(0)} className="garis-nol" />}
-              <path d={jalur} className="garis-seri" />
-              <g className="x-labels">
-                {BULAN.map((b, i) => <text key={b} x={xs(i)} y={H - 4} textAnchor="middle">{b.charAt(0)}</text>)}
-              </g>
-              {titik.map(t => {
-                const teks = `${BULAN[t.i]}: ${m3s(t.v)} m³/s`;
-                const lb = teks.length * 7.4 + 18;
-                const tx = Math.min(Math.max(t.x - lb / 2, 2), W - lb - 2);
-                const ty = t.y - 40 < 0 ? t.y + 12 : t.y - 40;
-                return (
-                  <g key={t.i} className="dot-group" style={{ "--i": t.i } as CSSProperties}>
-                    <circle cx={t.x} cy={t.y} r="12" className="dot-area" />
-                    <circle cx={t.x} cy={t.y} r="4.5" className="dot" />
-                    <g className="tooltip">
-                      <rect x={tx} y={ty} width={lb} height="28" rx="8" />
-                      <text x={tx + lb / 2} y={ty + 19} textAnchor="middle">{teks}</text>
-                    </g>
-                  </g>
-                );
-              })}
-            </svg>
-          </>)}
-        </>
-      ) : (
-        <p className="stat-kosong">Data neraca tahun {tahun} belum diunggah untuk DAS ini.</p>
-      )}
-    </div>
+    </>
   );
 }
 
-function IsiProfil({ d, p, tahun, onPilih, seri, onSeri, menuBuka, onMenu }: {
-  d: Das; p: Profil; tahun: string; onPilih?: (id: string) => void;
-  seri: Seri; onSeri?: (s: Seri) => void; menuBuka?: boolean; onMenu?: (b: boolean) => void;
-}) {
+function IsiProfil({ d, p, tahun, onPilih }: { d: Das; p: Profil; tahun: string; onPilih?: (id: string) => void }) {
   const kelas = d.status === "Surplus" ? "baik" : d.status === "Defisit" ? "lemah" : "lama";
   const selisih = p.debitRata != null && p.butuhRata != null ? p.debitRata - p.butuhRata : null;
   const kartu: [string, string, string][] = [
@@ -276,7 +183,7 @@ function IsiProfil({ d, p, tahun, onPilih, seri, onSeri, menuBuka, onMenu }: {
           <div key={j}><span>{j}</span><b>{n}</b><small>{s}</small></div>
         ))}
       </div>
-      <StatNeraca p={p} tahun={tahun} seri={seri} onSeri={onSeri} menuBuka={menuBuka} onMenu={onMenu} />
+      <GrafikBulanan p={p} />
       <h4>Keterangan</h4>
       <table className="info">
         <tbody>
@@ -299,10 +206,6 @@ export default function ProfilDasBergilir({ daftar, dataAir, penggunaAir, tahun,
   const [aktifId, setAktifId] = useState<string | null>(null);
   const [hantu, setHantu] = useState<{ id: string; top: number; tinggi: number } | null>(null);
   const [jalan, setJalan] = useState(true);
-  const [seri, setSeri] = useState<Seri>("ketersediaan");
-  const [menuBuka, setMenuBuka] = useState(false);
-  const menuRef = useRef(false);
-  const bukaMenu = useCallback((b: boolean) => { menuRef.current = b; setMenuBuka(b); }, []);
   const panelRef = useRef<HTMLDivElement>(null);
   const tahan = useRef(false);
   const tunda = useRef(false);
@@ -327,16 +230,6 @@ export default function ProfilDasBergilir({ daftar, dataAir, penggunaAir, tahun,
     ganti(urut[j].id);
   }, [urut, aktif, ganti]);
 
-  // Menu grafik tertutup bila klik di luar menu.
-  useEffect(() => {
-    if (!menuBuka) return;
-    const tutup = (e: PointerEvent) => {
-      if (!(e.target as Element | null)?.closest?.(".menu-wrapper")) bukaMenu(false);
-    };
-    document.addEventListener("pointerdown", tutup);
-    return () => document.removeEventListener("pointerdown", tutup);
-  }, [menuBuka, bukaMenu]);
-
   // Salinan lama ("hantu") memudar dalam 0,24 detik lalu dilepas.
   useEffect(() => {
     if (!hantu) return;
@@ -352,7 +245,7 @@ export default function ProfilDasBergilir({ daftar, dataAir, penggunaAir, tahun,
     const tunggu = tunda.current ? JEDA_MANUAL : JEDA;
     tunda.current = false;
     const t = setTimeout(() => {
-      if (document.hidden || tahan.current || menuRef.current) setDetak(x => x + 1);
+      if (document.hidden || tahan.current) setDetak(x => x + 1);
       else lompat(1);
     }, tunggu);
     return () => clearTimeout(t);
@@ -383,13 +276,12 @@ export default function ProfilDasBergilir({ daftar, dataAir, penggunaAir, tahun,
       </div>
       <section ref={panelRef} className="rincian ada" aria-live="off" aria-label="Profil DAS">
         <div key={aktif.id} className="ganti-das" style={{ "--warna-das": aktif.color } as CSSProperties}>
-          <IsiProfil d={aktif} p={profil.get(aktif.id)!} tahun={tahun} onPilih={onPilih}
-            seri={seri} onSeri={setSeri} menuBuka={menuBuka} onMenu={bukaMenu} />
+          <IsiProfil d={aktif} p={profil.get(aktif.id)!} tahun={tahun} onPilih={onPilih} />
         </div>
         {dHantu && (
           <div className="rincian-hantu" aria-hidden="true" style={{ height: hantu!.tinggi }}>
             <div style={{ transform: `translateY(${-hantu!.top}px)` }}>
-              <IsiProfil d={dHantu} p={profil.get(dHantu.id)!} tahun={tahun} seri={seri} />
+              <IsiProfil d={dHantu} p={profil.get(dHantu.id)!} tahun={tahun} />
             </div>
           </div>
         )}
