@@ -579,3 +579,118 @@ html.kaca { background: var(--latar); }
   .profil-bergilir .rincian-hantu { display: none; }
   .profil-bergilir .ganti-das, .profil-bergilir .ganti-das * { animation: none !important; }
 }
+
+/* -------------------------------------------------------------
+   Kartu statistik neraca di profil DAS
+   Desain "stat-card" dari Uiverse.io oleh code-town3 (lisensi MIT),
+   disesuaikan: lebar mengikuti panel, menu memakai tombol, gerak masuk.
+   ------------------------------------------------------------- */
+.profil-bergilir .stat-card {
+  margin-top: 12px;
+  background: #232733;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.18);
+  padding: 1.4rem 1.25rem 1.25rem;
+  width: 100%;
+  color: #f3f6fa;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  font-family: var(--font-kaca, "Inter", sans-serif);
+}
+.profil-bergilir .stat-card-header { display: flex; justify-content: space-between; align-items: center; }
+.profil-bergilir .stat-card-title {
+  font-size: 1.2rem; font-weight: 700; color: #f3f6fa; letter-spacing: 0.01em; margin: 0; line-height: 1.2;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(90deg, #fff 0%, #f3f6fa 50%, #e3e8ef 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.profil-bergilir .stat-card-chart { display: flex; justify-content: center; align-items: center; }
+.profil-bergilir .donut { width: 170px; height: 170px; overflow: visible; }
+.profil-bergilir .donut-bg { fill: none; stroke: #2c3140; stroke-width: 14; }
+.profil-bergilir .donut-segment { fill: none; stroke-width: 14; stroke-linecap: round; transition: stroke-dasharray 0.3s; }
+.profil-bergilir .donut-segment.sales { stroke: #3d8bff; }
+.profil-bergilir .donut-segment.product { stroke: #ff6a3d; }
+.profil-bergilir .donut-segment.income { stroke: #1ecb6b; }
+.profil-bergilir .donut-text-main { font-size: 2.1rem; font-weight: 600; fill: #f3f6fa; font-variant-numeric: tabular-nums; }
+.profil-bergilir .donut-text-sub { font-size: 1rem; fill: #b0b6c3; }
+.profil-bergilir .stat-card-legend { margin-top: 0.25rem; display: flex; flex-direction: column; gap: 0.6rem; }
+.profil-bergilir .legend-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  font-size: .92rem; color: #b0b6c3; font-variant-numeric: tabular-nums;
+}
+.profil-bergilir .legend-item > span:first-child { display: inline-flex; align-items: center; }
+.profil-bergilir .legend-item > span:last-child { white-space: nowrap; }
+.profil-bergilir .stat-card-legend .legend-item:first-child { font-size: 0.95rem; color: #b8c0cc; font-weight: 400; letter-spacing: 0.01em; }
+.profil-bergilir .legend-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 0.5rem; flex: none; }
+.profil-bergilir .legend-dot.sales { background: #3d8bff; }
+.profil-bergilir .legend-dot.product { background: #ff6a3d; }
+.profil-bergilir .legend-dot.income { background: #1ecb6b; }
+.profil-bergilir .legend-value { font-size: 2rem; color: #3d8bff; font-weight: 600; margin-left: 0.5rem; line-height: 1; }
+.profil-bergilir .legend-change { color: #1ecb6b; font-weight: 600; margin-left: 10px; }
+.profil-bergilir .legend-change.turun { color: #ff6a3d; }
+.profil-bergilir .linechart { width: 100%; height: auto; display: block; overflow: visible; }
+.profil-bergilir .linechart .x-labels text { font-size: 12px; fill: #b0b6c3; }
+.profil-bergilir .linechart .garis-seri {
+  fill: none; stroke: var(--warna-seri, #3d8bff); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round;
+  filter: drop-shadow(0 4px 10px color-mix(in srgb, var(--warna-seri, #3d8bff) 35%, transparent));
+}
+.profil-bergilir .linechart .garis-nol { stroke: #3a4050; stroke-width: 1; stroke-dasharray: 4 4; }
+.profil-bergilir .linechart .dot { fill: #232733; stroke: var(--warna-seri, #3d8bff); stroke-width: 2.5; transition: r .15s; }
+.profil-bergilir .linechart .dot-area { fill: transparent; }
+.profil-bergilir .dot-group:hover .dot { r: 6.5; fill: var(--warna-seri, #3d8bff); }
+.profil-bergilir .dot-group .tooltip { opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+.profil-bergilir .dot-group:hover .tooltip { opacity: 1; }
+.profil-bergilir .dot-group .tooltip rect {
+  fill: #2c3140; stroke: #3a4050; stroke-width: 1.2; filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.32)); opacity: 0.96;
+}
+.profil-bergilir .dot-group .tooltip text { font-size: 13px; font-weight: 500; fill: #fff; letter-spacing: 0.2px; }
+.profil-bergilir .stat-kosong { margin: 0; font-size: .9rem; color: #b0b6c3; }
+
+/* Menu titik tiga */
+.profil-bergilir .menu-wrapper { position: relative; display: inline-block; margin-right: 4px; }
+.profil-bergilir .menu-dots {
+  display: flex; flex-direction: column; gap: 3px; cursor: pointer; width: 26px; padding: 4px 0;
+  align-items: center; margin: 0 4px; background: none; border: 0; border-radius: 8px;
+}
+.profil-bergilir .menu-dots span { display: block; width: 5px; height: 5px; background: #6c7383; border-radius: 50%; transition: background 0.2s; }
+.profil-bergilir .menu-dots:hover span, .profil-bergilir .menu-dots[aria-expanded="true"] span { background: #b0b6c3; }
+.profil-bergilir .menu-select {
+  position: absolute; right: 0; top: 30px; min-width: 150px; z-index: 10; padding: 8px 6px;
+  border-radius: 18px; border: 1.5px solid rgba(80, 90, 120, 0.18);
+  background: rgba(30, 34, 44, 0.92); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  transition: opacity 0.25s cubic-bezier(0.4, 2, 0.6, 1), transform 0.25s cubic-bezier(0.4, 2, 0.6, 1), visibility 0s .25s;
+  opacity: 0; visibility: hidden; transform: scale(0.95) translateY(-8px); pointer-events: none;
+}
+.profil-bergilir .menu-select.buka {
+  opacity: 1; visibility: visible; transform: scale(1) translateY(0); pointer-events: auto;
+  transition: opacity 0.25s cubic-bezier(0.4, 2, 0.6, 1), transform 0.25s cubic-bezier(0.4, 2, 0.6, 1), visibility 0s;
+}
+.profil-bergilir .menu-select div {
+  padding: 9px 18px 9px 14px; color: #f3f6fa; cursor: pointer; font-size: 14px;
+  border-left: 3px solid transparent; margin-bottom: 2px; border-radius: 8px;
+  transition: background 0.18s, color 0.18s, border-left 0.18s; outline: none;
+}
+.profil-bergilir .menu-select div:nth-child(1) { border-left: 3px solid #3d8bff; }
+.profil-bergilir .menu-select div:nth-child(2) { border-left: 3px solid #ff6a3d; }
+.profil-bergilir .menu-select div:nth-child(3) { border-left: 3px solid #1ecb6b; }
+.profil-bergilir .menu-select div:nth-child(1):is(:hover, :focus-visible, .pilih) { background: rgba(61, 139, 255, 0.10); color: #3d8bff; }
+.profil-bergilir .menu-select div:nth-child(2):is(:hover, :focus-visible, .pilih) { background: rgba(255, 106, 61, 0.10); color: #ff6a3d; }
+.profil-bergilir .menu-select div:nth-child(3):is(:hover, :focus-visible, .pilih) { background: rgba(30, 203, 107, 0.10); color: #1ecb6b; }
+
+/* Gerak masuk kartu statistik saat DAS berganti */
+@keyframes donat-gambar { from { stroke-dasharray: 0 999; } }
+@keyframes garis-gambar { from { stroke-dashoffset: var(--panjang); } to { stroke-dashoffset: 0; } }
+@keyframes titik-muncul { from { opacity: 0; transform: scale(.3); } to { opacity: 1; transform: none; } }
+.profil-bergilir .ganti-das .stat-card { animation: das-masuk .42s cubic-bezier(.2, .7, .3, 1) .18s both; }
+.profil-bergilir .ganti-das .donut-segment { animation: donat-gambar .7s cubic-bezier(.3, .7, .3, 1) calc(.3s + var(--i, 0) * .12s) both; }
+.profil-bergilir .ganti-das .garis-seri { stroke-dasharray: var(--panjang); animation: garis-gambar .9s cubic-bezier(.4, .1, .3, 1) .35s both; }
+.profil-bergilir .ganti-das .dot-group { transform-box: fill-box; transform-origin: center; animation: titik-muncul .35s cubic-bezier(.3, 1.4, .5, 1) calc(.4s + var(--i, 0) * .06s) both; }
+.profil-bergilir .ganti-das .stat-card-legend .legend-item { animation: das-masuk .42s cubic-bezier(.2, .7, .3, 1) both; }
+.profil-bergilir .ganti-das .stat-card-legend .legend-item:nth-child(1) { animation-delay: .28s; }
+.profil-bergilir .ganti-das .stat-card-legend .legend-item:nth-child(2) { animation-delay: .33s; }
+.profil-bergilir .ganti-das .stat-card-legend .legend-item:nth-child(3) { animation-delay: .38s; }
+.profil-bergilir .ganti-das .stat-card-legend .legend-item:nth-child(4) { animation-delay: .43s; }
+.profil-bergilir .seri-label { display: flex; align-items: center; gap: 7px; margin-bottom: -10px; font-size: .8rem; color: #b0b6c3; }
+.profil-bergilir .seri-label i { width: 14px; height: 3px; border-radius: 2px; flex: none; }
