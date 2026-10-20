@@ -1,7 +1,7 @@
 {
  "format": "hms-neraca-air",
  "versi": 1,
- "dibuat": "2026-10-20T16:51:50",
+ "dibuat": "2026-10-20T17:17:14",
  "aplikasi": "HEC-HMS DAS Analyzer - Simulasi",
  "das": {
   "nama": "WAE_TOMU_BATU_GAJAH",
@@ -1862,15 +1862,15 @@
    "kunci": "weibull",
    "nama": "Ketersediaan_Weibull_WAE_TOMU_BATU_GAJAH_S1.xlsx",
    "berkas": "Ketersediaan_Weibull_WAE_TOMU_BATU_GAJAH_S1.xlsx",
-   "ukuran": 448252
+   "ukuran": 448247
   },
   {
    "kunci": "harian15",
    "nama": "Ketersediaan_15Harian_2025_WAE_TOMU_BATU_GAJAH_S1.xlsx",
    "berkas": "Ketersediaan_15Harian_2025_WAE_TOMU_BATU_GAJAH_S1.xlsx",
-   "ukuran": 388323
+   "ukuran": 388317
   }
  ],
- "diimpor": "2026-10-20T07:52:54.373Z",
+ "diimpor": "2026-10-20T08:21:37.390Z",
  "dikirim_dari": "Simulasi HEC-HMS (tombol Kirim ke web Neraca Air)"
 }
