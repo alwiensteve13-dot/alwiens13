@@ -1,7 +1,7 @@
 {
  "format": "hms-neraca-air",
  "versi": 1,
- "dibuat": "2026-10-26T19:14:51",
+ "dibuat": "2026-10-27T22:50:48",
  "aplikasi": "HEC-HMS DAS Analyzer - Simulasi",
  "das": {
   "nama": "Nasiri_luhu_",
@@ -1862,7 +1862,7 @@
    "kunci": "weibull",
    "nama": "Ketersediaan_Weibull_Nasiri_luhu__Outlet.xlsx",
    "berkas": "Ketersediaan_Weibull_Nasiri_luhu__Outlet.xlsx",
-   "ukuran": 456033
+   "ukuran": 456034
   },
   {
    "kunci": "harian15",
@@ -1871,6 +1871,6 @@
    "ukuran": 396082
   }
  ],
- "diimpor": "2026-10-26T10:14:57.965Z",
+ "diimpor": "2026-10-27T13:51:06.538Z",
  "dikirim_dari": "Simulasi HEC-HMS (tombol Kirim ke web Neraca Air)"
 }
